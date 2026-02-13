@@ -41,8 +41,8 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative z-10 glass-dark rounded-3xl p-8 border border-white/10">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-2xl shadow-primary/50 mb-4 border-4 border-white/10">
-            <Shield className="w-10 h-10 text-white" />
+          <div className="w-24 h-24 flex items-center justify-center mb-4">
+            <img src="/ncc-logo.png" alt="NCC Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2 text-center tracking-tight">NCC RGU Unit</h1>
           <p className="text-gray-400 text-sm">Secure Command Center</p>

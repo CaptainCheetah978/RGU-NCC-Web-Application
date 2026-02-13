@@ -57,8 +57,8 @@ export function Sidebar() {
     return (
         <div className="h-screen w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col fixed left-0 top-0 z-20">
             <div className="p-6 flex items-center space-x-3 border-b border-white/10">
-                <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center shadow-lg shadow-secondary/20">
-                    <Shield className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 flex items-center justify-center">
+                    <img src="/ncc-logo.png" alt="NCC" className="w-full h-full object-contain" />
                 </div>
                 <span className="font-bold text-white text-lg tracking-tight">NCC RGU</span>
             </div>

@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "NCC Royal Global University",
   description: "Official Cadet Management System for NCC RGU Unit",
+  icons: {
+    icon: "/ncc-logo.png",
+  },
 };
 
 import { Providers } from "@/components/providers";

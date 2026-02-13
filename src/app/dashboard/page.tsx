@@ -13,9 +13,19 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-8">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-                <p className="text-gray-500">Here's what's happening in your unit today.</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+                    <p className="text-gray-500">Here's what's happening in your unit today.</p>
+                </div>
+                <div className="flex items-center space-x-4">
+                    <img src="/ncc-logo.png" alt="NCC" className="h-16 w-16 object-contain" />
+                    <img src="/rgu-logo.png" alt="RGU" className="h-16 w-auto object-contain" />
+                    <div className="border-l border-gray-300 pl-4">
+                        <p className="text-sm text-gray-500">Welcome back,</p>
+                        <p className="text-lg font-bold text-gray-900">{user.name}</p>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
