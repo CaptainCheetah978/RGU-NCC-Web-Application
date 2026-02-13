@@ -3,14 +3,14 @@ import { Role, User, Wing, Gender, Cadet } from "@/types";
 export const MOCK_USERS: (User | Cadet)[] = [
     {
         id: "ano-1",
-        name: "Lt. Dr KM Sudha",
+        name: "ANO",
         role: Role.ANO,
         regimentalNumber: "NCC/ANO/2024/001",
         pin: "0324",
     },
     {
         id: "suo-1",
-        name: "SUO Aditya Singh",
+        name: "SUO",
         role: Role.SUO,
         regimentalNumber: "AS2020SDIA0300001",
         wing: Wing.ARMY,
@@ -22,7 +22,7 @@ export const MOCK_USERS: (User | Cadet)[] = [
     },
     {
         id: "suo-2",
-        name: "SUO Gargi Sharma",
+        name: "SUO",
         role: Role.SUO,
         regimentalNumber: "AS2020SWIA0300002",
         wing: Wing.ARMY,
@@ -58,7 +58,7 @@ export const MOCK_USERS: (User | Cadet)[] = [
     },
     {
         id: "cdt-1",
-        name: "Cdt. Rohini Roy",
+        name: "Cdt. Roshni",
         role: Role.CADET,
         regimentalNumber: "AS2022SWIA0300005",
         wing: Wing.ARMY,

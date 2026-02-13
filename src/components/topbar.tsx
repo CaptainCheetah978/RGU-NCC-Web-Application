@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { Role } from "@/types";
 import { Bell } from "lucide-react";
 
 export function Topbar() {
@@ -11,7 +12,11 @@ export function Topbar() {
     return (
         <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-8 sticky top-0 z-10 w-full shadow-sm">
             <h1 className="text-xl font-bold text-black tracking-tight">
-                Welcome back, {user.role === "CADET" ? "Cadet" : user.role} {user.name.split(" ")[0]}
+                Welcome back, {
+                    (user.role === Role.ANO || user.role === Role.SUO)
+                        ? user.role
+                        : `${user.role === Role.CADET ? "Cadet" : user.role} ${user.name.split(" ")[0]}`
+                }
             </h1>
 
             <div className="flex items-center space-x-4">

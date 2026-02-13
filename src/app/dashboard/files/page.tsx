@@ -24,9 +24,9 @@ interface FileItem {
 }
 
 const MOCK_FILES: FileItem[] = [
-    { id: "1", name: "Drill Manual 2023.pdf", type: "PDF", size: "2.4 MB", uploadedBy: "Lt. Dr KM Sudha", date: "Oct 20, 2023", url: "#" },
-    { id: "2", name: "Parade Formation.jpg", type: "IMAGE", size: "1.8 MB", uploadedBy: "SUO Aditya Singh", date: "Oct 22, 2023", url: "#" },
-    { id: "3", name: "Camp Instructions.pdf", type: "PDF", size: "0.5 MB", uploadedBy: "Lt. Dr KM Sudha", date: "Oct 24, 2023", url: "#" },
+    { id: "1", name: "Drill Manual 2023.pdf", type: "PDF", size: "2.4 MB", uploadedBy: "ANO", date: "Oct 20, 2023", url: "#" },
+    { id: "2", name: "Parade Formation.jpg", type: "IMAGE", size: "1.8 MB", uploadedBy: "SUO", date: "Oct 22, 2023", url: "#" },
+    { id: "3", name: "Camp Instructions.pdf", type: "PDF", size: "0.5 MB", uploadedBy: "ANO", date: "Oct 24, 2023", url: "#" },
 ];
 
 export default function FilesPage() {

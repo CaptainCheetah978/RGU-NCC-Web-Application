@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { ClassSession, Cadet, AttendanceRecord, Note, Role } from "@/types";
+import { ClassSession, Cadet, AttendanceRecord, Note, Role, User } from "@/types";
+import { MOCK_USERS } from "@/lib/mock-data";
 
 interface DashboardStats {
     totalCadets: number;
@@ -26,6 +27,7 @@ interface DataContextType {
     forwardNoteToANO: (noteId: string, anoId: string, anoName: string) => void;
     deleteNote: (id: string) => void;
     getStats: (userId?: string) => DashboardStats;
+    messageableUsers: (Cadet | User)[];
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -42,7 +44,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         if (storedClasses) setClasses(JSON.parse(storedClasses));
 
         const storedCadets = localStorage.getItem("ncc_cadets");
-        if (storedCadets) setCadets(JSON.parse(storedCadets));
+        if (storedCadets) {
+            setCadets(JSON.parse(storedCadets));
+        } else {
+            // Seed with login cadets (all except ANO)
+            const seedCadets = MOCK_USERS.filter(u => u.role !== Role.ANO) as Cadet[];
+            setCadets(seedCadets);
+        }
 
         const storedAttendance = localStorage.getItem("ncc_attendance");
         if (storedAttendance) setAttendance(JSON.parse(storedAttendance));
@@ -161,13 +169,32 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         };
     };
 
+    // List of users who can receive notes (Cadets + Officers)
+    const messageableUsers = useMemo(() => {
+        // Start with mock ANO if not in cadets
+        const anos = [
+            {
+                id: "ano-1",
+                name: "ANO",
+                role: Role.ANO,
+                regimentalNumber: "NCC/ANO/2024/001",
+            }
+        ];
+
+        // Filter out any duplicates if ANO was somehow added to cadets
+        const cadetsList = cadets.filter(c => c.id !== "ano-1");
+
+        return [...anos, ...cadetsList];
+    }, [cadets]);
+
     return (
         <DataContext.Provider value={{
             classes, addClass, deleteClass,
             cadets, addCadet, updateCadet, deleteCadet,
             attendance, markAttendance,
             notes, sendNote, markNoteAsRead, forwardNoteToANO, deleteNote,
-            getStats
+            getStats,
+            messageableUsers
         }}>
             {children}
         </DataContext.Provider>

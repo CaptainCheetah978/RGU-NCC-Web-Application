@@ -10,7 +10,8 @@ import {
     FileText,
     Settings,
     LogOut,
-    Shield
+    Shield,
+    MessageSquare
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -46,6 +47,12 @@ export function Sidebar() {
             name: "Files & Media",
             href: "/dashboard/files",
             icon: FileText,
+            roles: [] // All
+        },
+        {
+            name: "Private Notes",
+            href: "/dashboard/notes",
+            icon: MessageSquare,
             roles: [] // All
         },
     ];
