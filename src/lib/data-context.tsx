@@ -44,13 +44,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         if (storedClasses) setClasses(JSON.parse(storedClasses));
 
         const storedCadets = localStorage.getItem("ncc_cadets");
+        let initialCadets: Cadet[] = [];
+
         if (storedCadets) {
-            setCadets(JSON.parse(storedCadets));
-        } else {
-            // Seed with login cadets (all except ANO)
-            const seedCadets = MOCK_USERS.filter(u => u.role !== Role.ANO) as Cadet[];
-            setCadets(seedCadets);
+            initialCadets = JSON.parse(storedCadets);
         }
+
+        // Always ensure login cadets (except ANO) are in the list
+        const loginCadets = MOCK_USERS.filter(u => u.role !== Role.ANO) as Cadet[];
+
+        // Merge login cadets that don't already exist in the registry (by ID)
+        loginCadets.forEach(loginCdt => {
+            if (!initialCadets.find(c => c.id === loginCdt.id)) {
+                initialCadets.push(loginCdt);
+            }
+        });
+
+        // Update name for Roshni if it was still old in storage
+        const roshni = initialCadets.find(c => c.id === "cdt-1");
+        if (roshni) roshni.name = "Cdt. Roshni";
+
+        setCadets(initialCadets);
 
         const storedAttendance = localStorage.getItem("ncc_attendance");
         if (storedAttendance) setAttendance(JSON.parse(storedAttendance));
