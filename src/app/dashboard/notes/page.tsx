@@ -18,7 +18,8 @@ import {
     CheckCircle2,
     ArrowUpRight,
     User,
-    Search
+    Search,
+    Reply
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,6 +112,15 @@ export default function NotesPage() {
         } else {
             alert("No ANO found to forward to.");
         }
+    };
+
+    const handleReply = (note: Note) => {
+        setFormData({
+            recipientId: note.senderId,
+            subject: note.subject.startsWith("Re: ") ? note.subject : `Re: ${note.subject}`,
+            content: "",
+        });
+        setIsComposeModalOpen(true);
     };
 
     return (
@@ -244,6 +254,17 @@ export default function NotesPage() {
                                         </div>
                                     </div>
                                     <div className="flex space-x-2">
+                                        {(user.role === Role.SUO || user.role === Role.ANO) && activeTab === "inbox" && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleReply(selectedNote)}
+                                                className="text-primary hover:text-primary hover:bg-primary/5"
+                                            >
+                                                <Reply className="w-4 h-4 mr-2" />
+                                                Reply
+                                            </Button>
+                                        )}
                                         {activeTab === "inbox" && user.role === Role.SUO && !selectedNote.forwardedToANO && (
                                             <Button
                                                 variant="ghost"
