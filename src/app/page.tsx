@@ -72,28 +72,38 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-10">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-24 h-24 mb-6 relative"
-          >
-            <img src="/ncc-logo.png" alt="NCC" className="w-full h-full object-contain drop-shadow-2xl" />
-          </motion.div>
+          <div className="flex items-center space-x-8 mb-6">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-20 h-20 relative"
+            >
+              <img src="/ncc-logo.png" alt="NCC logo" className="w-full h-full object-contain drop-shadow-2xl" />
+            </motion.div>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="w-24 h-24 relative"
+            >
+              <img src="/rgu-logo.png" alt="RGU logo" className="w-full h-full object-contain drop-shadow-2xl" />
+            </motion.div>
+          </div>
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl font-extrabold text-white mb-2 tracking-tighter"
+            className="text-3xl font-extrabold text-white mb-2 tracking-tight text-center"
           >
-            NCC RGU
+            Welcome to RGU NCC
           </motion.h1>
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-gray-400 font-medium tracking-widest text-xs uppercase"
+            className="text-gray-400 font-medium text-xs text-center px-4"
           >
-            Command Center Entry
+            Please select from below for proceeding to dashboard
           </motion.p>
         </div>
 
