@@ -1,15 +1,168 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Custom NCC Colors */
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-orange: var(--accent-orange);
+  --color-tertiary: var(--tertiary);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /* NCC Brand Colors */
+  --background: #F3F4F6;
+  /* Light Gray */
+  --foreground: #1D2951;
+  /* Deep Blue Text */
+
+  --card: #FFFFFF;
+  --card-foreground: #1D2951;
+
+  --popover: #FFFFFF;
+  --popover-foreground: #1D2951;
+
+  --primary: #1D2951;
+  /* Deep Blue */
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #E31837;
+  /* NCC Red */
+  --secondary-foreground: #FFFFFF;
+
+  --accent-gold: #FFD700;
+  /* NCC Gold */
+  --accent-orange: #F05523;
+  /* RGU Orange */
+  --tertiary: #4B92DB;
+  /* Light Blue */
+
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+
+  --accent: #F3F4F6;
+  --accent-foreground: #1D2951;
+
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #1D2951;
+
+  --chart-1: #1D2951;
+  --chart-2: #E31837;
+  --chart-3: #FFD700;
+  --chart-4: #F05523;
+  --chart-5: #4B92DB;
+
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1D2951;
+  --sidebar-primary: #1D2951;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #1D2951;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #1D2951;
+}
+
+.dark {
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+
+  --card: #1E293B;
+  --card-foreground: #F8FAFC;
+
+  --popover: #1E293B;
+  --popover-foreground: #F8FAFC;
+
+  --primary: #4B92DB;
+  /* Tertiary Blue for Dark Mode */
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #E31837;
+  --secondary-foreground: #FFFFFF;
+
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+
+  --accent: #1E293B;
+  --accent-foreground: #F8FAFC;
+
+  --destructive: #7F1D1D;
+  --destructive-foreground: #F8FAFC;
+
+  --border: #334155;
+  --input: #334155;
+  --ring: #4B92DB;
+
+  --chart-1: #4B92DB;
+  --chart-2: #E31837;
+  --chart-3: #FFD700;
+  --chart-4: #F05523;
+  --chart-5: #1D2951;
+
+  --sidebar: #0F172A;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #4B92DB;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: #F8FAFC;
+  --sidebar-border: #334155;
+  --sidebar-ring: #4B92DB;
+}
 
 @layer base {
-  :root {
-    --background: 243 244 246; /* #F3F4F6 */
-    --foreground: 29 41 81; /* #1D2951 */
+  * {
+    @apply border-border outline-ring/50;
   }
 
   body {
-    @apply bg-background text-primary antialiased;
+    @apply bg-background text-foreground;
   }
 }
 
@@ -17,7 +170,7 @@
   .glass {
     @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-lg;
   }
-  
+
   .glass-dark {
     @apply bg-primary/90 backdrop-blur-lg border border-primary/20 shadow-lg text-white;
   }

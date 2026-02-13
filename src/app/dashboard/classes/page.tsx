@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Plus, Calendar, Clock, MapPin, Users, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function ClassesPage() {
     const { classes, addClass, deleteClass } = useData();
@@ -74,11 +76,11 @@ export default function ClassesPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1 }}
                         >
-                            <Card className="hover:shadow-xl transition-all duration-300 border-t-4 border-t-primary group">
+                            <Card className="hover:shadow-xl transition-all duration-300 border-t-4 border-t-primary group h-full flex flex-col hover:border-t-secondary/80">
                                 <CardHeader>
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold mb-2">
+                                            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold mb-2 border border-primary/20">
                                                 TRAINING
                                             </span>
                                             <CardTitle className="text-xl mb-1 group-hover:text-primary transition-colors">{cls.title}</CardTitle>
@@ -86,34 +88,37 @@ export default function ClassesPage() {
                                         {canEdit && (
                                             <button
                                                 onClick={() => deleteClass(cls.id)}
-                                                className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                                className="text-gray-300 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-full"
+                                                title="Delete Class"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         )}
                                     </div>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex items-center text-sm text-gray-600">
+                                <CardContent className="space-y-4 flex-1">
+                                    <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg group-hover:bg-gray-100/50 transition-colors">
                                         <Calendar className="w-4 h-4 mr-2 text-secondary" />
-                                        {cls.date}
+                                        <span className="font-medium">{cls.date}</span>
                                     </div>
-                                    <div className="flex items-center text-sm text-gray-600">
-                                        <Clock className="w-4 h-4 mr-2 text-secondary" />
-                                        {cls.time}
+                                    <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg group-hover:bg-gray-100/50 transition-colors">
+                                        <Clock className="w-4 h-4 mr-2 text-tertiary" />
+                                        <span className="font-medium">{cls.time}</span>
                                     </div>
                                     {cls.description && (
-                                        <p className="text-sm text-gray-500 mt-2 line-clamp-2">{cls.description}</p>
+                                        <p className="text-sm text-gray-500 mt-2 line-clamp-2 px-1">{cls.description}</p>
                                     )}
                                 </CardContent>
-                                <CardFooter className="bg-gray-50/50 border-t border-gray-100 flex justify-between items-center">
-                                    <div className="flex items-center text-sm text-gray-500">
-                                        <Users className="w-4 h-4 mr-2" />
+                                <CardFooter className="bg-gray-50/50 border-t border-gray-100 flex justify-between items-center p-4">
+                                    <div className="flex items-center text-sm text-gray-500 font-medium">
+                                        <Users className="w-4 h-4 mr-2 text-gray-400" />
                                         {cls.attendees.length} Cadets
                                     </div>
-                                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-white">
-                                        View Details
-                                    </Button>
+                                    <Link href={`/dashboard/attendance?classId=${cls.id}`}>
+                                        <Button variant="ghost" size="sm" className="text-primary hover:text-white hover:bg-primary border border-primary/20 hover:border-primary transition-all">
+                                            View Attendance
+                                        </Button>
+                                    </Link>
                                 </CardFooter>
                             </Card>
                         </motion.div>

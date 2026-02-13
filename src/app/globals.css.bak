@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 243 244 246; /* #F3F4F6 */
+    --foreground: 29 41 81; /* #1D2951 */
+  }
+
+  body {
+    @apply bg-background text-primary antialiased;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-lg;
+  }
+  
+  .glass-dark {
+    @apply bg-primary/90 backdrop-blur-lg border border-primary/20 shadow-lg text-white;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-tertiary to-secondary;
+  }
+}
