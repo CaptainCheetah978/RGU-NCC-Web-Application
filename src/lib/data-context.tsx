@@ -16,6 +16,7 @@ interface DataContextType {
     deleteClass: (id: string) => void;
     cadets: Cadet[];
     addCadet: (cadet: Cadet) => void;
+    updateCadet: (id: string, updates: Partial<Cadet>) => void;
     deleteCadet: (id: string) => void;
     attendance: AttendanceRecord[];
     markAttendance: (record: AttendanceRecord) => void;
@@ -79,6 +80,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     // Cadet management
     const addCadet = (cadet: Cadet) => {
         setCadets(prev => [...prev, cadet]);
+    };
+
+    const updateCadet = (id: string, updates: Partial<Cadet>) => {
+        setCadets(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
     };
 
     const deleteCadet = (id: string) => {
@@ -159,7 +164,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return (
         <DataContext.Provider value={{
             classes, addClass, deleteClass,
-            cadets, addCadet, deleteCadet,
+            cadets, addCadet, updateCadet, deleteCadet,
             attendance, markAttendance,
             notes, sendNote, markNoteAsRead, forwardNoteToANO, deleteNote,
             getStats

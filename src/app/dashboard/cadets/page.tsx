@@ -12,9 +12,11 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
 export default function CadetsPage() {
-    const { cadets, addCadet, deleteCadet } = useData();
+    const { cadets, addCadet, updateCadet, deleteCadet } = useData();
     const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingCadet, setEditingCadet] = useState<any>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterRole, setFilterRole] = useState<string>("ALL");
 
@@ -26,34 +28,19 @@ export default function CadetsPage() {
         }
     };
 
-    // Helper function to get wing code for regimental number
-    const getWingCode = (wing: Wing): string => {
-        switch (wing) {
-            case Wing.ARMY:
-                return "AS";
-            case Wing.AIR:
-                return "AI";
-            case Wing.NAVY:
-                return "NV";
-            default:
-                return "AS";
-        }
-    };
-
-    // Helper function to generate regimental number
-    const generateRegimentalNumber = (
-        wing: Wing,
-        year: number,
-        gender: Gender,
-        battalion: string,
-        unitNumber: string,
-        sequentialNumber: number
-    ): string => {
-        const wingCode = getWingCode(wing);
-        const genderCode = gender === Gender.MALE ? "SDI" : "SWI";
-        const paddedUnit = unitNumber.padStart(3, '0');
-        const paddedSeq = sequentialNumber.toString().padStart(4, '0');
-        return `${wingCode}${year}${genderCode}${battalion}${paddedUnit}${paddedSeq}`;
+    const handleEdit = (cadet: any) => {
+        setEditingCadet(cadet);
+        setEditFormData({
+            name: cadet.name,
+            regimentalNumber: cadet.regimentalNumber || "",
+            rank: cadet.role,
+            wing: cadet.wing,
+            gender: cadet.gender,
+            battalion: cadet.battalion,
+            unitNumber: cadet.unitNumber,
+            enrollmentYear: cadet.enrollmentYear,
+        });
+        setIsEditModalOpen(true);
     };
 
     // Helper function to format unit name based on wing
@@ -73,6 +60,18 @@ export default function CadetsPage() {
     // Form State
     const [formData, setFormData] = useState({
         name: "",
+        regimentalNumber: "",
+        rank: Role.CADET,
+        wing: Wing.ARMY,
+        gender: Gender.MALE,
+        battalion: "A",
+        unitNumber: "30",
+        enrollmentYear: new Date().getFullYear(),
+    });
+
+    const [editFormData, setEditFormData] = useState({
+        name: "",
+        regimentalNumber: "",
         rank: Role.CADET,
         wing: Wing.ARMY,
         gender: Gender.MALE,
@@ -93,25 +92,12 @@ export default function CadetsPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Generate sequential number (in real app, this would be fetched from backend)
-        const sequentialNumber = cadets.filter(c => c.role !== Role.ANO).length + 1;
-
-        // Auto-generate regimental number
-        const regimentalNumber = generateRegimentalNumber(
-            formData.wing,
-            formData.enrollmentYear,
-            formData.gender,
-            formData.battalion,
-            formData.unitNumber,
-            sequentialNumber
-        );
-
         const newCadet = {
             id: `cdt-${Date.now()}`,
             name: formData.name,
             role: formData.rank,
             rank: formData.rank,
-            regimentalNumber: regimentalNumber,
+            regimentalNumber: formData.regimentalNumber,
             wing: formData.wing,
             gender: formData.gender,
             battalion: formData.battalion,
@@ -124,6 +110,7 @@ export default function CadetsPage() {
         setIsModalOpen(false);
         setFormData({
             name: "",
+            regimentalNumber: "",
             rank: Role.CADET,
             wing: Wing.ARMY,
             gender: Gender.MALE,
@@ -131,6 +118,26 @@ export default function CadetsPage() {
             unitNumber: "30",
             enrollmentYear: new Date().getFullYear(),
         });
+    };
+
+    const handleUpdate = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingCadet) return;
+
+        updateCadet(editingCadet.id, {
+            name: editFormData.name,
+            role: editFormData.rank,
+            rank: editFormData.rank,
+            regimentalNumber: editFormData.regimentalNumber,
+            wing: editFormData.wing,
+            gender: editFormData.gender,
+            battalion: editFormData.battalion,
+            unitNumber: editFormData.unitNumber,
+            enrollmentYear: editFormData.enrollmentYear,
+        });
+
+        setIsEditModalOpen(false);
+        setEditingCadet(null);
     };
 
     return (
@@ -235,8 +242,17 @@ export default function CadetsPage() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {canEdit && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleEdit(cadet)}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                    )}
                                                     <Button variant="ghost" size="sm">
-                                                        View Profile
+                                                        View
                                                     </Button>
                                                     {canEdit && (
                                                         <button
@@ -267,6 +283,16 @@ export default function CadetsPage() {
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             required
                         />
+                        <Input
+                            label="Regimental Number"
+                            placeholder="e.g. AS2024SDIA0300001"
+                            value={formData.regimentalNumber}
+                            onChange={(e) => setFormData({ ...formData, regimentalNumber: e.target.value.toUpperCase() })}
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-primary/80 ml-1">Rank</label>
                             <select
@@ -274,7 +300,7 @@ export default function CadetsPage() {
                                 value={formData.rank}
                                 onChange={(e) => setFormData({ ...formData, rank: e.target.value as Role })}
                             >
-                                {Object.values(Role).map(r => (
+                                {Object.values(Role).filter(r => r !== Role.ANO).map(r => (
                                     <option key={r} value={r}>{r}</option>
                                 ))}
                             </select>
@@ -336,6 +362,99 @@ export default function CadetsPage() {
                     <div className="pt-4 flex justify-end space-x-3">
                         <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
                         <Button type="submit">Complete Enrollment</Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Edit Cadet Modal */}
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Cadet Details">
+                <form onSubmit={handleUpdate} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label="Full Name"
+                            placeholder="e.g. Rahul Singh"
+                            value={editFormData.name}
+                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label="Regimental Number"
+                            placeholder="e.g. AS2024SDIA0300001"
+                            value={editFormData.regimentalNumber}
+                            onChange={(e) => setEditFormData({ ...editFormData, regimentalNumber: e.target.value.toUpperCase() })}
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-primary/80 ml-1">Rank</label>
+                            <select
+                                className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={editFormData.rank}
+                                onChange={(e) => setEditFormData({ ...editFormData, rank: e.target.value as Role })}
+                            >
+                                {Object.values(Role).filter(r => r !== Role.ANO).map(r => (
+                                    <option key={r} value={r}>{r}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-primary/80 ml-1">Gender</label>
+                            <select
+                                className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={editFormData.gender}
+                                onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value as Gender })}
+                            >
+                                {Object.values(Gender).map(g => (
+                                    <option key={g} value={g}>{g}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label="Battalion"
+                            placeholder="e.g. A, B, C"
+                            value={editFormData.battalion}
+                            onChange={(e) => setEditFormData({ ...editFormData, battalion: e.target.value.toUpperCase() })}
+                            maxLength={1}
+                            required
+                        />
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-primary/80 ml-1">Wing</label>
+                            <select
+                                className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={editFormData.wing}
+                                onChange={(e) => setEditFormData({ ...editFormData, wing: e.target.value as Wing })}
+                            >
+                                {Object.values(Wing).map(w => (
+                                    <option key={w} value={w}>{w}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label="Unit Number"
+                            placeholder="e.g. 30, 48"
+                            value={editFormData.unitNumber}
+                            onChange={(e) => setEditFormData({ ...editFormData, unitNumber: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label="Enrollment Year"
+                            type="number"
+                            value={editFormData.enrollmentYear}
+                            onChange={(e) => setEditFormData({ ...editFormData, enrollmentYear: parseInt(e.target.value) })}
+                        />
+                    </div>
+
+                    <div className="pt-4 flex justify-end space-x-3">
+                        <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+                        <Button type="submit">Save Changes</Button>
                     </div>
                 </form>
             </Modal>
