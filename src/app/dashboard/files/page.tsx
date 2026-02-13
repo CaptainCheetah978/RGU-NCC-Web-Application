@@ -31,6 +31,9 @@ const MOCK_FILES: FileItem[] = [
 
 export default function FilesPage() {
     const { user } = useAuth();
+
+    if (!user) return null;
+
     const [files, setFiles] = useState<FileItem[]>(MOCK_FILES);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploadFile, setUploadFile] = useState<File | null>(null);

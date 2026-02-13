@@ -14,6 +14,9 @@ import { motion } from "framer-motion";
 export default function CadetsPage() {
     const { cadets, addCadet, updateCadet, deleteCadet } = useData();
     const { user } = useAuth();
+
+    if (!user) return null;
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingCadet, setEditingCadet] = useState<any>(null);

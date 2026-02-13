@@ -15,6 +15,8 @@ function AttendanceContent() {
     const { classes, cadets, attendance, markAttendance } = useData();
     const { user } = useAuth();
 
+    if (!user) return null;
+
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");
 

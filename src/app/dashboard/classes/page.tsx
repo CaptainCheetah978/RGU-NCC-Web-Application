@@ -16,6 +16,9 @@ import { cn } from "@/lib/utils";
 export default function ClassesPage() {
     const { classes, addClass, deleteClass } = useData();
     const { user } = useAuth();
+
+    if (!user) return null;
+
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Form State
