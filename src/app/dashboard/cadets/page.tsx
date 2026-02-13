@@ -36,25 +36,17 @@ export default function CadetsPage() {
             rank: cadet.role,
             wing: cadet.wing,
             gender: cadet.gender,
-            battalion: cadet.battalion,
             unitNumber: cadet.unitNumber,
+            unitName: cadet.unitName || (cadet.wing === Wing.ARMY ? "Assam BN NCC" : cadet.wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC"),
             enrollmentYear: cadet.enrollmentYear,
         });
         setIsEditModalOpen(true);
     };
 
-    // Helper function to format unit name based on wing
-    const getFormattedUnit = (wing: Wing, unitNumber: string): string => {
-        switch (wing) {
-            case Wing.ARMY:
-                return `${unitNumber} Assam Bn NCC`;
-            case Wing.AIR:
-                return `${unitNumber} Assam Air Sqn NCC`;
-            case Wing.NAVY:
-                return `${unitNumber} Assam Naval Unit NCC`;
-            default:
-                return `${unitNumber} NCC`;
-        }
+    // Helper function to format unit name for display
+    const getFormattedUnit = (wing: Wing, unitNumber: string, unitName?: string): string => {
+        const name = unitName || (wing === Wing.ARMY ? "Assam BN NCC" : wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC");
+        return `${unitNumber} ${name}`;
     };
 
     // Form State
@@ -64,8 +56,8 @@ export default function CadetsPage() {
         rank: Role.CADET,
         wing: Wing.ARMY,
         gender: Gender.MALE,
-        battalion: "A",
         unitNumber: "30",
+        unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
     });
 
@@ -75,8 +67,8 @@ export default function CadetsPage() {
         rank: Role.CADET,
         wing: Wing.ARMY,
         gender: Gender.MALE,
-        battalion: "A",
         unitNumber: "30",
+        unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
     });
 
@@ -100,8 +92,8 @@ export default function CadetsPage() {
             regimentalNumber: formData.regimentalNumber,
             wing: formData.wing,
             gender: formData.gender,
-            battalion: formData.battalion,
             unitNumber: formData.unitNumber,
+            unitName: formData.unitName,
             enrollmentYear: formData.enrollmentYear,
             avatarUrl: "" // Placeholder
         };
@@ -114,8 +106,8 @@ export default function CadetsPage() {
             rank: Role.CADET,
             wing: Wing.ARMY,
             gender: Gender.MALE,
-            battalion: "A",
             unitNumber: "30",
+            unitName: "Assam BN NCC",
             enrollmentYear: new Date().getFullYear(),
         });
     };
@@ -131,8 +123,8 @@ export default function CadetsPage() {
             regimentalNumber: editFormData.regimentalNumber,
             wing: editFormData.wing,
             gender: editFormData.gender,
-            battalion: editFormData.battalion,
             unitNumber: editFormData.unitNumber,
+            unitName: editFormData.unitName,
             enrollmentYear: editFormData.enrollmentYear,
         });
 
@@ -235,7 +227,7 @@ export default function CadetsPage() {
                                                 {cadet.regimentalNumber || "N/A"}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
-                                                {getFormattedUnit(cadet.wing, cadet.unitNumber)}
+                                                {getFormattedUnit(cadet.wing, cadet.unitNumber, cadet.unitName)}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-500">
                                                 {cadet.enrollmentYear}
@@ -305,9 +297,6 @@ export default function CadetsPage() {
                                 ))}
                             </select>
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-primary/80 ml-1">Gender</label>
                             <select
@@ -320,14 +309,6 @@ export default function CadetsPage() {
                                 ))}
                             </select>
                         </div>
-                        <Input
-                            label="Battalion"
-                            placeholder="e.g. A, B, C"
-                            value={formData.battalion}
-                            onChange={(e) => setFormData({ ...formData, battalion: e.target.value.toUpperCase() })}
-                            maxLength={1}
-                            required
-                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -336,7 +317,14 @@ export default function CadetsPage() {
                             <select
                                 className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                 value={formData.wing}
-                                onChange={(e) => setFormData({ ...formData, wing: e.target.value as Wing })}
+                                onChange={(e) => {
+                                    const wing = e.target.value as Wing;
+                                    let unitName = "";
+                                    if (wing === Wing.ARMY) unitName = "Assam BN NCC";
+                                    else if (wing === Wing.AIR) unitName = "Assam Air Sqn NCC";
+                                    else if (wing === Wing.NAVY) unitName = "Assam Naval Unit NCC";
+                                    setFormData({ ...formData, wing, unitName });
+                                }}
                             >
                                 {Object.values(Wing).map(w => (
                                     <option key={w} value={w}>{w}</option>
@@ -352,12 +340,20 @@ export default function CadetsPage() {
                         />
                     </div>
 
-                    <Input
-                        label="Enrollment Year"
-                        type="number"
-                        value={formData.enrollmentYear}
-                        onChange={(e) => setFormData({ ...formData, enrollmentYear: parseInt(e.target.value) })}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label="Unit Name"
+                            value={formData.unitName}
+                            onChange={(e) => setFormData({ ...formData, unitName: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label="Enrollment Year"
+                            type="number"
+                            value={formData.enrollmentYear}
+                            onChange={(e) => setFormData({ ...formData, enrollmentYear: parseInt(e.target.value) })}
+                        />
+                    </div>
 
                     <div className="pt-4 flex justify-end space-x-3">
                         <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
@@ -414,34 +410,39 @@ export default function CadetsPage() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Battalion"
-                            placeholder="e.g. A, B, C"
-                            value={editFormData.battalion}
-                            onChange={(e) => setEditFormData({ ...editFormData, battalion: e.target.value.toUpperCase() })}
-                            maxLength={1}
-                            required
-                        />
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-primary/80 ml-1">Wing</label>
                             <select
                                 className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                 value={editFormData.wing}
-                                onChange={(e) => setEditFormData({ ...editFormData, wing: e.target.value as Wing })}
+                                onChange={(e) => {
+                                    const wing = e.target.value as Wing;
+                                    let unitName = "";
+                                    if (wing === Wing.ARMY) unitName = "Assam BN NCC";
+                                    else if (wing === Wing.AIR) unitName = "Assam Air Sqn NCC";
+                                    else if (wing === Wing.NAVY) unitName = "Assam Naval Unit NCC";
+                                    setEditFormData({ ...editFormData, wing, unitName });
+                                }}
                             >
                                 {Object.values(Wing).map(w => (
                                     <option key={w} value={w}>{w}</option>
                                 ))}
                             </select>
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
                         <Input
                             label="Unit Number"
                             placeholder="e.g. 30, 48"
                             value={editFormData.unitNumber}
                             onChange={(e) => setEditFormData({ ...editFormData, unitNumber: e.target.value })}
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label="Unit Name"
+                            value={editFormData.unitName}
+                            onChange={(e) => setEditFormData({ ...editFormData, unitName: e.target.value })}
                             required
                         />
                         <Input

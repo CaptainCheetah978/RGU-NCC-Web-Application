@@ -34,6 +34,7 @@ export interface Cadet extends User {
     gender: Gender;
     battalion?: string;
     unitNumber: string;
+    unitName?: string;
     enrollmentYear: number;
 }
 
