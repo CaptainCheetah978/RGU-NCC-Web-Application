@@ -5,7 +5,7 @@ export const MOCK_USERS: User[] = [
         id: "ano-1",
         name: "Lt. Dr KM Sudha",
         role: Role.ANO,
-        regimentalNumber: "NCC/ANO/2020/001",
+        regimentalNumber: "NCC/ANO/2024/001",
         pin: "0324",
     },
     {
