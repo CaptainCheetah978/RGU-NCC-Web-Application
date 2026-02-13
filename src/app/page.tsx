@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { MOCK_USERS } from "@/lib/mock-data";
+import { useData } from "@/lib/data-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
   const { login, isLoading } = useAuth();
+  const { messageableUsers } = useData();
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +19,7 @@ export default function LoginPage() {
   const handleLogin = async () => {
     if (!selectedUser) return;
 
-    const user = MOCK_USERS.find(u => u.id === selectedUser);
+    const user = messageableUsers.find(u => u.id === selectedUser);
 
     // Simple PIN check for officers (anyone above Cadet for demo)
     if (user?.role !== Role.CADET && user?.role !== Role.CPL && user?.role !== Role.LCPL) {
@@ -53,7 +54,7 @@ export default function LoginPage() {
             <div className="space-y-3">
               <p className="text-white/60 text-sm font-medium ml-1">Select Identity</p>
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                {MOCK_USERS.map((user) => (
+                {messageableUsers.map((user) => (
                   <motion.button
                     key={user.id}
                     whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.1)" }}
@@ -77,20 +78,22 @@ export default function LoginPage() {
               </div>
             </div>
           ) : (
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               <motion.div
+                key="pin-input"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold mr-3">
-                      {MOCK_USERS.find(u => u.id === selectedUser)?.name.charAt(0)}
+                      {messageableUsers.find(u => u.id === selectedUser)?.name.charAt(0)}
                     </div>
                     <div className="text-left">
                       <p className="text-gray-400 text-xs">Signing in as</p>
-                      <h3 className="text-white font-bold">{MOCK_USERS.find(u => u.id === selectedUser)?.name}</h3>
+                      <h3 className="text-white font-bold">{messageableUsers.find(u => u.id === selectedUser)?.name}</h3>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(null); setError(""); setPin(""); }} className="text-gray-400 hover:text-white">
@@ -99,9 +102,9 @@ export default function LoginPage() {
                 </div>
 
                 {/* PIN Input if not Cadet */}
-                {(MOCK_USERS.find(u => u.id === selectedUser)?.role !== Role.CADET &&
-                  MOCK_USERS.find(u => u.id === selectedUser)?.role !== Role.CPL &&
-                  MOCK_USERS.find(u => u.id === selectedUser)?.role !== Role.LCPL) && (
+                {(messageableUsers.find(u => u.id === selectedUser)?.role !== Role.CADET &&
+                  messageableUsers.find(u => u.id === selectedUser)?.role !== Role.CPL &&
+                  messageableUsers.find(u => u.id === selectedUser)?.role !== Role.LCPL) && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-300 ml-1">Access PIN</label>
                       <div className="relative">

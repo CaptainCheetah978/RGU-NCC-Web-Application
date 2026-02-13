@@ -192,6 +192,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 name: "ANO",
                 role: Role.ANO,
                 regimentalNumber: "NCC/ANO/2024/001",
+                pin: "0324",
             }
         ];
 

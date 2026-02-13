@@ -42,6 +42,7 @@ export default function CadetsPage() {
             unitNumber: cadet.unitNumber,
             unitName: cadet.unitName || (cadet.wing === Wing.ARMY ? "Assam BN NCC" : cadet.wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC"),
             enrollmentYear: cadet.enrollmentYear,
+            pin: cadet.pin || "",
         });
         setIsEditModalOpen(true);
     };
@@ -62,6 +63,7 @@ export default function CadetsPage() {
         unitNumber: "30",
         unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
+        pin: "",
     });
 
     const [editFormData, setEditFormData] = useState({
@@ -73,6 +75,7 @@ export default function CadetsPage() {
         unitNumber: "30",
         unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
+        pin: "",
     });
 
     const filteredCadets = useMemo(() => {
@@ -98,6 +101,7 @@ export default function CadetsPage() {
             unitNumber: formData.unitNumber,
             unitName: formData.unitName,
             enrollmentYear: formData.enrollmentYear,
+            pin: formData.pin,
             avatarUrl: "" // Placeholder
         };
 
@@ -112,6 +116,7 @@ export default function CadetsPage() {
             unitNumber: "30",
             unitName: "Assam BN NCC",
             enrollmentYear: new Date().getFullYear(),
+            pin: "",
         });
     };
 
@@ -129,6 +134,7 @@ export default function CadetsPage() {
             unitNumber: editFormData.unitNumber,
             unitName: editFormData.unitName,
             enrollmentYear: editFormData.enrollmentYear,
+            pin: editFormData.pin,
         });
 
         setIsEditModalOpen(false);
@@ -358,6 +364,18 @@ export default function CadetsPage() {
                         />
                     </div>
 
+                    <div className="space-y-2">
+                        <Input
+                            label="Access PIN (Required for Officers)"
+                            placeholder="e.g. 1234"
+                            type="password"
+                            maxLength={4}
+                            value={formData.pin}
+                            onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
+                        />
+                        <p className="text-[10px] text-gray-400 ml-1">Ranks SGT and above require a 4-digit PIN for dashboard access.</p>
+                    </div>
+
                     <div className="pt-4 flex justify-end space-x-3">
                         <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
                         <Button type="submit">Complete Enrollment</Button>
@@ -453,6 +471,17 @@ export default function CadetsPage() {
                             type="number"
                             value={editFormData.enrollmentYear}
                             onChange={(e) => setEditFormData({ ...editFormData, enrollmentYear: parseInt(e.target.value) })}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Input
+                            label="Access PIN"
+                            placeholder="Leave blank to keep current"
+                            type="password"
+                            maxLength={4}
+                            value={editFormData.pin}
+                            onChange={(e) => setEditFormData({ ...editFormData, pin: e.target.value })}
                         />
                     </div>
 
