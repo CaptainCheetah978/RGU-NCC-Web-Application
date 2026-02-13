@@ -8,6 +8,12 @@ export enum Role {
     CADET = "CADET", // Cadet (User)
 }
 
+export enum Wing {
+    ARMY = "Army",
+    AIR = "Air",
+    NAVY = "Navy",
+}
+
 export interface User {
     id: string;
     name: string;
@@ -19,8 +25,8 @@ export interface User {
 
 export interface Cadet extends User {
     rank: Role;
-    unit: string;
-    platoon: string;
+    wing: Wing;
+    unitNumber: string;
     enrollmentYear: number;
 }
 

@@ -2,7 +2,7 @@
 
 import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
-import { Role } from "@/types";
+import { Role, Wing } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
@@ -26,13 +26,27 @@ export default function CadetsPage() {
         }
     };
 
+    // Helper function to format unit name based on wing
+    const getFormattedUnit = (wing: Wing, unitNumber: string): string => {
+        switch (wing) {
+            case Wing.ARMY:
+                return `${unitNumber} Assam Bn NCC`;
+            case Wing.AIR:
+                return `${unitNumber} Assam Air Sqn NCC`;
+            case Wing.NAVY:
+                return `${unitNumber} Assam Naval Unit NCC`;
+            default:
+                return `${unitNumber} NCC`;
+        }
+    };
+
     // Form State
     const [formData, setFormData] = useState({
         name: "",
         regimentalNumber: "",
         rank: Role.CADET,
-        unit: "48 Assam Naval Unit",
-        platoon: "Alpha",
+        wing: Wing.ARMY,
+        unitNumber: "30",
         enrollmentYear: new Date().getFullYear(),
     });
 
@@ -52,10 +66,10 @@ export default function CadetsPage() {
             id: `cdt-${Date.now()}`,
             name: formData.name,
             role: formData.rank,
-            rank: formData.rank, // Added explicit rank property
+            rank: formData.rank,
             regimentalNumber: formData.regimentalNumber,
-            unit: formData.unit,
-            platoon: formData.platoon,
+            wing: formData.wing,
+            unitNumber: formData.unitNumber,
             enrollmentYear: formData.enrollmentYear,
             avatarUrl: "" // Placeholder
         };
@@ -66,8 +80,8 @@ export default function CadetsPage() {
             name: "",
             regimentalNumber: "",
             rank: Role.CADET,
-            unit: "48 Assam Naval Unit",
-            platoon: "Alpha",
+            wing: Wing.ARMY,
+            unitNumber: "30",
             enrollmentYear: new Date().getFullYear(),
         });
     };
@@ -124,7 +138,7 @@ export default function CadetsPage() {
                                     <th className="px-6 py-4">Cadet</th>
                                     <th className="px-6 py-4">Rank</th>
                                     <th className="px-6 py-4">Regimental No</th>
-                                    <th className="px-6 py-4">Unit / Platoon</th>
+                                    <th className="px-6 py-4">Unit</th>
                                     <th className="px-6 py-4">Enrolled</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
@@ -167,7 +181,7 @@ export default function CadetsPage() {
                                                 {cadet.regimentalNumber || "N/A"}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
-                                                {cadet.unit} <span className="text-gray-300 mx-1">/</span> {cadet.platoon}
+                                                {getFormattedUnit(cadet.wing, cadet.unitNumber)}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-500">
                                                 {cadet.enrollmentYear}
@@ -229,15 +243,24 @@ export default function CadetsPage() {
                     />
 
                     <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-primary/80 ml-1">Wing</label>
+                            <select
+                                className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={formData.wing}
+                                onChange={(e) => setFormData({ ...formData, wing: e.target.value as Wing })}
+                            >
+                                {Object.values(Wing).map(w => (
+                                    <option key={w} value={w}>{w}</option>
+                                ))}
+                            </select>
+                        </div>
                         <Input
-                            label="Unit"
-                            value={formData.unit}
-                            onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                        />
-                        <Input
-                            label="Platoon"
-                            value={formData.platoon}
-                            onChange={(e) => setFormData({ ...formData, platoon: e.target.value })}
+                            label="Unit Number"
+                            placeholder="e.g. 30, 48"
+                            value={formData.unitNumber}
+                            onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
+                            required
                         />
                     </div>
 
