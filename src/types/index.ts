@@ -14,6 +14,7 @@ export interface User {
     role: Role;
     regimentalNumber?: string;
     avatarUrl?: string;
+    pin?: string;
 }
 
 export interface Cadet extends User {

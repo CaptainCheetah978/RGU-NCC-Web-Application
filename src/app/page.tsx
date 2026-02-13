@@ -22,8 +22,8 @@ export default function LoginPage() {
 
     // Simple PIN check for officers (anyone above Cadet for demo)
     if (user?.role !== Role.CADET && user?.role !== Role.CPL && user?.role !== Role.LCPL) {
-      if (pin !== "1234") {
-        setError("Invalid PIN. (Hint: 1234)");
+      if (!user?.pin || pin !== user.pin) {
+        setError(`Invalid PIN for ${user?.name}`);
         return;
       }
     }
@@ -108,7 +108,7 @@ export default function LoginPage() {
                         <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
                         <Input
                           type="password"
-                          placeholder="Enter PIN (1234)"
+                          placeholder="Enter your PIN"
                           className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-secondary focus-visible:border-secondary"
                           value={pin}
                           onChange={(e) => setPin(e.target.value)}

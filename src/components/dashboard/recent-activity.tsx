@@ -12,7 +12,7 @@ interface RecentActivityProps {
 export function RecentActivity({ activities = [] }: RecentActivityProps) {
     // Default mock data
     const displayActivities = activities.length > 0 ? activities : [
-        { text: "SUO Rahul marked attendance for Class 1A", time: "2 hours ago" },
+        { text: "SUO Aditya marked attendance for Class 1A", time: "2 hours ago" },
         { text: "Cadet Priya uploaded 'Medical Certificate'", time: "4 hours ago" },
         { text: "New Class 'Weapon Training' scheduled", time: "Yesterday" }
     ];
