@@ -333,7 +333,7 @@ export default function NotesPage() {
                         >
                             <option value="">Select Recipient...</option>
                             {messageableUsers
-                                .filter(u => (u.role === Role.ANO || u.role === Role.SUO) && u.id !== user.id)
+                                .filter(u => (u.role === Role.ANO || u.role === Role.SUO || u.id === formData.recipientId) && u.id !== user.id)
                                 .map(u => (
                                     <option key={u.id} value={u.id}>
                                         {u.name}{u.name !== u.role ? ` (${u.role})` : ""} {u.regimentalNumber ? ` - ${u.regimentalNumber}` : ""}
