@@ -30,7 +30,7 @@ export function AttendanceExport({ classSession, cadets, attendance, className }
                 cadet.regimentalNumber || "-",
                 cadet.rank,
                 cadet.name,
-                cadet.unit,
+                cadet.unitNumber,
                 status,
                 timestamp
             ].map(cell => `"${cell}"`).join(","); // Quote fields to handle commas
