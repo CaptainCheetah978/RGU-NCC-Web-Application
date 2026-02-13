@@ -14,6 +14,11 @@ export enum Wing {
     NAVY = "Navy",
 }
 
+export enum Gender {
+    MALE = "Male",
+    FEMALE = "Female",
+}
+
 export interface User {
     id: string;
     name: string;
@@ -26,6 +31,8 @@ export interface User {
 export interface Cadet extends User {
     rank: Role;
     wing: Wing;
+    gender: Gender;
+    battalion?: string;
     unitNumber: string;
     enrollmentYear: number;
 }

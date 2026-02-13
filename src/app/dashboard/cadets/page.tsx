@@ -2,7 +2,7 @@
 
 import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
-import { Role, Wing } from "@/types";
+import { Role, Wing, Gender } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
@@ -26,6 +26,36 @@ export default function CadetsPage() {
         }
     };
 
+    // Helper function to get wing code for regimental number
+    const getWingCode = (wing: Wing): string => {
+        switch (wing) {
+            case Wing.ARMY:
+                return "AS";
+            case Wing.AIR:
+                return "AI";
+            case Wing.NAVY:
+                return "NV";
+            default:
+                return "AS";
+        }
+    };
+
+    // Helper function to generate regimental number
+    const generateRegimentalNumber = (
+        wing: Wing,
+        year: number,
+        gender: Gender,
+        battalion: string,
+        unitNumber: string,
+        sequentialNumber: number
+    ): string => {
+        const wingCode = getWingCode(wing);
+        const genderCode = gender === Gender.MALE ? "SDI" : "SWI";
+        const paddedUnit = unitNumber.padStart(3, '0');
+        const paddedSeq = sequentialNumber.toString().padStart(4, '0');
+        return `${wingCode}${year}${genderCode}${battalion}${paddedUnit}${paddedSeq}`;
+    };
+
     // Helper function to format unit name based on wing
     const getFormattedUnit = (wing: Wing, unitNumber: string): string => {
         switch (wing) {
@@ -43,9 +73,10 @@ export default function CadetsPage() {
     // Form State
     const [formData, setFormData] = useState({
         name: "",
-        regimentalNumber: "",
         rank: Role.CADET,
         wing: Wing.ARMY,
+        gender: Gender.MALE,
+        battalion: "A",
         unitNumber: "30",
         enrollmentYear: new Date().getFullYear(),
     });
@@ -62,13 +93,28 @@ export default function CadetsPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Generate sequential number (in real app, this would be fetched from backend)
+        const sequentialNumber = cadets.filter(c => c.role !== Role.ANO).length + 1;
+
+        // Auto-generate regimental number
+        const regimentalNumber = generateRegimentalNumber(
+            formData.wing,
+            formData.enrollmentYear,
+            formData.gender,
+            formData.battalion,
+            formData.unitNumber,
+            sequentialNumber
+        );
+
         const newCadet = {
             id: `cdt-${Date.now()}`,
             name: formData.name,
             role: formData.rank,
             rank: formData.rank,
-            regimentalNumber: formData.regimentalNumber,
+            regimentalNumber: regimentalNumber,
             wing: formData.wing,
+            gender: formData.gender,
+            battalion: formData.battalion,
             unitNumber: formData.unitNumber,
             enrollmentYear: formData.enrollmentYear,
             avatarUrl: "" // Placeholder
@@ -78,9 +124,10 @@ export default function CadetsPage() {
         setIsModalOpen(false);
         setFormData({
             name: "",
-            regimentalNumber: "",
             rank: Role.CADET,
             wing: Wing.ARMY,
+            gender: Gender.MALE,
+            battalion: "A",
             unitNumber: "30",
             enrollmentYear: new Date().getFullYear(),
         });
@@ -234,13 +281,28 @@ export default function CadetsPage() {
                         </div>
                     </div>
 
-                    <Input
-                        label="Regimental Number"
-                        placeholder="e.g. AS/22/SD/10001"
-                        value={formData.regimentalNumber}
-                        onChange={(e) => setFormData({ ...formData, regimentalNumber: e.target.value })}
-                        required
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-primary/80 ml-1">Gender</label>
+                            <select
+                                className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={formData.gender}
+                                onChange={(e) => setFormData({ ...formData, gender: e.target.value as Gender })}
+                            >
+                                {Object.values(Gender).map(g => (
+                                    <option key={g} value={g}>{g}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <Input
+                            label="Battalion"
+                            placeholder="e.g. A, B, C"
+                            value={formData.battalion}
+                            onChange={(e) => setFormData({ ...formData, battalion: e.target.value.toUpperCase() })}
+                            maxLength={1}
+                            required
+                        />
+                    </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
