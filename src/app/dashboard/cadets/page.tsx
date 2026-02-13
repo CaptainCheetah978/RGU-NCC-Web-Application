@@ -7,18 +7,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Shield, UserPlus, Filter } from "lucide-react";
+import { Plus, Search, Shield, UserPlus, Filter, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
 export default function CadetsPage() {
-    const { cadets, addCadet } = useData();
+    const { cadets, addCadet, deleteCadet } = useData();
     const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterRole, setFilterRole] = useState<string>("ALL");
 
     const canEdit = user && [Role.ANO, Role.SUO].includes(user.role);
+
+    const handleDelete = (id: string, name: string) => {
+        if (confirm(`Are you sure you want to remove ${name} from the registry?`)) {
+            deleteCadet(id);
+        }
+    };
 
     // Form State
     const [formData, setFormData] = useState({
@@ -167,9 +173,19 @@ export default function CadetsPage() {
                                                 {cadet.enrollmentYear}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    View Profile
-                                                </Button>
+                                                <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="sm">
+                                                        View Profile
+                                                    </Button>
+                                                    {canEdit && (
+                                                        <button
+                                                            onClick={() => handleDelete(cadet.id, cadet.name)}
+                                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </motion.tr>
                                     ))

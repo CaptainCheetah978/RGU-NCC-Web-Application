@@ -1,15 +1,19 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { Users, Calendar, CheckCircle, FileText } from "lucide-react";
+import { useData } from "@/lib/data-context";
+import { Users, Calendar, CheckCircle, MessageSquare } from "lucide-react";
 import { InfoCard } from "@/components/dashboard/info-card";
 import { UpcomingClasses } from "@/components/dashboard/upcoming-classes";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 
 export default function DashboardPage() {
     const { user } = useAuth();
+    const { getStats } = useData();
 
     if (!user) return null;
+
+    const stats = getStats(user.id);
 
     return (
         <div className="space-y-8">
@@ -31,31 +35,29 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <InfoCard
                     title="Total Cadets"
-                    value="124"
+                    value={stats.totalCadets}
                     icon={Users}
-                    trend="+12%"
                     color="blue"
                     delay={0.1}
                 />
                 <InfoCard
                     title="Attendance Rate"
-                    value="92%"
+                    value={stats.attendanceRate}
                     icon={CheckCircle}
-                    trend="+5%"
                     color="green"
                     delay={0.2}
                 />
                 <InfoCard
                     title="Active Classes"
-                    value="3"
+                    value={stats.activeClasses}
                     icon={Calendar}
                     color="orange"
                     delay={0.3}
                 />
                 <InfoCard
-                    title="Pending Reports"
-                    value="7"
-                    icon={FileText}
+                    title="Notes Received"
+                    value={stats.unreadNotes}
+                    icon={MessageSquare}
                     color="red"
                     delay={0.4}
                 />

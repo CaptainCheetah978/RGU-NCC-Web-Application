@@ -41,3 +41,18 @@ export interface AttendanceRecord {
     status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
     timestamp: string;
 }
+
+export interface Note {
+    id: string;
+    senderId: string;
+    senderName: string;
+    recipientId: string;
+    recipientName: string;
+    subject: string;
+    content: string;
+    timestamp: string;
+    isRead: boolean;
+    forwardedToANO?: boolean;
+    originalSenderId?: string; // For forwarded notes
+    originalSenderName?: string;
+}
