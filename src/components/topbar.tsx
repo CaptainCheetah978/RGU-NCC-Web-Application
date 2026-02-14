@@ -52,8 +52,8 @@ export function Topbar() {
     };
 
     return (
-        <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-8 sticky top-0 z-50 w-full shadow-sm">
-            <h1 className="text-xl font-bold text-black tracking-tight">
+        <header className="h-16 border-b border-gray-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 flex items-center justify-between px-8 sticky top-0 z-50 w-full shadow-sm">
+            <h1 className="text-xl font-bold text-black dark:text-white tracking-tight">
                 Welcome back, {
                     (displayUser.role === Role.ANO || displayUser.role === Role.SUO)
                         ? displayUser.role
@@ -67,10 +67,10 @@ export function Topbar() {
                         onClick={() => setShowNotifications(!showNotifications)}
                         className={cn(
                             "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 relative group",
-                            showNotifications ? "bg-primary/10" : "bg-gray-100 hover:bg-gray-200"
+                            showNotifications ? "bg-primary/10" : "bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700"
                         )}
                     >
-                        <Bell className={cn("w-5 h-5 transition-colors", showNotifications ? "text-primary" : "text-gray-600")} />
+                        <Bell className={cn("w-5 h-5 transition-colors", showNotifications ? "text-primary" : "text-gray-600 dark:text-gray-300")} />
                         {unreadCount > 0 && (
                             <motion.span
                                 initial={{ scale: 0 }}
@@ -88,11 +88,11 @@ export function Topbar() {
                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[100]"
+                                className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden z-[100]"
                                 style={{ transformOrigin: "top right" }}
                             >
-                                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                                    <h3 className="font-bold text-gray-900 flex items-center">
+                                <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between bg-gray-50/50 dark:bg-slate-900/50">
+                                    <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
                                         Notifications
                                         {unreadCount > 0 && <span className="ml-2 text-[10px] px-2 py-0.5 bg-primary/10 text-primary rounded-full">{unreadCount} New</span>}
                                     </h3>
@@ -164,10 +164,10 @@ export function Topbar() {
                     </AnimatePresence>
                 </div>
 
-                <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
+                <div className="flex items-center space-x-3 pl-4 border-l border-gray-200 dark:border-slate-700">
                     <div className="text-right hidden md:block">
-                        <p className="text-sm font-medium text-black">{displayUser.name}</p>
-                        <p className="text-xs text-gray-600">{displayUser.regimentalNumber}</p>
+                        <p className="text-sm font-medium text-black dark:text-white">{displayUser.name}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{displayUser.regimentalNumber}</p>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white font-bold shadow-lg shadow-black/20 overflow-hidden">
                         {displayUser.avatarUrl ? (

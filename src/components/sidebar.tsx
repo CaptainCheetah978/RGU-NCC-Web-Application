@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import { Role } from "@/types";
 import { cn } from "@/lib/utils";
 import {
@@ -12,7 +13,9 @@ import {
     Shield,
     MessageSquare,
     Megaphone,
-    History
+    History,
+    Sun,
+    Moon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,6 +23,7 @@ import { motion } from "framer-motion";
 
 export function Sidebar() {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const pathname = usePathname();
 
     if (!user) return null;
@@ -81,8 +85,8 @@ export function Sidebar() {
     );
 
     return (
-        <div className="h-screen w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col fixed left-0 top-0 z-20">
-            <div className="p-6 flex items-center space-x-3 border-b border-white/10">
+        <div className="h-screen w-64 bg-white/5 dark:bg-slate-900/95 backdrop-blur-xl border-r border-white/10 dark:border-slate-700/50 flex flex-col fixed left-0 top-0 z-20">
+            <div className="p-6 flex items-center space-x-3 border-b border-white/10 dark:border-slate-700/50">
                 <div className="w-10 h-10 flex items-center justify-center">
                     <img src="/ncc-logo.png" alt="NCC" className="w-full h-full object-contain" />
                 </div>
@@ -119,7 +123,14 @@ export function Sidebar() {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-white/10">
+            <div className="p-4 border-t border-white/10 dark:border-slate-700/50 space-y-2">
+                <button
+                    onClick={toggleTheme}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white w-full transition-colors"
+                >
+                    {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    <span className="font-medium">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                </button>
                 <button
                     onClick={logout}
                     className="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 w-full transition-colors"
