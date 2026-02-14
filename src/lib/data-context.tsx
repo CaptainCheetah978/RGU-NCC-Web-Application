@@ -28,6 +28,7 @@ interface DataContextType {
     deleteNote: (id: string) => void;
     getStats: (userId?: string) => DashboardStats;
     messageableUsers: (Cadet | User)[];
+    updateUser: (userId: string, updates: Partial<Cadet | User>) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -157,6 +158,36 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setNotes(prev => prev.filter(n => n.id !== id));
     };
 
+    const updateUser = (userId: string, updates: Partial<Cadet | User>) => {
+        // If it's a cadet in our list
+        if (cadets.find(c => c.id === userId)) {
+            setCadets(prev => prev.map(c => c.id === userId ? { ...c, ...updates } : c));
+        } else {
+            // It might be the ANO or a user not in registry, storage it specifically
+            const key = `user_ext_${userId}`;
+            const existing = localStorage.getItem(key);
+            const data = existing ? JSON.parse(existing) : {};
+            localStorage.setItem(key, JSON.stringify({ ...data, ...updates }));
+
+            // Force a refresh of messageableUsers by triggering a dummy state if needed, 
+            // but for simple photo persistence, we can rely on how messageableUsers is memoized.
+            // Let's add an 'extraUserData' state for better Reactivity
+            setExtraUserData(prev => ({ ...prev, [userId]: { ...prev[userId], ...updates } }));
+        }
+    };
+
+    const [extraUserData, setExtraUserData] = useState<Record<string, any>>({});
+
+    useEffect(() => {
+        // Load extra user data (like ANO's photo/PIN overrides)
+        const stored = localStorage.getItem("ncc_extra_user_data");
+        if (stored) setExtraUserData(JSON.parse(stored));
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem("ncc_extra_user_data", JSON.stringify(extraUserData));
+    }, [extraUserData]);
+
     // Computed statistics
     const getStats = (userId?: string): DashboardStats => {
         const totalCadets = cadets.length;
@@ -199,8 +230,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         // Filter out any duplicates if ANO was somehow added to cadets
         const cadetsList = cadets.filter(c => c.id !== "ano-1");
 
-        return [...anos, ...cadetsList];
-    }, [cadets]);
+        const mergedAnos = anos.map(a => ({
+            ...a,
+            ...(extraUserData[a.id] || {})
+        }));
+
+        const mergedCadets = cadetsList.map(c => ({
+            ...c,
+            ...(extraUserData[c.id] || {})
+        }));
+
+        return [...mergedAnos, ...mergedCadets];
+    }, [cadets, extraUserData]);
 
     return (
         <DataContext.Provider value={{
@@ -209,7 +250,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             attendance, markAttendance,
             notes, sendNote, markNoteAsRead, forwardNoteToANO, deleteNote,
             getStats,
-            messageableUsers
+            messageableUsers,
+            updateUser
         }}>
             {children}
         </DataContext.Provider>

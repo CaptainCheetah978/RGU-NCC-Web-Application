@@ -55,6 +55,12 @@ export function Sidebar() {
             icon: MessageSquare,
             roles: [] // All
         },
+        {
+            name: "My Profile",
+            href: "/dashboard/profile",
+            icon: Users,
+            roles: [] // All
+        },
     ];
 
     const filteredLinks = links.filter(link =>

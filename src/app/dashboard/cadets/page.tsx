@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Shield, UserPlus, Filter, Trash2 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Plus, Search, Shield, UserPlus, Filter, Trash2, Camera, Info } from "lucide-react";
+import { useState, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 
 export default function CadetsPage() {
-    const { cadets, addCadet, updateCadet, deleteCadet } = useData();
+    const { cadets, addCadet, updateCadet, deleteCadet, updateUser } = useData();
     const { user } = useAuth();
 
     if (!user) return null;
@@ -22,7 +22,9 @@ export default function CadetsPage() {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [editingCadet, setEditingCadet] = useState<any>(null);
     const [viewingCadet, setViewingCadet] = useState<any>(null);
+    const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [filterRole, setFilterRole] = useState<string>("ALL");
 
     const canEdit = user && [Role.ANO, Role.SUO].includes(user.role);
@@ -52,6 +54,30 @@ export default function CadetsPage() {
     const handleView = (cadet: any) => {
         setViewingCadet(cadet);
         setIsViewModalOpen(true);
+    };
+
+    const handlePhotoUploadClick = () => {
+        setIsDisclaimerOpen(true);
+    };
+
+    const handleDisclaimerConfirm = () => {
+        setIsDisclaimerOpen(false);
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !viewingCadet) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            // Use updateUser for unified registry/extra persistence
+            updateUser(viewingCadet.id, { avatarUrl: base64 });
+            // Update local viewing state to show immediate result
+            setViewingCadet((prev: any) => ({ ...prev, avatarUrl: base64 }));
+        };
+        reader.readAsDataURL(file);
     };
 
     // Helper function to format unit name for display
@@ -508,17 +534,38 @@ export default function CadetsPage() {
                 {viewingCadet && (
                     <div className="space-y-6">
                         <div className="flex items-center p-6 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-2xl font-bold text-white shadow-xl mr-6">
-                                {viewingCadet.name.charAt(0)}
+                            <div className="relative group mr-6">
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-2xl font-bold text-white shadow-xl overflow-hidden">
+                                    {viewingCadet.avatarUrl ? (
+                                        <img src={viewingCadet.avatarUrl} alt={viewingCadet.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        viewingCadet.name.charAt(0)
+                                    )}
+                                </div>
+                                {canEdit && (
+                                    <button
+                                        onClick={handlePhotoUploadClick}
+                                        className="absolute bottom-0 right-0 w-7 h-7 bg-primary rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform border-2 border-white"
+                                    >
+                                        <Camera className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
                             </div>
                             <div>
                                 <h3 className="text-2xl font-bold text-gray-900 leading-tight">{viewingCadet.name}</h3>
-                                <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${viewingCadet.role === Role.SUO || viewingCadet.role === Role.UO
-                                    ? "bg-red-100 text-red-700 border-red-200"
-                                    : "bg-blue-100 text-blue-700 border-blue-200"
-                                    }`}>
-                                    {viewingCadet.role}
-                                </span>
+                                <div className="flex items-center space-x-2 mt-2">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${viewingCadet.role === Role.SUO || viewingCadet.role === Role.UO
+                                        ? "bg-red-100 text-red-700 border-red-200"
+                                        : "bg-blue-100 text-blue-700 border-blue-200"
+                                        }`}>
+                                        {viewingCadet.role}
+                                    </span>
+                                    {'wing' in viewingCadet && (
+                                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 border border-gray-200">
+                                            {viewingCadet.wing}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -552,6 +599,46 @@ export default function CadetsPage() {
                         </div>
                     </div>
                 )}
+            </Modal>
+
+            {/* Hidden File Input */}
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/*"
+            />
+
+            {/* Uniform Disclaimer Modal */}
+            <Modal
+                isOpen={isDisclaimerOpen}
+                onClose={() => setIsDisclaimerOpen(false)}
+                title="Photo Upload Disclaimer"
+            >
+                <div className="space-y-4">
+                    <div className="flex items-start p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                        <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white mr-4 shrink-0 shadow-lg">
+                            <Info className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-amber-900">Official Requirement</h4>
+                            <p className="text-sm text-amber-800/80 mt-1">
+                                Photo must be in **NCC khakhi uniform** without headgear.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="pt-4 flex justify-end space-x-3">
+                        <Button variant="ghost" onClick={() => setIsDisclaimerOpen(false)}>Cancel</Button>
+                        <Button
+                            className="bg-primary text-white"
+                            onClick={handleDisclaimerConfirm}
+                        >
+                            Confirm & Proceed
+                        </Button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );
