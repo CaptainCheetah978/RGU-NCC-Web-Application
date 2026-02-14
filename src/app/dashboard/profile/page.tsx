@@ -192,19 +192,23 @@ export default function ProfilePage() {
                                     <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-red-600 via-white to-blue-800" />
 
                                     {/* Header Section */}
-                                    <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white">
-                                        <img src="/ncc-logo.png" className="w-14 h-14 object-contain" alt="NCC" />
-                                        <div className="text-center flex-1 mx-4">
-                                            <h3 className="text-[13px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">Royal Global University, Guwahati</h3>
-                                            <p className="text-[11px] font-bold text-red-700 tracking-[0.25em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
+                                    <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+                                        <div className="w-16 h-16 flex items-center justify-center">
+                                            <img src="/ncc-logo.png" className="max-w-full max-h-full object-contain" alt="NCC" />
                                         </div>
-                                        <img src="/rgu-logo.png" className="w-16 h-16 object-contain" alt="RGU" />
+                                        <div className="text-center flex-1 mx-4">
+                                            <h3 className="text-[14px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">Royal Global University, Guwahati</h3>
+                                            <p className="text-[11px] font-bold text-red-700 tracking-[0.2em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
+                                        </div>
+                                        <div className="w-16 h-16 flex items-center justify-center">
+                                            <img src="/rgu-logo.png" className="max-w-full max-h-full object-contain" alt="RGU" />
+                                        </div>
                                     </div>
 
                                     {/* Body Section */}
-                                    <div className="flex-1 p-6 pb-2 flex">
+                                    <div className="flex-1 p-6 py-4 flex items-start overflow-hidden">
                                         {/* Photo Area */}
-                                        <div className="w-32 h-32 border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center mr-6 shrink-0 shadow-sm relative">
+                                        <div className="w-28 h-28 border-2 border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center mr-8 shrink-0 shadow-sm relative ring-4 ring-white">
                                             {currentUser.avatarUrl ? (
                                                 <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-full h-full object-cover" />
                                             ) : (
@@ -216,32 +220,32 @@ export default function ProfilePage() {
                                         </div>
 
                                         {/* Info Area */}
-                                        <div className="flex-1 space-y-3.5">
+                                        <div className="flex-1 space-y-4 pt-2">
                                             <div className="relative">
-                                                <p className="text-[9px] font-extrabold text-gray-400 uppercase tracking-tighter absolute -top-3 left-0">Full Name</p>
-                                                <p className="text-[15px] font-bold text-gray-900 border-b border-gray-300 pb-0.5 leading-none">{currentUser.name}</p>
+                                                <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Full Name</p>
+                                                <p className="text-[14px] font-bold text-gray-900 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.name}</p>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                                                 <div className="relative">
-                                                    <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-tighter absolute -top-3 left-0">Rank</p>
-                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-300 pb-0.5 uppercase">{currentUser.role}</p>
+                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Rank</p>
+                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase">{currentUser.role || "N/A"}</p>
                                                 </div>
                                                 <div className="relative">
-                                                    <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-tighter absolute -top-3 left-0">Regt. No</p>
-                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-300 pb-0.5">{currentUser.regimentalNumber || "N/A"}</p>
+                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Regt. No</p>
+                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase">{currentUser.regimentalNumber || "N/A"}</p>
                                                 </div>
                                                 <div className="relative">
-                                                    <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-tighter absolute -top-3 left-0">Wing</p>
-                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-300 pb-0.5 uppercase">{currentUser.wing || "N/A"}</p>
+                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Wing</p>
+                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase">{currentUser.wing || "N/A"}</p>
                                                 </div>
                                                 <div className="relative">
-                                                    <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-tighter absolute -top-3 left-0">Blood Group</p>
-                                                    <p className="text-[11px] font-bold text-red-700 border-b border-gray-300 pb-0.5">{currentUser.bloodGroup || "N/A"}</p>
+                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Blood Group</p>
+                                                    <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 uppercase">{currentUser.bloodGroup || "N/A"}</p>
                                                 </div>
                                             </div>
                                             <div className="relative mt-1">
-                                                <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-tighter absolute -top-3 left-0">Unit Name</p>
-                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-300 pb-0.5">
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Unit Name</p>
+                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase leading-tight">
                                                     {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
                                                 </p>
                                             </div>
@@ -249,21 +253,21 @@ export default function ProfilePage() {
                                     </div>
 
                                     {/* Bottom Signatures Area */}
-                                    <div className="px-6 pb-6 mt-auto flex justify-between items-end">
+                                    <div className="px-6 pb-4 mt-auto flex justify-between items-end">
                                         <div className="text-center">
-                                            <div className="w-24 border-b border-gray-400 mb-1" />
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase">Sign of Cadet</p>
+                                            <div className="w-24 border-b border-gray-300 mb-1" />
+                                            <p className="text-[7px] font-bold text-gray-400 uppercase tracking-tighter">Sign of Cadet</p>
                                         </div>
-                                        <div className="text-center">
-                                            <p className="text-[10px] italic font-serif text-gray-600 mb-0 px-2 leading-none">s/d-</p>
-                                            <div className="w-28 border-b border-gray-400 mb-1" />
-                                            <p className="text-[8px] font-bold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
-                                            <p className="text-[7px] font-bold text-gray-400 uppercase mt-0.5 tracking-widest">Digital Signature</p>
+                                        <div className="text-center relative">
+                                            <p className="text-[9px] italic font-serif text-gray-600 mb-0 leading-none absolute -top-3 left-1/2 -translate-x-1/2 w-max">s/d-</p>
+                                            <div className="w-28 border-b border-gray-300 mb-1" />
+                                            <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
+                                            <p className="text-[6px] font-bold text-gray-400 uppercase mt-0.5 tracking-wider">Digital Signature</p>
                                         </div>
                                     </div>
 
                                     {/* Footer bar */}
-                                    <div className="bg-[#002147] h-2 w-full mt-auto" />
+                                    <div className="bg-[#002147] h-1.5 w-full shrink-0" />
                                 </div>
                             </div>
                         </CardContent>
