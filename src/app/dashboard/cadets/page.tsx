@@ -19,7 +19,9 @@ export default function CadetsPage() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [editingCadet, setEditingCadet] = useState<any>(null);
+    const [viewingCadet, setViewingCadet] = useState<any>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterRole, setFilterRole] = useState<string>("ALL");
 
@@ -45,6 +47,11 @@ export default function CadetsPage() {
             pin: cadet.pin || "",
         });
         setIsEditModalOpen(true);
+    };
+
+    const handleView = (cadet: any) => {
+        setViewingCadet(cadet);
+        setIsViewModalOpen(true);
     };
 
     // Helper function to format unit name for display
@@ -191,10 +198,10 @@ export default function CadetsPage() {
                             <thead className="bg-gray-50/50">
                                 <tr className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                                     <th className="px-6 py-4">Cadet</th>
-                                    <th className="px-6 py-4">Rank</th>
-                                    <th className="px-6 py-4">Regimental No</th>
-                                    <th className="px-6 py-4">Unit</th>
-                                    <th className="px-6 py-4">Enrolled</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Rank</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Regt. No</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Unit Name</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Year</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -252,7 +259,11 @@ export default function CadetsPage() {
                                                             Edit
                                                         </Button>
                                                     )}
-                                                    <Button variant="ghost" size="sm">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleView(cadet)}
+                                                    >
                                                         View
                                                     </Button>
                                                     {canEdit && (
@@ -490,6 +501,57 @@ export default function CadetsPage() {
                         <Button type="submit">Save Changes</Button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* View Cadet Profile Modal */}
+            <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Cadet Profile">
+                {viewingCadet && (
+                    <div className="space-y-6">
+                        <div className="flex items-center p-6 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-2xl font-bold text-white shadow-xl mr-6">
+                                {viewingCadet.name.charAt(0)}
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900 leading-tight">{viewingCadet.name}</h3>
+                                <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${viewingCadet.role === Role.SUO || viewingCadet.role === Role.UO
+                                    ? "bg-red-100 text-red-700 border-red-200"
+                                    : "bg-blue-100 text-blue-700 border-blue-200"
+                                    }`}>
+                                    {viewingCadet.role}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-6 px-2">
+                            <div className="space-y-1">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Regimental Number</p>
+                                <p className="text-sm font-mono text-gray-800 font-bold">{viewingCadet.regimentalNumber || "N/A"}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Wing</p>
+                                <p className="text-sm text-gray-800 font-bold uppercase">{viewingCadet.wing}</p>
+                            </div>
+                            <div className="space-y-1 col-span-2">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Unit Information</p>
+                                <p className="text-sm text-gray-800 font-bold">
+                                    {getFormattedUnit(viewingCadet.wing, viewingCadet.unitNumber, viewingCadet.unitName)}
+                                </p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Enrollment Year</p>
+                                <p className="text-sm text-gray-800 font-bold">{viewingCadet.enrollmentYear}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Gender</p>
+                                <p className="text-sm text-gray-800 font-bold capitalize">{viewingCadet.gender.toLowerCase()}</p>
+                            </div>
+                        </div>
+
+                        <div className="pt-4 flex justify-end">
+                            <Button onClick={() => setIsViewModalOpen(false)}>Close Review</Button>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     );
