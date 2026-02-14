@@ -12,18 +12,18 @@
 </p>
 
 <p align="center">
-  <a href="https://rgu-ncc-web-application.vercel.app">🌐 Live Demo</a>
+  <a href="#features">Features</a>
   &nbsp;·&nbsp;
-  <a href="#-features">Features</a>
+  <a href="#getting-started">Getting Started</a>
   &nbsp;·&nbsp;
-  <a href="#-getting-started">Getting Started</a>
+  <a href="#tech-stack">Tech Stack</a>
   &nbsp;·&nbsp;
-  <a href="#-tech-stack">Tech Stack</a>
+  <a href="#role-based-access">Roles</a>
 </p>
 
 ---
 
-## ✨ Features
+## Features
 
 | Module | Description |
 |--------|-------------|
@@ -39,7 +39,7 @@
 | **📁 File Sharing** | Upload and share PDFs, images, and videos across the unit |
 | **🌙 Dark Mode** | Toggle between light and dark themes with persistent preference |
 
-## 🔐 Role-Based Access
+## Role-Based Access
 
 The application supports a **three-tier hierarchy**:
 
@@ -57,7 +57,7 @@ The application supports a **three-tier hierarchy**:
 | SUO | `Pranay Borthakur` | `2468` |
 | Cadet | `Ananya Sharma` | `1234` |
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -71,7 +71,7 @@ The application supports a **three-tier hierarchy**:
 | Deployment | [Vercel](https://vercel.com/) |
 | Data | Browser `localStorage` (no backend required) |
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -101,7 +101,7 @@ npm run build
 npm start
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -139,7 +139,7 @@ src/
     └── index.ts             # TypeScript type definitions
 ```
 
-## 🌐 Deployment
+## Deployment
 
 The app is deployed on **Vercel** with automatic deployments on every push to `main`.
 
@@ -148,7 +148,7 @@ The app is deployed on **Vercel** with automatic deployments on every push to `m
 3. Vercel auto-detects Next.js and configures the build
 4. Click **Deploy** — done!
 
-## ⚠️ Data Persistence
+## Data Persistence
 
 All data is stored in the browser's `localStorage`. This means:
 - ✅ No backend or database setup required
@@ -156,7 +156,7 @@ All data is stored in the browser's `localStorage`. This means:
 - ⚠️ Data is per-browser and per-device
 - ⚠️ Clearing browser cache will reset all data
 
-## 📄 License
+## License
 
 This project is developed for the **NCC unit at Royal Global University, Guwahati, Assam**.
 
