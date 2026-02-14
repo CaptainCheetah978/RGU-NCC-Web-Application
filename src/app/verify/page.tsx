@@ -12,41 +12,50 @@ function VerifyContent() {
     // Look up the user/cadet from mock data + localStorage
     let person: Record<string, string | undefined> | null = null;
 
-    if (id) {
-        // Check mock users first
+    if (id && typeof window !== "undefined") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let merged: any = null;
+
+        // 1. Check mock users as base
         const mockUser = MOCK_USERS.find(u => u.id === id);
         if (mockUser) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const mu = mockUser as any;
-            person = {
-                name: mu.name,
-                role: mu.role,
-                regimentalNumber: mu.regimentalNumber || undefined,
-            };
+            merged = { ...mockUser };
         }
 
-        // Try localStorage cadets for more detail
-        if (typeof window !== "undefined") {
-            try {
-                const stored = localStorage.getItem("ncc_cadets");
-                if (stored) {
-                    const cadets = JSON.parse(stored);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const cadet = cadets.find((c: any) => c.id === id);
-                    if (cadet) {
-                        person = {
-                            name: cadet.name,
-                            role: cadet.role,
-                            regimentalNumber: cadet.regimentalNumber,
-                            wing: cadet.wing,
-                            unitNumber: cadet.unitNumber,
-                            unitName: cadet.unitName,
-                            bloodGroup: cadet.bloodGroup,
-                            enrollmentYear: cadet.enrollmentYear,
-                        };
-                    }
+        // 2. Override with localStorage cadets (has the latest edits)
+        try {
+            const storedCadets = localStorage.getItem("ncc_cadets");
+            if (storedCadets) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const cadet = JSON.parse(storedCadets).find((c: any) => c.id === id);
+                if (cadet) {
+                    merged = { ...(merged || {}), ...cadet };
                 }
-            } catch { /* ignore parse errors */ }
+            }
+        } catch { /* ignore */ }
+
+        // 3. Override with extra user data (profile-level edits like avatar, blood group changes)
+        try {
+            const storedExtra = localStorage.getItem("ncc_extra_user_data");
+            if (storedExtra) {
+                const extras = JSON.parse(storedExtra);
+                if (extras[id]) {
+                    merged = { ...(merged || {}), ...extras[id] };
+                }
+            }
+        } catch { /* ignore */ }
+
+        if (merged) {
+            person = {
+                name: merged.name,
+                role: merged.role,
+                regimentalNumber: merged.regimentalNumber,
+                wing: merged.wing,
+                unitNumber: merged.unitNumber,
+                unitName: merged.unitName,
+                bloodGroup: merged.bloodGroup,
+                enrollmentYear: merged.enrollmentYear?.toString(),
+            };
         }
     }
 
