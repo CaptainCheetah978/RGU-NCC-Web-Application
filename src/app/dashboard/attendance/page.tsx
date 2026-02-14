@@ -15,23 +15,21 @@ function AttendanceContent() {
     const { classes, cadets, attendance, markAttendance } = useData();
     const { user } = useAuth();
 
-    if (!user) return null;
-
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");
 
     const [selectedClassId, setSelectedClassId] = useState<string>("");
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         if (classes.length > 0) {
             if (classIdParam && classes.find(c => c.id === classIdParam)) {
-                setSelectedClassId(classIdParam);
+                setSelectedClassId(classIdParam || "");
             } else if (!selectedClassId) {
                 setSelectedClassId(classes[0].id);
             }
         }
     }, [classes, classIdParam, selectedClassId]);
-    const [searchQuery, setSearchQuery] = useState("");
 
     const canMark = user && [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
 
@@ -44,6 +42,18 @@ function AttendanceContent() {
             c.regimentalNumber?.toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [cadets, searchQuery]);
+
+    const stats = useMemo(() => {
+        const classRecords = attendance.filter(r => r.classId === selectedClassId);
+        return {
+            present: classRecords.filter(r => r.status === "PRESENT").length,
+            absent: classRecords.filter(r => r.status === "ABSENT").length,
+            late: classRecords.filter(r => r.status === "LATE").length,
+            total: cadets.length
+        };
+    }, [attendance, selectedClassId, cadets.length]);
+
+    if (!user) return null;
 
     const getStatus = (cadetId: string) => {
         const record = attendance.find(
@@ -62,18 +72,6 @@ function AttendanceContent() {
             timestamp: new Date().toISOString()
         });
     };
-
-    // Calculate stats
-    const stats = useMemo(() => {
-        const classRecords = attendance.filter(r => r.classId === selectedClassId);
-        return {
-            present: classRecords.filter(r => r.status === "PRESENT").length,
-            absent: classRecords.filter(r => r.status === "ABSENT").length,
-            late: classRecords.filter(r => r.status === "LATE").length,
-            total: cadets.length // Assuming all cadets should attend for simplicity
-        };
-    }, [attendance, selectedClassId, cadets.length]);
-
 
     if (!classes.length) {
         return (

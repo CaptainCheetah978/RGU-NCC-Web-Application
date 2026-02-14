@@ -45,7 +45,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const [cadets, setCadets] = useState<Cadet[]>(() => {
         if (typeof window === 'undefined') return [];
         const stored = localStorage.getItem("ncc_cadets");
-        let initialCadets: Cadet[] = stored ? JSON.parse(stored) : [];
+        const initialCadets: Cadet[] = stored ? JSON.parse(stored) : [];
 
         // Always ensure login cadets (except ANO) are in the list
         const loginCadets = MOCK_USERS.filter(u => u.role !== Role.ANO) as Cadet[];
@@ -72,7 +72,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         return stored ? JSON.parse(stored) : [];
     });
 
-    const [extraUserData, setExtraUserData] = useState<Record<string, any>>(() => {
+    const [extraUserData, setExtraUserData] = useState<Record<string, Partial<Cadet | User>>>(() => {
         if (typeof window === 'undefined') return {};
         const stored = localStorage.getItem("ncc_extra_user_data");
         return stored ? JSON.parse(stored) : {};

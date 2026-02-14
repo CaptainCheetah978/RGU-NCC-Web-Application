@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState, useMemo } from "react";
 import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
 import { Role, Note } from "@/types";
@@ -21,7 +22,6 @@ import {
     Search,
     Reply
 } from "lucide-react";
-import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -137,7 +137,6 @@ export default function NotesPage() {
             </div>
 
             <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0">
-                {/* Left Sidebar: Note List */}
                 <Card className="w-full md:w-80 border-white/20 shadow-sm flex flex-col overflow-hidden bg-white/80 backdrop-blur-sm">
                     <div className="p-4 border-b border-gray-100 space-y-4 shrink-0">
                         <div className="flex p-1 bg-gray-100 rounded-xl">
@@ -228,7 +227,6 @@ export default function NotesPage() {
                     </div>
                 </Card>
 
-                {/* Right Area: Note Content */}
                 <Card className="flex-1 border-white/20 shadow-sm flex flex-col overflow-hidden bg-white/50 backdrop-blur-xl">
                     <AnimatePresence mode="wait">
                         {selectedNote ? (
@@ -320,7 +318,6 @@ export default function NotesPage() {
                 </Card>
             </div>
 
-            {/* Compose Modal */}
             <Modal isOpen={isComposeModalOpen} onClose={() => setIsComposeModalOpen(false)} title="Compose New Note">
                 <form onSubmit={handleSendNote} className="space-y-4">
                     <div className="space-y-2">
@@ -375,7 +372,7 @@ export default function NotesPage() {
     );
 }
 
-function Shield(props: any) {
+function Shield(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg
             {...props}
@@ -391,5 +388,5 @@ function Shield(props: any) {
         >
             <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
         </svg>
-    )
+    );
 }

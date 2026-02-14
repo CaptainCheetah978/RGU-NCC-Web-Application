@@ -2,12 +2,12 @@
 
 import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
-import { Role, Wing, Gender } from "@/types";
+import { Role, Wing, Gender, Cadet } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Shield, UserPlus, Filter, Trash2, Camera, Info } from "lucide-react";
+import { Search, UserPlus, Trash2, Camera, Info } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 
@@ -15,77 +15,15 @@ export default function CadetsPage() {
     const { cadets, addCadet, updateCadet, deleteCadet, updateUser } = useData();
     const { user } = useAuth();
 
-    if (!user) return null;
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-    const [editingCadet, setEditingCadet] = useState<any>(null);
-    const [viewingCadet, setViewingCadet] = useState<any>(null);
+    const [editingCadet, setEditingCadet] = useState<Cadet | null>(null);
+    const [viewingCadet, setViewingCadet] = useState<Cadet | null>(null);
     const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [filterRole, setFilterRole] = useState<string>("ALL");
-
-    const canEdit = user && [Role.ANO, Role.SUO].includes(user.role);
-
-    const handleDelete = (id: string, name: string) => {
-        if (confirm(`Are you sure you want to remove ${name} from the registry?`)) {
-            deleteCadet(id);
-        }
-    };
-
-    const handleEdit = (cadet: any) => {
-        setEditingCadet(cadet);
-        setEditFormData({
-            name: cadet.name,
-            regimentalNumber: cadet.regimentalNumber || "",
-            rank: cadet.role,
-            wing: cadet.wing,
-            gender: cadet.gender,
-            unitNumber: cadet.unitNumber,
-            unitName: cadet.unitName || (cadet.wing === Wing.ARMY ? "Assam BN NCC" : cadet.wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC"),
-            enrollmentYear: cadet.enrollmentYear,
-            bloodGroup: cadet.bloodGroup || "O+",
-            pin: cadet.pin || "",
-        });
-        setIsEditModalOpen(true);
-    };
-
-    const handleView = (cadet: any) => {
-        setViewingCadet(cadet);
-        setIsViewModalOpen(true);
-    };
-
-    const handlePhotoUploadClick = () => {
-        setIsDisclaimerOpen(true);
-    };
-
-    const handleDisclaimerConfirm = () => {
-        setIsDisclaimerOpen(false);
-        fileInputRef.current?.click();
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !viewingCadet) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const base64 = event.target?.result as string;
-            // Use updateUser for unified registry/extra persistence
-            updateUser(viewingCadet.id, { avatarUrl: base64 });
-            // Update local viewing state to show immediate result
-            setViewingCadet((prev: any) => ({ ...prev, avatarUrl: base64 }));
-        };
-        reader.readAsDataURL(file);
-    };
-
-    // Helper function to format unit name for display
-    const getFormattedUnit = (wing: Wing, unitNumber: string, unitName?: string): string => {
-        const name = unitName || (wing === Wing.ARMY ? "Assam BN NCC" : wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC");
-        return `${unitNumber} ${name}`;
-    };
 
     // Form State
     const [formData, setFormData] = useState({
@@ -122,6 +60,69 @@ export default function CadetsPage() {
             return matchesSearch && matchesRole;
         });
     }, [cadets, searchQuery, filterRole]);
+
+    if (!user) return null;
+
+    const canEdit = user && [Role.ANO, Role.SUO].includes(user.role);
+
+    const handleDelete = (id: string, name: string) => {
+        if (confirm(`Are you sure you want to remove ${name} from the registry?`)) {
+            deleteCadet(id);
+        }
+    };
+
+    const handleEdit = (cadet: Cadet) => {
+        setEditingCadet(cadet);
+        setEditFormData({
+            name: cadet.name,
+            regimentalNumber: cadet.regimentalNumber || "",
+            rank: cadet.role,
+            wing: cadet.wing,
+            gender: cadet.gender,
+            unitNumber: cadet.unitNumber,
+            unitName: cadet.unitName || (cadet.wing === Wing.ARMY ? "Assam BN NCC" : cadet.wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC"),
+            enrollmentYear: cadet.enrollmentYear,
+            bloodGroup: cadet.bloodGroup || "O+",
+            pin: cadet.pin || "",
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleView = (cadet: Cadet) => {
+        setViewingCadet(cadet);
+        setIsViewModalOpen(true);
+    };
+
+    const handlePhotoUploadClick = () => {
+        setIsDisclaimerOpen(true);
+    };
+
+    const handleDisclaimerConfirm = () => {
+        setIsDisclaimerOpen(false);
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !viewingCadet) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            // Use updateUser for unified registry/extra persistence
+            updateUser(viewingCadet.id, { avatarUrl: base64 });
+            // Update local viewing state to show immediate result
+            setViewingCadet((prev: Cadet | null) => prev ? { ...prev, avatarUrl: base64 } : null);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // Helper function to format unit name for display
+    const getFormattedUnit = (wing: Wing, unitNumber: string, unitName?: string): string => {
+        const name = unitName || (wing === Wing.ARMY ? "Assam BN NCC" : wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC");
+        return `${unitNumber} ${name}`;
+    };
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
