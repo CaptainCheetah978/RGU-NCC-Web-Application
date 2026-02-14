@@ -206,9 +206,9 @@ export default function ProfilePage() {
                                     </div>
 
                                     {/* Body Section */}
-                                    <div className="flex-1 p-5 py-1 flex items-start overflow-hidden pl-10 relative z-10">
+                                    <div className="flex-1 px-5 py-3 flex items-center overflow-hidden pl-10 relative z-10">
                                         {/* Photo Area */}
-                                        <div className="w-28 h-28 border-2 border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center mr-5 shrink-0 shadow-sm relative ring-4 ring-white mt-1">
+                                        <div className="w-28 h-28 border-2 border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center mr-5 shrink-0 shadow-sm relative ring-4 ring-white">
                                             {currentUser.avatarUrl ? (
                                                 <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-full h-full object-cover" />
                                             ) : (
@@ -219,39 +219,46 @@ export default function ProfilePage() {
                                             )}
                                         </div>
 
-                                        {/* Info Area */}
-                                        <div className="flex-1 space-y-2 pt-1">
-                                            <div className="relative pt-2.5">
+                                        {/* Info Area - Unified Grid for absolute uniform spacing */}
+                                        <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-6.5">
+                                            {/* Name Row */}
+                                            <div className="relative pt-2.5 col-span-2">
                                                 <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Full Name</p>
                                                 <p className="text-[14px] font-bold text-gray-900 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.name}</p>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-x-6 gap-y-6.5">
-                                                <div className="relative pt-2.5">
-                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
-                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.role || "N/A"}</p>
-                                                </div>
-                                                <div className="relative pt-2.5">
-                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
-                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.regimentalNumber || "N/A"}</p>
-                                                </div>
-                                                <div className="relative pt-2.5">
-                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
-                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.wing || "N/A"}</p>
-                                                </div>
-                                                <div className="relative pt-2.5">
-                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
-                                                    <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.bloodGroup || "N/A"}</p>
-                                                </div>
-                                                <div className="relative pt-2.5">
-                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Group HQ</p>
-                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{(currentUser as any).groupHQ || "Guwahati"}</p>
-                                                </div>
-                                                <div className="relative pt-2.5">
-                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Dte</p>
-                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{(currentUser as any).dte || "NER"}</p>
-                                                </div>
+
+                                            {/* Rank & Regt No Row */}
+                                            <div className="relative pt-2.5">
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
+                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.role || "N/A"}</p>
                                             </div>
-                                            <div className="relative pt-2.5 mt-5">
+                                            <div className="relative pt-2.5">
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
+                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.regimentalNumber || "N/A"}</p>
+                                            </div>
+
+                                            {/* Wing & Blood Group Row */}
+                                            <div className="relative pt-2.5">
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
+                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.wing || "N/A"}</p>
+                                            </div>
+                                            <div className="relative pt-2.5">
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
+                                                <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.bloodGroup || "N/A"}</p>
+                                            </div>
+
+                                            {/* Group HQ & Dte Row */}
+                                            <div className="relative pt-2.5">
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Group HQ</p>
+                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{(currentUser as any).groupHQ || "Guwahati"}</p>
+                                            </div>
+                                            <div className="relative pt-2.5">
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Dte</p>
+                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{(currentUser as any).dte || "NER"}</p>
+                                            </div>
+
+                                            {/* Unit Name Row */}
+                                            <div className="relative pt-2.5 col-span-2">
                                                 <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Unit Name</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-tight uppercase w-max max-w-full">
                                                     {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
