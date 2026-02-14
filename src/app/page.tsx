@@ -76,7 +76,7 @@ export default function LoginPage() {
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-20 h-20 relative"
+              className="w-22 h-22 relative"
             >
               <img src="/ncc-logo.png" alt="NCC logo" className="w-full h-full object-contain drop-shadow-2xl" />
             </motion.div>
@@ -84,7 +84,7 @@ export default function LoginPage() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="w-24 h-24 relative"
+              className="w-22 h-22 relative"
             >
               <img src="/rgu-logo.png" alt="RGU logo" className="w-full h-full object-contain drop-shadow-2xl" />
             </motion.div>

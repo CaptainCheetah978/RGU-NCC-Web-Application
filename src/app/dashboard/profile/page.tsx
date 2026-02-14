@@ -193,14 +193,14 @@ export default function ProfilePage() {
 
                                     {/* Header Section */}
                                     <div className="p-1 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 relative z-10 pl-8">
-                                        <div className="w-10 h-10 flex items-center justify-center">
+                                        <div className="w-11 h-11 flex items-center justify-center">
                                             <img src="/ncc-logo.png" className="max-w-full max-h-full object-contain" alt="NCC" />
                                         </div>
                                         <div className="text-center flex-1 mx-4">
                                             <h3 className="text-[13px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">The Assam Royal Global University</h3>
                                             <p className="text-[10px] font-bold text-red-700 tracking-[0.2em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
                                         </div>
-                                        <div className="w-10 h-10 flex items-center justify-center">
+                                        <div className="w-11 h-11 flex items-center justify-center pr-2">
                                             <img src="/rgu-logo.png" className="max-w-full max-h-full object-contain" alt="RGU" />
                                         </div>
                                     </div>

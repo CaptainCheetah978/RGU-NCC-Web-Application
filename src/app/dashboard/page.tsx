@@ -26,7 +26,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-center space-x-4">
                     <img src="/ncc-logo.png" alt="NCC" className="h-16 w-16 object-contain" />
-                    <img src="/rgu-logo.png" alt="RGU" className="h-16 w-auto object-contain" />
+                    <img src="/rgu-logo.png" alt="RGU" className="h-16 w-16 object-contain" />
                     <div className="flex items-center border-l border-gray-300 pl-4 space-x-3">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-lg font-bold text-white shadow-lg overflow-hidden">
                             {displayUser.avatarUrl ? (
