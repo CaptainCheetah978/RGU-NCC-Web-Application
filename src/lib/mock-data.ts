@@ -19,8 +19,6 @@ export const MOCK_USERS: (User | Cadet)[] = [
         unitName: "Assam BN NCC",
         bloodGroup: "O+",
         enrollmentYear: 2020,
-        groupHQ: "Guwahati",
-        dte: "North-Eastern Region (NER)",
         pin: "3489",
     },
     {
@@ -34,8 +32,6 @@ export const MOCK_USERS: (User | Cadet)[] = [
         unitName: "Assam BN NCC",
         bloodGroup: "A+",
         enrollmentYear: 2020,
-        groupHQ: "Guwahati",
-        dte: "North-Eastern Region (NER)",
         pin: "3489",
     },
     {
@@ -49,8 +45,6 @@ export const MOCK_USERS: (User | Cadet)[] = [
         unitName: "Assam BN NCC",
         bloodGroup: "B+",
         enrollmentYear: 2021,
-        groupHQ: "Guwahati",
-        dte: "North-Eastern Region (NER)",
         pin: "5698",
     },
     {
@@ -64,8 +58,6 @@ export const MOCK_USERS: (User | Cadet)[] = [
         unitName: "Assam BN NCC",
         bloodGroup: "O+",
         enrollmentYear: 2021,
-        groupHQ: "Guwahati",
-        dte: "North-Eastern Region (NER)",
         pin: "5698",
     },
     {
@@ -79,8 +71,6 @@ export const MOCK_USERS: (User | Cadet)[] = [
         unitName: "Assam BN NCC",
         bloodGroup: "AB+",
         enrollmentYear: 2022,
-        groupHQ: "Guwahati",
-        dte: "North-Eastern Region (NER)",
     },
 ];
 

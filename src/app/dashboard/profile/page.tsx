@@ -220,7 +220,7 @@ export default function ProfilePage() {
                                         </div>
 
                                         {/* Info Area - Unified Grid for absolute uniform spacing */}
-                                        <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-4.5">
+                                        <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-6">
                                             {/* Name Row */}
                                             <div className="relative pt-2.5 col-span-2">
                                                 <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Full Name</p>
@@ -247,22 +247,12 @@ export default function ProfilePage() {
                                                 <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.bloodGroup || "N/A"}</p>
                                             </div>
 
-                                            {/* Unit Name Row - Moved Up */}
+                                            {/* Unit Name Row */}
                                             <div className="relative pt-2.5 col-span-2">
                                                 <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Unit Name</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-tight uppercase w-max max-w-full">
                                                     {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
                                                 </p>
-                                            </div>
-
-                                            {/* Group HQ & Dte Row - Moved Down */}
-                                            <div className="relative pt-2.5">
-                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Group HQ</p>
-                                                <p className="text-[10px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{(currentUser as any).groupHQ || "Guwahati"}</p>
-                                            </div>
-                                            <div className="relative pt-2.5">
-                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Dte</p>
-                                                <p className="text-[10px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{(currentUser as any).dte || "NER"}</p>
                                             </div>
                                         </div>
                                     </div>

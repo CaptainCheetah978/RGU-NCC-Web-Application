@@ -47,8 +47,6 @@ export default function CadetsPage() {
             unitName: cadet.unitName || (cadet.wing === Wing.ARMY ? "Assam BN NCC" : cadet.wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC"),
             enrollmentYear: cadet.enrollmentYear,
             bloodGroup: cadet.bloodGroup || "O+",
-            groupHQ: cadet.groupHQ || "Guwahati",
-            dte: cadet.dte || "North-Eastern Region (NER)",
             pin: cadet.pin || "",
         });
         setIsEditModalOpen(true);
@@ -100,8 +98,6 @@ export default function CadetsPage() {
         unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
         bloodGroup: "O+",
-        groupHQ: "Guwahati",
-        dte: "North-Eastern Region (NER)",
         pin: "",
     });
 
@@ -115,8 +111,6 @@ export default function CadetsPage() {
         unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
         bloodGroup: "O+",
-        groupHQ: "Guwahati",
-        dte: "North-Eastern Region (NER)",
         pin: "",
     });
 
@@ -144,8 +138,6 @@ export default function CadetsPage() {
             unitName: formData.unitName,
             enrollmentYear: formData.enrollmentYear,
             bloodGroup: formData.bloodGroup,
-            groupHQ: formData.groupHQ,
-            dte: formData.dte,
             pin: formData.pin,
             avatarUrl: "" // Placeholder
         };
@@ -162,8 +154,6 @@ export default function CadetsPage() {
             unitName: "Assam BN NCC",
             enrollmentYear: new Date().getFullYear(),
             bloodGroup: "O+",
-            groupHQ: "Guwahati",
-            dte: "North-Eastern Region (NER)",
             pin: "",
         });
     };
@@ -183,8 +173,6 @@ export default function CadetsPage() {
             unitName: editFormData.unitName,
             enrollmentYear: editFormData.enrollmentYear,
             bloodGroup: editFormData.bloodGroup,
-            groupHQ: editFormData.groupHQ,
-            dte: editFormData.dte,
             pin: editFormData.pin,
         });
 
@@ -431,21 +419,6 @@ export default function CadetsPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Group HQ"
-                            value={formData.groupHQ}
-                            onChange={(e) => setFormData({ ...formData, groupHQ: e.target.value })}
-                            required
-                        />
-                        <Input
-                            label="Directorate (Dte)"
-                            value={formData.dte}
-                            onChange={(e) => setFormData({ ...formData, dte: e.target.value })}
-                            required
-                        />
-                    </div>
-
                     <div className="space-y-2">
                         <Input
                             label="Access PIN (Required for Officers)"
@@ -568,21 +541,6 @@ export default function CadetsPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Group HQ"
-                            value={editFormData.groupHQ}
-                            onChange={(e) => setEditFormData({ ...editFormData, groupHQ: e.target.value })}
-                            required
-                        />
-                        <Input
-                            label="Directorate (Dte)"
-                            value={editFormData.dte}
-                            onChange={(e) => setEditFormData({ ...editFormData, dte: e.target.value })}
-                            required
-                        />
-                    </div>
-
                     <div className="space-y-2">
                         <Input
                             label="Access PIN"
@@ -663,14 +621,6 @@ export default function CadetsPage() {
                             <div className="space-y-1">
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Blood Group</p>
                                 <p className="text-sm text-red-600 font-bold">{viewingCadet.bloodGroup || "N/A"}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Group HQ</p>
-                                <p className="text-sm text-gray-800 font-bold">{viewingCadet.groupHQ || "Guwahati"}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Directorate</p>
-                                <p className="text-sm text-gray-800 font-bold">{viewingCadet.dte || "NER"}</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Gender</p>

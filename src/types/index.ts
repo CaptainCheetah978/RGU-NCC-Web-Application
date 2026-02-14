@@ -37,8 +37,6 @@ export interface Cadet extends User {
     unitName?: string;
     enrollmentYear: number;
     bloodGroup?: string;
-    groupHQ: string;
-    dte: string;
 }
 
 export interface ClassSession {
