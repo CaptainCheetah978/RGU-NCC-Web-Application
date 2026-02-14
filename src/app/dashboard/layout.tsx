@@ -2,12 +2,29 @@
 
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const { user, isLoading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!isLoading && !user) {
+            router.replace("/");
+        }
+    }, [user, isLoading, router]);
+
+    // Don't render the dashboard shell at all if there's no user
+    if (!user) {
+        return null;
+    }
+
     return (
         <div className="flex h-screen bg-gray-900 overflow-hidden">
             <Sidebar />
@@ -26,3 +43,4 @@ export default function DashboardLayout({
         </div>
     );
 }
+

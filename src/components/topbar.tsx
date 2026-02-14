@@ -28,16 +28,18 @@ export function Topbar() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    if (!user) return null;
-
-    // Get unread notes for the current user
+    // Get unread notes for the current user — must be above the early return to satisfy Rules of Hooks
     const unreadNotes = useMemo(() => {
+        if (!user) return [];
         return notes
             .filter(n => n.recipientId === user.id && !n.isRead)
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    }, [notes, user.id]);
+    }, [notes, user]);
 
     const unreadCount = unreadNotes.length;
+
+    // Early return AFTER all hooks
+    if (!user) return null;
 
     // Get the most up-to-date user data (including extras like photos)
     const currentUser = messageableUsers.find(u => u.id === user.id);
