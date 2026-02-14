@@ -84,6 +84,84 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => { localStorage.setItem("ncc_notes", JSON.stringify(notes)); }, [notes]);
     useEffect(() => { localStorage.setItem("ncc_extra_user_data", JSON.stringify(extraUserData)); }, [extraUserData]);
 
+    // Class management
+    const addClass = (cls: ClassSession) => {
+        setClasses(prev => [...prev, cls]);
+    };
+
+    const deleteClass = (id: string) => {
+        setClasses(prev => prev.filter(c => c.id !== id));
+    };
+
+    // Cadet management
+    const addCadet = (cadet: Cadet) => {
+        setCadets(prev => [...prev, cadet]);
+    };
+
+    const updateCadet = (id: string, updates: Partial<Cadet>) => {
+        setCadets(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    };
+
+    const deleteCadet = (id: string) => {
+        setCadets(prev => prev.filter(c => c.id !== id));
+    };
+
+    // Attendance management
+    const markAttendance = (record: AttendanceRecord) => {
+        setAttendance(prev => {
+            const filtered = prev.filter(r => !(r.classId === record.classId && r.cadetId === record.cadetId));
+            return [...filtered, record];
+        });
+    };
+
+    // Notes management
+    const sendNote = (note: Note) => {
+        setNotes(prev => [...prev, note]);
+    };
+
+    const markNoteAsRead = (id: string) => {
+        setNotes(prev => prev.map(note =>
+            note.id === id ? { ...note, isRead: true } : note
+        ));
+    };
+
+    const forwardNoteToANO = (noteId: string, anoId: string, anoName: string) => {
+        const originalNote = notes.find(n => n.id === noteId);
+        if (!originalNote) return;
+
+        const forwardedNote: Note = {
+            ...originalNote,
+            id: `fwd-${Date.now()}`,
+            recipientId: anoId,
+            recipientName: anoName,
+            timestamp: new Date().toISOString(),
+            isRead: false,
+            forwardedToANO: true,
+            originalSenderId: originalNote.senderId,
+            originalSenderName: originalNote.senderName,
+        };
+
+        setNotes(prev => [
+            ...prev.map(n => n.id === noteId ? { ...n, forwardedToANO: true } : n),
+            forwardedNote
+        ]);
+    };
+
+    const deleteNote = (id: string) => {
+        setNotes(prev => prev.filter(n => n.id !== id));
+    };
+
+    const updateUser = (userId: string, updates: Partial<Cadet | User>) => {
+        // If it's a cadet in our list
+        if (cadets.find(c => c.id === userId)) {
+            setCadets(prev => prev.map(c => c.id === userId ? { ...c, ...updates } : c));
+        } else {
+            // It might be the ANO or a user not in registry, storage it specifically
+            // Let's add an 'extraUserData' state for better Reactivity
+            setExtraUserData(prev => ({ ...prev, [userId]: { ...prev[userId], ...updates } }));
+        }
+    };
+
     // Computed statistics
     const getStats = (userId?: string): DashboardStats => {
         const totalCadets = cadets.length;
