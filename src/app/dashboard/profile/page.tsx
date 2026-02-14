@@ -243,9 +243,9 @@ export default function ProfilePage() {
                                                     <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 uppercase">{currentUser.bloodGroup || "N/A"}</p>
                                                 </div>
                                             </div>
-                                            <div className="relative mt-1">
+                                            <div className="relative mt-2">
                                                 <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Unit Name</p>
-                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase leading-tight">
+                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase leading-tight w-max max-w-full">
                                                     {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
                                                 </p>
                                             </div>
@@ -253,17 +253,17 @@ export default function ProfilePage() {
                                     </div>
 
                                     {/* Bottom Signatures Area */}
-                                    <div className="px-8 pb-8 mt-auto flex justify-between items-end relative z-10">
+                                    <div className="px-8 pb-6 mt-auto flex justify-between items-end relative z-10">
                                         <div className="text-center">
-                                            <div className="w-24 border-b border-gray-300 mb-1" />
+                                            <div className="w-20 border-b border-gray-300 mb-1" />
                                             <p className="text-[7px] font-bold text-gray-400 uppercase tracking-tighter">Sign of Cadet</p>
                                         </div>
-                                        <div className="text-center flex flex-col items-center">
-                                            <div className="relative w-max flex flex-col items-center">
-                                                <p className="text-[9px] italic font-serif text-gray-600 mb-1 leading-none">s/d-</p>
-                                                <div className="w-28 border-b border-gray-300 mb-1" />
-                                                <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
-                                                <p className="text-[6px] font-bold text-gray-400 uppercase mt-1 tracking-wider">Digital Signature</p>
+                                        <div className="text-center">
+                                            <div className="flex flex-col items-center">
+                                                <p className="text-[9px] italic font-serif text-gray-600 mb-0 leading-none">s/d-</p>
+                                                <div className="w-24 border-b border-gray-300 mb-1" />
+                                                <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, TARGU NCC</p>
+                                                <p className="text-[6px] font-bold text-gray-400 uppercase mt-0.5 tracking-wider">Digital Signature</p>
                                             </div>
                                         </div>
                                     </div>
