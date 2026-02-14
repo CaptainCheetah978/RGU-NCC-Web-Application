@@ -16,10 +16,12 @@ function VerifyContent() {
         // Check mock users first
         const mockUser = MOCK_USERS.find(u => u.id === id);
         if (mockUser) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const mu = mockUser as any;
             person = {
-                name: mockUser.name,
-                role: mockUser.role,
-                regimentalNumber: (mockUser as Record<string, string>).regimentalNumber || undefined,
+                name: mu.name,
+                role: mu.role,
+                regimentalNumber: mu.regimentalNumber || undefined,
             };
         }
 
@@ -29,7 +31,8 @@ function VerifyContent() {
                 const stored = localStorage.getItem("ncc_cadets");
                 if (stored) {
                     const cadets = JSON.parse(stored);
-                    const cadet = cadets.find((c: Record<string, string>) => c.id === id);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const cadet = cadets.find((c: any) => c.id === id);
                     if (cadet) {
                         person = {
                             name: cadet.name,
