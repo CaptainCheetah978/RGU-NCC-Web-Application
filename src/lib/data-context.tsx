@@ -29,6 +29,7 @@ interface DataContextType {
     getStats: (userId?: string) => DashboardStats;
     messageableUsers: (Cadet | User)[];
     updateUser: (userId: string, updates: Partial<Cadet | User>) => void;
+    markAllAsRead: (userId: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -151,6 +152,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setNotes(prev => prev.filter(n => n.id !== id));
     };
 
+    const markAllAsRead = (userId: string) => {
+        setNotes(prev => prev.map(note =>
+            note.recipientId === userId ? { ...note, isRead: true } : note
+        ));
+    };
+
     const updateUser = (userId: string, updates: Partial<Cadet | User>) => {
         // If it's a cadet in our list
         if (cadets.find(c => c.id === userId)) {
@@ -225,7 +232,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             notes, sendNote, markNoteAsRead, forwardNoteToANO, deleteNote,
             getStats,
             messageableUsers,
-            updateUser
+            updateUser,
+            markAllAsRead
         }}>
             {children}
         </DataContext.Provider>
