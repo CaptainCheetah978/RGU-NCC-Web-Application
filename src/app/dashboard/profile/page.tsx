@@ -85,55 +85,58 @@ export default function ProfilePage() {
         <div className="space-y-8 max-w-5xl mx-auto pb-12 print:p-0">
             <style jsx global>{`
                 @media print {
-                    /* Hide everything by default */
+                    /* Reset layout and backgrounds */
                     body, html {
                         background: white !important;
-                        overscroll-behavior: none;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
                     }
                     
-                    /* Hide all parents background and overflow */
-                    div, section, main, header, aside {
-                        background: transparent !important;
-                        border: none !important;
-                        box-shadow: none !important;
-                        overflow: visible !important;
+                    /* Hide parent containers that shouldn't show */
+                    .flex.h-screen {
+                        display: block !important;
                         height: auto !important;
+                        overflow: visible !important;
+                    }
+                    
+                    main {
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        overflow: visible !important;
                     }
 
+                    /* Hide everything by default using visibility to maintain structure if needed, 
+                       but display: none is cleaner for layout roots */
                     body * {
                         visibility: hidden;
                     }
                     
-                    /* Only show the print container */
-                    .print-container, .print-container * {
+                    /* Only show the print container and its hierarchy */
+                    .print-container, 
+                    .print-container * {
                         visibility: visible;
                     }
                     
                     .print-container {
-                        position: fixed !important;
-                        left: 50% !important;
-                        top: 50% !important;
-                        transform: translate(-50%, -50%) !important;
-                        width: auto !important;
-                        height: auto !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
+                        visibility: visible !important;
+                        position: absolute !important;
+                        left: 0 !important;
+                        top: 0 !important;
+                        width: 100% !important;
                         display: flex !important;
                         justify-content: center !important;
-                        align-items: center !important;
+                        padding-top: 50px !important;
                         background: white !important;
-                        z-index: 9999 !important;
                     }
                     
-                    @page {
-                        size: landscape;
-                        margin: 0;
-                    }
-
                     .no-print {
                         display: none !important;
+                    }
+                    
+                    /* Remove any shadows/borders from the card container during print */
+                    .print-container > div {
+                        box-shadow: none !important;
+                        border: 1px solid #eee !important;
                     }
                 }
             `}</style>
@@ -191,8 +194,8 @@ export default function ProfilePage() {
 
                 {/* Digital ID Card Display */}
                 <div className="lg:col-span-2 space-y-8">
-                    <Card className="border-gray-200 overflow-hidden shadow-2xl no-print">
-                        <CardHeader className="bg-gray-50 border-b border-gray-200 flex flex-row items-center justify-between">
+                    <Card className="border-gray-200 overflow-hidden shadow-2xl">
+                        <CardHeader className="bg-gray-50 border-b border-gray-200 flex flex-row items-center justify-between no-print">
                             <CardTitle className="text-lg flex items-center">
                                 <Shield className="w-5 h-5 mr-2 text-primary" />
                                 Digital NCC ID Card
