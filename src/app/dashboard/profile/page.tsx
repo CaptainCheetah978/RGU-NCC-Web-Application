@@ -262,7 +262,7 @@ export default function ProfilePage() {
                                             <div className="flex flex-col items-center">
                                                 <p className="text-[9px] italic font-serif text-gray-600 mb-0 leading-none">s/d-</p>
                                                 <div className="w-24 border-b border-gray-300 mb-1" />
-                                                <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, TARGU NCC</p>
+                                                <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
                                                 <p className="text-[6px] font-bold text-gray-400 uppercase mt-0.5 tracking-wider">Digital Signature</p>
                                             </div>
                                         </div>
