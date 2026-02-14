@@ -46,6 +46,7 @@ export default function CadetsPage() {
             unitNumber: cadet.unitNumber,
             unitName: cadet.unitName || (cadet.wing === Wing.ARMY ? "Assam BN NCC" : cadet.wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC"),
             enrollmentYear: cadet.enrollmentYear,
+            bloodGroup: cadet.bloodGroup || "O+",
             pin: cadet.pin || "",
         });
         setIsEditModalOpen(true);
@@ -96,6 +97,7 @@ export default function CadetsPage() {
         unitNumber: "30",
         unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
+        bloodGroup: "O+",
         pin: "",
     });
 
@@ -108,6 +110,7 @@ export default function CadetsPage() {
         unitNumber: "30",
         unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
+        bloodGroup: "O+",
         pin: "",
     });
 
@@ -134,6 +137,7 @@ export default function CadetsPage() {
             unitNumber: formData.unitNumber,
             unitName: formData.unitName,
             enrollmentYear: formData.enrollmentYear,
+            bloodGroup: formData.bloodGroup,
             pin: formData.pin,
             avatarUrl: "" // Placeholder
         };
@@ -149,6 +153,7 @@ export default function CadetsPage() {
             unitNumber: "30",
             unitName: "Assam BN NCC",
             enrollmentYear: new Date().getFullYear(),
+            bloodGroup: "O+",
             pin: "",
         });
     };
@@ -167,6 +172,7 @@ export default function CadetsPage() {
             unitNumber: editFormData.unitNumber,
             unitName: editFormData.unitName,
             enrollmentYear: editFormData.enrollmentYear,
+            bloodGroup: editFormData.bloodGroup,
             pin: editFormData.pin,
         });
 
@@ -399,6 +405,18 @@ export default function CadetsPage() {
                             value={formData.enrollmentYear}
                             onChange={(e) => setFormData({ ...formData, enrollmentYear: parseInt(e.target.value) })}
                         />
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-primary/80 ml-1">Blood Group</label>
+                            <select
+                                className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={formData.bloodGroup}
+                                onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
+                            >
+                                {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
+                                    <option key={bg} value={bg}>{bg}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="space-y-2">
@@ -509,6 +527,18 @@ export default function CadetsPage() {
                             value={editFormData.enrollmentYear}
                             onChange={(e) => setEditFormData({ ...editFormData, enrollmentYear: parseInt(e.target.value) })}
                         />
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-primary/80 ml-1">Blood Group</label>
+                            <select
+                                className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={editFormData.bloodGroup}
+                                onChange={(e) => setEditFormData({ ...editFormData, bloodGroup: e.target.value })}
+                            >
+                                {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
+                                    <option key={bg} value={bg}>{bg}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="space-y-2">
@@ -587,6 +617,10 @@ export default function CadetsPage() {
                             <div className="space-y-1">
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Enrollment Year</p>
                                 <p className="text-sm text-gray-800 font-bold">{viewingCadet.enrollmentYear}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Blood Group</p>
+                                <p className="text-sm text-red-600 font-bold">{viewingCadet.bloodGroup || "N/A"}</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Gender</p>
