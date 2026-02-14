@@ -220,12 +220,12 @@ export default function ProfilePage() {
                                         </div>
 
                                         {/* Info Area */}
-                                        <div className="flex-1 space-y-2 pt-1">
+                                        <div className="flex-1 space-y-3 pt-1">
                                             <div className="relative">
                                                 <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Full Name</p>
                                                 <p className="text-[14px] font-bold text-gray-900 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.name}</p>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                                            <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                                                 <div className="relative">
                                                     <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Rank</p>
                                                     <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase">{currentUser.role || "N/A"}</p>
@@ -251,7 +251,7 @@ export default function ProfilePage() {
                                                     <p className="text-[10px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase leading-none">{(currentUser as any).dte || "NER"}</p>
                                                 </div>
                                             </div>
-                                            <div className="relative mt-2">
+                                            <div className="relative mt-4">
                                                 <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Unit Name</p>
                                                 <p className="text-[10px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase leading-tight w-max max-w-full">
                                                     {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
@@ -261,7 +261,7 @@ export default function ProfilePage() {
                                     </div>
 
                                     {/* Bottom Signatures Area */}
-                                    <div className="px-8 pb-5 mt-auto flex justify-between items-end relative z-10 pl-12">
+                                    <div className="px-8 pb-4 mt-auto flex justify-between items-end relative z-10 pl-12">
                                         <div className="text-center">
                                             <div className="w-20 border-b border-gray-300 mb-1" />
                                             <p className="text-[7px] font-bold text-gray-400 uppercase tracking-tighter">Sign of Cadet</p>
