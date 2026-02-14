@@ -14,11 +14,11 @@
 <p align="center">
   <a href="https://rgu-ncc-web-application.vercel.app">🌐 Live Demo</a>
   &nbsp;·&nbsp;
-  <a href="#features">Features</a>
+  <a href="#-features">Features</a>
   &nbsp;·&nbsp;
-  <a href="#getting-started">Getting Started</a>
+  <a href="#-getting-started">Getting Started</a>
   &nbsp;·&nbsp;
-  <a href="#tech-stack">Tech Stack</a>
+  <a href="#-tech-stack">Tech Stack</a>
 </p>
 
 ---
