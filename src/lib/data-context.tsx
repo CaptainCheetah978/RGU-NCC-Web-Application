@@ -34,22 +34,17 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-    const [classes, setClasses] = useState<ClassSession[]>([]);
-    const [cadets, setCadets] = useState<Cadet[]>([]);
-    const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
-    const [notes, setNotes] = useState<Note[]>([]);
+    // Lazy initialization functions to read from localStorage synchronously on first render
+    const [classes, setClasses] = useState<ClassSession[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const stored = localStorage.getItem("ncc_classes");
+        return stored ? JSON.parse(stored) : [];
+    });
 
-    // Load initial data from localStorage only (NO MOCK DATA)
-    useEffect(() => {
-        const storedClasses = localStorage.getItem("ncc_classes");
-        if (storedClasses) setClasses(JSON.parse(storedClasses));
-
-        const storedCadets = localStorage.getItem("ncc_cadets");
-        let initialCadets: Cadet[] = [];
-
-        if (storedCadets) {
-            initialCadets = JSON.parse(storedCadets);
-        }
+    const [cadets, setCadets] = useState<Cadet[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const stored = localStorage.getItem("ncc_cadets");
+        let initialCadets: Cadet[] = stored ? JSON.parse(stored) : [];
 
         // Always ensure login cadets (except ANO) are in the list
         const loginCadets = MOCK_USERS.filter(u => u.role !== Role.ANO) as Cadet[];
@@ -61,132 +56,33 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             }
         });
 
-        // Update name for Roshni if it was still old in storage
-        const roshni = initialCadets.find(c => c.id === "cdt-1");
-        if (roshni) roshni.name = "Cdt. Roshni";
+        return initialCadets;
+    });
 
-        setCadets(initialCadets);
+    const [attendance, setAttendance] = useState<AttendanceRecord[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const stored = localStorage.getItem("ncc_attendance");
+        return stored ? JSON.parse(stored) : [];
+    });
 
-        const storedAttendance = localStorage.getItem("ncc_attendance");
-        if (storedAttendance) setAttendance(JSON.parse(storedAttendance));
+    const [notes, setNotes] = useState<Note[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const stored = localStorage.getItem("ncc_notes");
+        return stored ? JSON.parse(stored) : [];
+    });
 
-        const storedNotes = localStorage.getItem("ncc_notes");
-        if (storedNotes) setNotes(JSON.parse(storedNotes));
-    }, []);
-
-    // Sync to localStorage on changes
-    useEffect(() => {
-        localStorage.setItem("ncc_classes", JSON.stringify(classes));
-    }, [classes]);
-
-    useEffect(() => {
-        localStorage.setItem("ncc_cadets", JSON.stringify(cadets));
-    }, [cadets]);
-
-    useEffect(() => {
-        localStorage.setItem("ncc_attendance", JSON.stringify(attendance));
-    }, [attendance]);
-
-    useEffect(() => {
-        localStorage.setItem("ncc_notes", JSON.stringify(notes));
-    }, [notes]);
-
-    // Class management
-    const addClass = (cls: ClassSession) => {
-        setClasses(prev => [...prev, cls]);
-    };
-
-    const deleteClass = (id: string) => {
-        setClasses(prev => prev.filter(c => c.id !== id));
-    };
-
-    // Cadet management
-    const addCadet = (cadet: Cadet) => {
-        setCadets(prev => [...prev, cadet]);
-    };
-
-    const updateCadet = (id: string, updates: Partial<Cadet>) => {
-        setCadets(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
-    };
-
-    const deleteCadet = (id: string) => {
-        setCadets(prev => prev.filter(c => c.id !== id));
-    };
-
-    // Attendance management
-    const markAttendance = (record: AttendanceRecord) => {
-        setAttendance(prev => {
-            const filtered = prev.filter(r => !(r.classId === record.classId && r.cadetId === record.cadetId));
-            return [...filtered, record];
-        });
-    };
-
-    // Notes management
-    const sendNote = (note: Note) => {
-        setNotes(prev => [...prev, note]);
-    };
-
-    const markNoteAsRead = (id: string) => {
-        setNotes(prev => prev.map(note =>
-            note.id === id ? { ...note, isRead: true } : note
-        ));
-    };
-
-    const forwardNoteToANO = (noteId: string, anoId: string, anoName: string) => {
-        const originalNote = notes.find(n => n.id === noteId);
-        if (!originalNote) return;
-
-        const forwardedNote: Note = {
-            ...originalNote,
-            id: `fwd-${Date.now()}`,
-            recipientId: anoId,
-            recipientName: anoName,
-            timestamp: new Date().toISOString(),
-            isRead: false,
-            forwardedToANO: true,
-            originalSenderId: originalNote.senderId,
-            originalSenderName: originalNote.senderName,
-        };
-
-        setNotes(prev => [
-            ...prev.map(n => n.id === noteId ? { ...n, forwardedToANO: true } : n),
-            forwardedNote
-        ]);
-    };
-
-    const deleteNote = (id: string) => {
-        setNotes(prev => prev.filter(n => n.id !== id));
-    };
-
-    const updateUser = (userId: string, updates: Partial<Cadet | User>) => {
-        // If it's a cadet in our list
-        if (cadets.find(c => c.id === userId)) {
-            setCadets(prev => prev.map(c => c.id === userId ? { ...c, ...updates } : c));
-        } else {
-            // It might be the ANO or a user not in registry, storage it specifically
-            const key = `user_ext_${userId}`;
-            const existing = localStorage.getItem(key);
-            const data = existing ? JSON.parse(existing) : {};
-            localStorage.setItem(key, JSON.stringify({ ...data, ...updates }));
-
-            // Force a refresh of messageableUsers by triggering a dummy state if needed, 
-            // but for simple photo persistence, we can rely on how messageableUsers is memoized.
-            // Let's add an 'extraUserData' state for better Reactivity
-            setExtraUserData(prev => ({ ...prev, [userId]: { ...prev[userId], ...updates } }));
-        }
-    };
-
-    const [extraUserData, setExtraUserData] = useState<Record<string, any>>({});
-
-    useEffect(() => {
-        // Load extra user data (like ANO's photo/PIN overrides)
+    const [extraUserData, setExtraUserData] = useState<Record<string, any>>(() => {
+        if (typeof window === 'undefined') return {};
         const stored = localStorage.getItem("ncc_extra_user_data");
-        if (stored) setExtraUserData(JSON.parse(stored));
-    }, []);
+        return stored ? JSON.parse(stored) : {};
+    });
 
-    useEffect(() => {
-        localStorage.setItem("ncc_extra_user_data", JSON.stringify(extraUserData));
-    }, [extraUserData]);
+    // Sync to localStorage on changes - these will now safely wait for initialization
+    useEffect(() => { localStorage.setItem("ncc_classes", JSON.stringify(classes)); }, [classes]);
+    useEffect(() => { localStorage.setItem("ncc_cadets", JSON.stringify(cadets)); }, [cadets]);
+    useEffect(() => { localStorage.setItem("ncc_attendance", JSON.stringify(attendance)); }, [attendance]);
+    useEffect(() => { localStorage.setItem("ncc_notes", JSON.stringify(notes)); }, [notes]);
+    useEffect(() => { localStorage.setItem("ncc_extra_user_data", JSON.stringify(extraUserData)); }, [extraUserData]);
 
     // Computed statistics
     const getStats = (userId?: string): DashboardStats => {
