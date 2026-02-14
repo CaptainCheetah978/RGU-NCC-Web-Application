@@ -49,6 +49,8 @@ export default function FilesPage() {
 
         const type: FileType = uploadFile.type.includes("pdf") ? "PDF" : uploadFile.type.includes("image") ? "IMAGE" : "VIDEO";
 
+        const blobUrl = URL.createObjectURL(uploadFile);
+
         const newFile: FileItem = {
             id: Date.now().toString(),
             name: uploadFile.name,
@@ -56,7 +58,7 @@ export default function FilesPage() {
             size: `${(uploadFile.size / 1024 / 1024).toFixed(2)} MB`,
             uploadedBy: user.name,
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            url: "#"
+            url: blobUrl
         };
 
         setFiles([newFile, ...files]);
@@ -68,6 +70,19 @@ export default function FilesPage() {
         if (confirm("Are you sure you want to delete this file?")) {
             setFiles(files.filter(f => f.id !== id));
         }
+    };
+
+    const handleDownload = (file: FileItem) => {
+        if (file.url === "#") {
+            alert("This is a sample file and cannot be downloaded.");
+            return;
+        }
+        const link = document.createElement("a");
+        link.href = file.url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const getIcon = (type: FileType) => {
@@ -118,7 +133,11 @@ export default function FilesPage() {
                                         </div>
                                     </div>
 
-                                    <button className="p-2 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDownload(file); }}
+                                        className="p-2 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
+                                        title="Download file"
+                                    >
                                         <Download className="w-4 h-4" />
                                     </button>
                                     {canUpload && (
