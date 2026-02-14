@@ -73,7 +73,7 @@ export function Sidebar() {
                 <div className="w-10 h-10 flex items-center justify-center">
                     <img src="/ncc-logo.png" alt="NCC" className="w-full h-full object-contain" />
                 </div>
-                <span className="font-bold text-white text-lg tracking-tight">NCC RGU</span>
+                <span className="font-bold text-white text-lg tracking-tight">NCC TARGU</span>
             </div>
 
             <nav className="flex-1 p-4 space-y-2">

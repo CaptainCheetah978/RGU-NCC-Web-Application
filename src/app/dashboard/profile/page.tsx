@@ -197,7 +197,7 @@ export default function ProfilePage() {
                                             <img src="/ncc-logo.png" className="max-w-full max-h-full object-contain" alt="NCC" />
                                         </div>
                                         <div className="text-center flex-1 mx-4">
-                                            <h3 className="text-[14px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">Royal Global University, Guwahati</h3>
+                                            <h3 className="text-[14px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">The Assam Royal Global University</h3>
                                             <p className="text-[11px] font-bold text-red-700 tracking-[0.2em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
                                         </div>
                                         <div className="w-16 h-16 flex items-center justify-center">
@@ -253,21 +253,23 @@ export default function ProfilePage() {
                                     </div>
 
                                     {/* Bottom Signatures Area */}
-                                    <div className="px-6 pb-4 mt-auto flex justify-between items-end">
+                                    <div className="px-8 pb-8 mt-auto flex justify-between items-end relative z-10">
                                         <div className="text-center">
                                             <div className="w-24 border-b border-gray-300 mb-1" />
                                             <p className="text-[7px] font-bold text-gray-400 uppercase tracking-tighter">Sign of Cadet</p>
                                         </div>
-                                        <div className="text-center relative">
-                                            <p className="text-[9px] italic font-serif text-gray-600 mb-0 leading-none absolute -top-3 left-1/2 -translate-x-1/2 w-max">s/d-</p>
-                                            <div className="w-28 border-b border-gray-300 mb-1" />
-                                            <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
-                                            <p className="text-[6px] font-bold text-gray-400 uppercase mt-0.5 tracking-wider">Digital Signature</p>
+                                        <div className="text-center flex flex-col items-center">
+                                            <div className="relative w-max flex flex-col items-center">
+                                                <p className="text-[9px] italic font-serif text-gray-600 mb-1 leading-none">s/d-</p>
+                                                <div className="w-28 border-b border-gray-300 mb-1" />
+                                                <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
+                                                <p className="text-[6px] font-bold text-gray-400 uppercase mt-1 tracking-wider">Digital Signature</p>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* Footer bar */}
-                                    <div className="bg-[#002147] h-1.5 w-full shrink-0" />
+                                    {/* Footer decorative line */}
+                                    <div className="absolute bottom-0 left-0 right-0 h-2.5 bg-[#002147]" />
                                 </div>
                             </div>
                         </CardContent>

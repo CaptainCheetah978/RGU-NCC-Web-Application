@@ -93,9 +93,9 @@ export default function LoginPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-3xl font-extrabold text-white mb-2 tracking-tight text-center"
+            className="text-2xl font-extrabold text-white mb-2 tracking-tight text-center leading-tight mx-auto max-w-[90%]"
           >
-            Welcome to RGU NCC
+            Welcome to The Assam Royal Global University NCC
           </motion.h1>
           <motion.p
             initial={{ y: 20, opacity: 0 }}
