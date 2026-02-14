@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, Trash2, Camera, Info } from "lucide-react";
+import { Search, UserPlus, Trash2, Camera, Info, Download } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 
 export default function CadetsPage() {
-    const { cadets, addCadet, updateCadet, deleteCadet, updateUser } = useData();
+    const { cadets, addCadet, updateCadet, deleteCadet, updateUser, logActivity } = useData();
     const { user } = useAuth();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,6 +123,36 @@ export default function CadetsPage() {
         return `${unitNumber} ${name}`;
     };
 
+    const handleExportCSV = () => {
+        const headers = ["Name", "Rank", "Regimental Number", "Wing", "Unit Number", "Unit Name", "Blood Group", "Enrollment Year", "Gender"];
+        const rows = cadets.map(c => [
+            c.name,
+            c.role,
+            c.regimentalNumber || "N/A",
+            c.wing,
+            c.unitNumber,
+            c.unitName || "",
+            c.bloodGroup || "N/A",
+            c.enrollmentYear.toString(),
+            c.gender,
+        ]);
+
+        const csv = [headers.join(","), ...rows.map(r => r.map(cell => `"${cell}"`).join(","))].join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `NCC_Cadet_Registry_${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        if (user) {
+            logActivity("Exported cadet registry", user.id, user.name, `${cadets.length} cadets`);
+        }
+    };
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -189,10 +219,16 @@ export default function CadetsPage() {
                     <p className="text-gray-500 mt-1">Manage unit strength and profiles.</p>
                 </div>
                 {canEdit && (
-                    <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-primary/25">
-                        <UserPlus className="w-5 h-5 mr-2" />
-                        Enrol New Cadet
-                    </Button>
+                    <div className="flex items-center space-x-3">
+                        <Button variant="ghost" onClick={handleExportCSV} className="text-gray-600 border border-gray-200">
+                            <Download className="w-4 h-4 mr-2" />
+                            Export CSV
+                        </Button>
+                        <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-primary/25">
+                            <UserPlus className="w-5 h-5 mr-2" />
+                            Enrol New Cadet
+                        </Button>
+                    </div>
                 )}
             </div>
 

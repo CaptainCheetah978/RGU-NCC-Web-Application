@@ -6,6 +6,8 @@ import { Users, Calendar, CheckCircle, MessageSquare } from "lucide-react";
 import { InfoCard } from "@/components/dashboard/info-card";
 import { UpcomingClasses } from "@/components/dashboard/upcoming-classes";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
+import { AnnouncementsBanner } from "@/components/dashboard/announcements-banner";
+import { AttendanceChart } from "@/components/dashboard/attendance-chart";
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -43,6 +45,8 @@ export default function DashboardPage() {
                 </div>
             </div>
 
+            <AnnouncementsBanner />
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <InfoCard
                     title="Total Cadets"
@@ -78,6 +82,8 @@ export default function DashboardPage() {
                 <UpcomingClasses />
                 <RecentActivity />
             </div>
+
+            <AttendanceChart />
         </div>
     );
 }

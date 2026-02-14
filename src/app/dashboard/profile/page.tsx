@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Camera, Award, Calendar, Shield, Info, Download, Printer } from "lucide-react";
 import { useState, useRef } from "react";
 import { toPng } from "html-to-image";
+import { QRCodeSVG } from "qrcode.react";
+import { AttendanceHistory } from "@/components/profile/attendance-history";
+import { CertificatesSection } from "@/components/profile/certificates-section";
 
 export default function ProfilePage() {
     const { user } = useAuth();
@@ -286,6 +289,17 @@ export default function ProfilePage() {
                                                 </p>
                                             </div>
                                         </div>
+
+                                        {/* QR Code */}
+                                        <div className="ml-3 shrink-0 flex flex-col items-center">
+                                            <QRCodeSVG
+                                                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?id=${currentUser.id}`}
+                                                size={56}
+                                                level="M"
+                                                className="rounded"
+                                            />
+                                            <p className="text-[5px] text-gray-400 font-bold mt-0.5 uppercase tracking-wider">Scan to verify</p>
+                                        </div>
                                     </div>
 
                                     {/* Bottom Signatures Area */}
@@ -350,6 +364,10 @@ export default function ProfilePage() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Attendance History & Certificates */}
+                    <AttendanceHistory cadetId={currentUser.id} />
+                    <CertificatesSection userId={currentUser.id} />
                 </div>
             </div>
 

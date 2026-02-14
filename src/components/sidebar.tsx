@@ -8,10 +8,11 @@ import {
     Users,
     CalendarCheck,
     FileText,
-    Settings,
     LogOut,
     Shield,
-    MessageSquare
+    MessageSquare,
+    Megaphone,
+    History
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -54,6 +55,18 @@ export function Sidebar() {
             href: "/dashboard/notes",
             icon: MessageSquare,
             roles: [] // All
+        },
+        {
+            name: "Announcements",
+            href: "/dashboard/announcements",
+            icon: Megaphone,
+            roles: [] // All
+        },
+        {
+            name: "Activity Log",
+            href: "/dashboard/activity",
+            icon: History,
+            roles: [Role.ANO] // ANO only
         },
         {
             name: "My Profile",

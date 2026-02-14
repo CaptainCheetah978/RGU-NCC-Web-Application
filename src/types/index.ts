@@ -71,3 +71,32 @@ export interface Note {
     originalSenderId?: string; // For forwarded notes
     originalSenderName?: string;
 }
+
+export interface Certificate {
+    id: string;
+    userId: string;
+    name: string;
+    type: "A" | "B" | "C" | "Camp" | "Award" | "Other";
+    fileData: string; // base64
+    uploadDate: string;
+}
+
+export interface Announcement {
+    id: string;
+    title: string;
+    content: string;
+    authorId: string;
+    authorName: string;
+    priority: "normal" | "urgent";
+    createdAt: string;
+    expiresAt?: string;
+}
+
+export interface ActivityLogEntry {
+    id: string;
+    action: string;
+    performedBy: string;
+    performedByName: string;
+    targetName?: string;
+    timestamp: string;
+}

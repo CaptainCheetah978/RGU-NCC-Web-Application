@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { ClassSession, Cadet, AttendanceRecord, Note, Role, User } from "@/types";
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import { ClassSession, Cadet, AttendanceRecord, Note, Role, User, Certificate, Announcement, ActivityLogEntry } from "@/types";
 import { MOCK_USERS } from "@/lib/mock-data";
 
 interface DashboardStats {
@@ -9,6 +9,12 @@ interface DashboardStats {
     attendanceRate: string;
     activeClasses: number;
     unreadNotes: number;
+}
+
+interface PersonalAttendanceEntry {
+    date: string;
+    className: string;
+    status: AttendanceRecord["status"];
 }
 
 interface DataContextType {
@@ -30,6 +36,22 @@ interface DataContextType {
     messageableUsers: (Cadet | User)[];
     updateUser: (userId: string, updates: Partial<Cadet | User>) => void;
     markAllAsRead: (userId: string) => void;
+    // Attendance insights
+    getPersonalAttendance: (cadetId: string) => PersonalAttendanceEntry[];
+    getAttendanceByClass: () => { className: string; present: number; absent: number; late: number; excused: number }[];
+    // Certificates
+    certificates: Certificate[];
+    addCertificate: (cert: Certificate) => void;
+    deleteCertificate: (certId: string) => void;
+    getCertificates: (userId: string) => Certificate[];
+    // Announcements
+    announcements: Announcement[];
+    addAnnouncement: (announcement: Announcement) => void;
+    deleteAnnouncement: (id: string) => void;
+    // Activity Log
+    activityLog: ActivityLogEntry[];
+    logActivity: (action: string, userId: string, userName: string, targetName?: string) => void;
+    getRecentActivities: (limit: number) => ActivityLogEntry[];
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -78,12 +100,50 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         return stored ? JSON.parse(stored) : {};
     });
 
-    // Sync to localStorage on changes - these will now safely wait for initialization
+    const [certificates, setCertificates] = useState<Certificate[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const stored = localStorage.getItem("ncc_certificates");
+        return stored ? JSON.parse(stored) : [];
+    });
+
+    const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const stored = localStorage.getItem("ncc_announcements");
+        return stored ? JSON.parse(stored) : [];
+    });
+
+    const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const stored = localStorage.getItem("ncc_activity_log");
+        return stored ? JSON.parse(stored) : [];
+    });
+
+    // Sync to localStorage on changes
     useEffect(() => { localStorage.setItem("ncc_classes", JSON.stringify(classes)); }, [classes]);
     useEffect(() => { localStorage.setItem("ncc_cadets", JSON.stringify(cadets)); }, [cadets]);
     useEffect(() => { localStorage.setItem("ncc_attendance", JSON.stringify(attendance)); }, [attendance]);
     useEffect(() => { localStorage.setItem("ncc_notes", JSON.stringify(notes)); }, [notes]);
     useEffect(() => { localStorage.setItem("ncc_extra_user_data", JSON.stringify(extraUserData)); }, [extraUserData]);
+    useEffect(() => { localStorage.setItem("ncc_certificates", JSON.stringify(certificates)); }, [certificates]);
+    useEffect(() => { localStorage.setItem("ncc_announcements", JSON.stringify(announcements)); }, [announcements]);
+    useEffect(() => { localStorage.setItem("ncc_activity_log", JSON.stringify(activityLog)); }, [activityLog]);
+
+    // Activity logging helper
+    const logActivity = useCallback((action: string, userId: string, userName: string, targetName?: string) => {
+        const entry: ActivityLogEntry = {
+            id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            action,
+            performedBy: userId,
+            performedByName: userName,
+            targetName,
+            timestamp: new Date().toISOString(),
+        };
+        setActivityLog(prev => [entry, ...prev].slice(0, 200)); // keep last 200 entries
+    }, []);
+
+    const getRecentActivities = useCallback((limit: number) => {
+        return activityLog.slice(0, limit);
+    }, [activityLog]);
 
     // Class management
     const addClass = (cls: ClassSession) => {
@@ -159,21 +219,67 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateUser = (userId: string, updates: Partial<Cadet | User>) => {
-        // If it's a cadet in our list
         if (cadets.find(c => c.id === userId)) {
             setCadets(prev => prev.map(c => c.id === userId ? { ...c, ...updates } : c));
         } else {
-            // It might be the ANO or a user not in registry, storage it specifically
-            // Let's add an 'extraUserData' state for better Reactivity
             setExtraUserData(prev => ({ ...prev, [userId]: { ...prev[userId], ...updates } }));
         }
     };
+
+    // Certificates
+    const addCertificate = (cert: Certificate) => {
+        setCertificates(prev => [...prev, cert]);
+    };
+
+    const deleteCertificate = (certId: string) => {
+        setCertificates(prev => prev.filter(c => c.id !== certId));
+    };
+
+    const getCertificates = useCallback((userId: string) => {
+        return certificates.filter(c => c.userId === userId);
+    }, [certificates]);
+
+    // Announcements
+    const addAnnouncement = (announcement: Announcement) => {
+        setAnnouncements(prev => [announcement, ...prev]);
+    };
+
+    const deleteAnnouncement = (id: string) => {
+        setAnnouncements(prev => prev.filter(a => a.id !== id));
+    };
+
+    // Attendance insights
+    const getPersonalAttendance = useCallback((cadetId: string): PersonalAttendanceEntry[] => {
+        return attendance
+            .filter(a => a.cadetId === cadetId)
+            .map(a => {
+                const cls = classes.find(c => c.id === a.classId);
+                return {
+                    date: a.timestamp,
+                    className: cls?.title || "Unknown Class",
+                    status: a.status,
+                };
+            })
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }, [attendance, classes]);
+
+    const getAttendanceByClass = useCallback(() => {
+        return classes.map(cls => {
+            const records = attendance.filter(a => a.classId === cls.id);
+            return {
+                className: cls.title,
+                present: records.filter(r => r.status === "PRESENT").length,
+                absent: records.filter(r => r.status === "ABSENT").length,
+                late: records.filter(r => r.status === "LATE").length,
+                excused: records.filter(r => r.status === "EXCUSED").length,
+            };
+        }).slice(-8); // last 8 classes for the chart
+    }, [attendance, classes]);
 
     // Computed statistics
     const getStats = (userId?: string): DashboardStats => {
         const totalCadets = cadets.length;
 
-        // Calculate attendance rate
         const totalAttendanceRecords = attendance.length;
         const presentCount = attendance.filter(a => a.status === "PRESENT").length;
         const attendanceRate = totalAttendanceRecords > 0
@@ -182,7 +288,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
         const activeClasses = classes.length;
 
-        // Count unread notes for specific user
         const unreadNotes = userId
             ? notes.filter(n => n.recipientId === userId && !n.isRead).length
             : 0;
@@ -197,7 +302,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     // List of users who can receive notes (Cadets + Officers)
     const messageableUsers = useMemo(() => {
-        // Start with mock ANO if not in cadets
         const anos = [
             {
                 id: "ano-1",
@@ -208,7 +312,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             }
         ];
 
-        // Filter out any duplicates if ANO was somehow added to cadets
         const cadetsList = cadets.filter(c => c.id !== "ano-1");
 
         const mergedAnos = anos.map(a => ({
@@ -233,7 +336,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             getStats,
             messageableUsers,
             updateUser,
-            markAllAsRead
+            markAllAsRead,
+            getPersonalAttendance,
+            getAttendanceByClass,
+            certificates, addCertificate, deleteCertificate, getCertificates,
+            announcements, addAnnouncement, deleteAnnouncement,
+            activityLog, logActivity, getRecentActivities,
         }}>
             {children}
         </DataContext.Provider>
