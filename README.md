@@ -1,81 +1,167 @@
-# NCC RGU Web Application
+<p align="center">
+  <img src="public/ncc-logo.png" alt="NCC Logo" width="80" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="public/rgu-logo.png" alt="RGU Logo" width="80" />
+</p>
 
-A comprehensive web application for the National Cadet Corps (NCC) of Royal Global University (RGU), designed to manage attendance, class records, and cadet information.
+<h1 align="center">NCC RGU — Cadet Management System</h1>
 
-## Features
+<p align="center">
+  A comprehensive web application for the <strong>National Cadet Corps (NCC)</strong> unit at <strong>Royal Global University (RGU)</strong>, Guwahati, Assam.<br/>
+  Built for ANOs, SUOs, and Cadets to manage attendance, classes, communications, and records — all in one place.
+</p>
 
-- **Dashboard**: Overview of NCC activities and stats.
-- **Attendance Management**: Track cadet attendance efficiently.
-- **Class Records**: Manage and organize class data.
-- **Resource Sharing**: Upload and share PDFs, images, and videos.
+<p align="center">
+  <a href="https://rgu-ncc-web-application.vercel.app">🌐 Live Demo</a>
+  &nbsp;·&nbsp;
+  <a href="#features">Features</a>
+  &nbsp;·&nbsp;
+  <a href="#getting-started">Getting Started</a>
+  &nbsp;·&nbsp;
+  <a href="#tech-stack">Tech Stack</a>
+</p>
 
-## Tech Stack
+---
 
-- **Framework**: Next.js 15
-- **Styling**: Tailwind CSS, Shadcn/ui
-- **Icons**: Lucide React
-- **Language**: TypeScript
+## ✨ Features
 
-## Configuration
+| Module | Description |
+|--------|-------------|
+| **📊 Dashboard** | Dynamic stats (total cadets, attendance rate, active classes, unread notes), attendance chart, announcements banner, and live recent activity feed |
+| **📅 Attendance** | Mark cadets as Present / Absent / Late / Excused per class. Export attendance as CSV |
+| **📚 Classes** | Schedule, view, and delete training sessions with instructor assignment |
+| **🎖️ Cadet Registry** | Enroll, edit, and delete cadets. Export full registry as CSV. Wing-based unit auto-fill (Army → Bn, Air → Air Sqn, Navy → Naval) |
+| **💬 Private Notes** | Hierarchical messaging — Cadets ↔ SUOs ↔ ANO. Send, reply, forward to ANO, and delete notes |
+| **📢 Announcements** | Post urgent or normal announcements visible to all users. ANOs and SUOs can manage posts |
+| **📋 Activity Log** | ANO-only audit trail of all system actions with timeline view and action-type filtering |
+| **🪪 Digital ID Card** | Profile page with downloadable NCC ID card featuring QR code for instant verification |
+| **📜 Certificates** | Upload and manage NCC certificates (A/B/C/Camp/Award) per cadet |
+| **📁 File Sharing** | Upload and share PDFs, images, and videos across the unit |
+| **🌙 Dark Mode** | Toggle between light and dark themes with persistent preference |
 
-Currently, the application is configured to run out-of-the-box for development.
+## 🔐 Role-Based Access
 
-### Environment Variables
-As the project evolves, you may need to configure environment variables. When that happens:
-1. Copy `.env.example` to `.env.local`.
-2. Update the values in `.env.local` with your specific configuration (e.g., database credentials, API keys).
+The application supports a **three-tier hierarchy**:
 
-*No `.env` file is required for the initial setup.*
+| Role | Access Level |
+|------|-------------|
+| **ANO** (Associate NCC Officer) | Full admin — manage cadets, classes, attendance, notes, announcements, activity log |
+| **SUO** (Senior Under Officer) | Manage classes, attendance, announcements. Forward notes to ANO |
+| **Cadet** | View dashboard, mark attendance (when allowed), send notes, view profile & certificates |
 
-## getting Started
+### Demo Credentials
+
+| Role | Username | PIN |
+|------|----------|-----|
+| ANO | `ANO` | `0324` |
+| SUO | `Pranay Borthakur` | `2468` |
+| Cadet | `Ananya Sharma` | `1234` |
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | [Next.js 16](https://nextjs.org/) (App Router, Turbopack) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| Icons | [Lucide React](https://lucide.dev/) |
+| Animations | [Framer Motion](https://www.framer.com/motion/) |
+| QR Codes | [qrcode.react](https://www.npmjs.com/package/qrcode.react) |
+| ID Export | [html-to-image](https://www.npmjs.com/package/html-to-image) |
+| Deployment | [Vercel](https://vercel.com/) |
+| Data | Browser `localStorage` (no backend required) |
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- Git installed
+- **Node.js** 18+ 
+- **Git**
 
-### Local Development
+### Installation
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/CaptainCheetah978/RGU-NCC-Web-Application.git
-   cd ncc-rgu-app
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/CaptainCheetah978/RGU-NCC-Web-Application.git
+cd RGU-NCC-Web-Application
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+# Install dependencies
+npm install
 
-3. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
+# Start the development server
+npm run dev
+```
 
-4. **Access the App**:
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Deployment to Vercel
+### Production Build
 
-The easiest way to deploy this Next.js app is to use the [Vercel Platform](https://vercel.com/new).
+```bash
+npm run build
+npm start
+```
 
-1. Push your code to a GitHub repository.
-2. Go to Vercel and **Import** your project.
-3. Vercel will detect Next.js and configure the build settings automatically.
-4. Click **Deploy**.
+## 📁 Project Structure
 
-## User Guide
+```
+src/
+├── app/
+│   ├── dashboard/
+│   │   ├── activity/        # Activity log (ANO-only)
+│   │   ├── announcements/   # Announcements page
+│   │   ├── attendance/      # Attendance marking
+│   │   ├── cadets/          # Cadet registry
+│   │   ├── classes/         # Class management
+│   │   ├── files/           # File sharing
+│   │   ├── notes/           # Private notes
+│   │   ├── profile/         # User profile & ID card
+│   │   ├── sheet/           # Attendance sheet
+│   │   ├── layout.tsx       # Dashboard shell
+│   │   └── page.tsx         # Dashboard home
+│   ├── verify/              # QR code verification page
+│   ├── layout.tsx           # Root layout
+│   ├── page.tsx             # Login page
+│   └── globals.css          # Design tokens & theme
+├── components/
+│   ├── dashboard/           # Dashboard widgets
+│   ├── profile/             # Profile components
+│   ├── ui/                  # Shared UI components
+│   ├── providers.tsx        # Context providers
+│   ├── sidebar.tsx          # Navigation sidebar
+│   └── topbar.tsx           # Top header bar
+├── lib/
+│   ├── auth-context.tsx     # Authentication state
+│   ├── data-context.tsx     # Data management & localStorage
+│   ├── theme-context.tsx    # Dark mode toggle
+│   ├── mock-data.ts         # Seed users & demo data
+│   └── utils.ts             # Utility functions
+└── types/
+    └── index.ts             # TypeScript type definitions
+```
 
-- **Dashboard**: View upcoming classes and recent activity.
-- **Classes**: Schedule new training sessions. Click **"View Attendance"** on any class to jump to the register.
-- **Attendance**: 
-    - Select a class from the dropdown.
-    - Mark cadets as **Present (Green)**, **Absent (Red)**, or **Late (Amber)**.
-    - Click **"Export CSV"** to download the attendance report.
-- **Data Persistence**: All data is currently stored in your browser's `localStorage`. Clearing cache will reset the data.
+## 🌐 Deployment
 
-## Project Structure
+The app is deployed on **Vercel** with automatic deployments on every push to `main`.
 
-- `/src/app`: Application routes and pages.
-- `/src/components`: Reusable UI components.
-- `/public`: Static assets.
+1. Push your code to GitHub
+2. Import the repository on [Vercel](https://vercel.com/new)
+3. Vercel auto-detects Next.js and configures the build
+4. Click **Deploy** — done!
+
+## ⚠️ Data Persistence
+
+All data is stored in the browser's `localStorage`. This means:
+- ✅ No backend or database setup required
+- ✅ Instant, zero-latency operations
+- ⚠️ Data is per-browser and per-device
+- ⚠️ Clearing browser cache will reset all data
+
+## 📄 License
+
+This project is developed for the **NCC unit at Royal Global University, Guwahati, Assam**.
+
+---
+
+<p align="center">
+  Made with ❤️ for the National Cadet Corps
+</p>
