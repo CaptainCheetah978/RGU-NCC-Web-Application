@@ -220,12 +220,12 @@ export default function ProfilePage() {
                                         </div>
 
                                         {/* Info Area */}
-                                        <div className="flex-1 space-y-4 pt-1">
+                                        <div className="flex-1 space-y-2 pt-1">
                                             <div className="relative">
                                                 <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Full Name</p>
                                                 <p className="text-[14px] font-bold text-gray-900 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.name}</p>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                                            <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                                                 <div className="relative">
                                                     <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Rank</p>
                                                     <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase">{currentUser.role || "N/A"}</p>
@@ -242,8 +242,16 @@ export default function ProfilePage() {
                                                     <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Blood Group</p>
                                                     <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 uppercase">{currentUser.bloodGroup || "N/A"}</p>
                                                 </div>
+                                                <div className="relative">
+                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Group HQ</p>
+                                                    <p className="text-[10px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase leading-none">{(currentUser as any).groupHQ || "Guwahati"}</p>
+                                                </div>
+                                                <div className="relative">
+                                                    <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Dte</p>
+                                                    <p className="text-[10px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase leading-none">{(currentUser as any).dte || "NER"}</p>
+                                                </div>
                                             </div>
-                                            <div className="relative mt-3">
+                                            <div className="relative mt-2">
                                                 <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute -top-3 left-0">Unit Name</p>
                                                 <p className="text-[10px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 uppercase leading-tight w-max max-w-full">
                                                     {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
@@ -260,11 +268,9 @@ export default function ProfilePage() {
                                         </div>
                                         <div className="text-center">
                                             <div className="flex flex-col items-center">
-                                                <div className="flex items-end space-x-1 mb-0.5">
-                                                    <p className="text-[10px] italic font-serif text-gray-500 leading-none">s/d-</p>
-                                                    <div className="w-28 border-b border-gray-300" />
-                                                </div>
-                                                <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none mt-1">ANO, RGU NCC</p>
+                                                <p className="text-[10px] italic font-serif text-gray-500 mb-0.5 leading-none">s/d-</p>
+                                                <div className="w-28 border-b border-gray-300 mb-1" />
+                                                <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
                                                 <p className="text-[6px] font-bold text-gray-400 uppercase mt-0.5 tracking-wider">Digital Signature</p>
                                             </div>
                                         </div>
