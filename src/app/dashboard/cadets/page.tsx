@@ -255,8 +255,12 @@ export default function CadetsPage() {
                                         >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center">
-                                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-sm font-bold text-white mr-3 shadow-md shadow-primary/20">
-                                                        {cadet.name.charAt(0)}
+                                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-sm font-bold text-white mr-3 shadow-md shadow-primary/20 overflow-hidden">
+                                                        {cadet.avatarUrl ? (
+                                                            <img src={cadet.avatarUrl} alt={cadet.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            cadet.name.charAt(0)
+                                                        )}
                                                     </div>
                                                     <div>
                                                         <span className="font-bold text-gray-900 block">{cadet.name}</span>

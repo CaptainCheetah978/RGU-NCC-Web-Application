@@ -9,11 +9,13 @@ import { RecentActivity } from "@/components/dashboard/recent-activity";
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const { getStats } = useData();
+    const { getStats, messageableUsers } = useData();
 
     if (!user) return null;
 
     const stats = getStats(user.id);
+    const currentUser = messageableUsers.find(u => u.id === user.id);
+    const displayUser = currentUser || user;
 
     return (
         <div className="space-y-8">
@@ -25,9 +27,18 @@ export default function DashboardPage() {
                 <div className="flex items-center space-x-4">
                     <img src="/ncc-logo.png" alt="NCC" className="h-16 w-16 object-contain" />
                     <img src="/rgu-logo.png" alt="RGU" className="h-16 w-auto object-contain" />
-                    <div className="border-l border-gray-300 pl-4">
-                        <p className="text-sm text-gray-500">Welcome back,</p>
-                        <p className="text-lg font-bold text-gray-900">{user.name}</p>
+                    <div className="flex items-center border-l border-gray-300 pl-4 space-x-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-lg font-bold text-white shadow-lg overflow-hidden">
+                            {displayUser.avatarUrl ? (
+                                <img src={displayUser.avatarUrl} alt={displayUser.name} className="w-full h-full object-cover" />
+                            ) : (
+                                displayUser.name.charAt(0)
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-500">Welcome back,</p>
+                            <p className="text-lg font-bold text-gray-900">{displayUser.name}</p>
+                        </div>
                     </div>
                 </div>
             </div>

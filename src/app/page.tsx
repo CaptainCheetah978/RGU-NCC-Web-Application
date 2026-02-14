@@ -191,8 +191,12 @@ export default function LoginPage() {
                         onClick={() => handleUserSelect(user.id)}
                         className="w-full flex items-center p-3 rounded-xl bg-white/5 border border-transparent hover:border-white/10 transition-all text-left"
                       >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-sm font-bold text-white mr-3 shadow-lg">
-                          {user.name.charAt(0)}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-sm font-bold text-white mr-3 shadow-lg overflow-hidden">
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            user.name.charAt(0)
+                          )}
                         </div>
                         <div className="flex-1">
                           <h3 className="text-white font-medium text-sm">{user.name}</h3>
@@ -228,8 +232,15 @@ export default function LoginPage() {
                 </div>
 
                 <div className="flex items-center p-4 rounded-2xl bg-white/5 border border-white/5">
-                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold mr-4 shadow-lg shrink-0">
-                    {messageableUsers.find(u => u.id === selectedUser)?.name.charAt(0)}
+                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold mr-4 shadow-lg shrink-0 overflow-hidden">
+                    {(() => {
+                      const selected = messageableUsers.find(u => u.id === selectedUser);
+                      return selected?.avatarUrl ? (
+                        <img src={selected.avatarUrl} alt={selected.name} className="w-full h-full object-cover" />
+                      ) : (
+                        selected?.name.charAt(0)
+                      );
+                    })()}
                   </div>
                   <div>
                     <p className="text-gray-400 text-xs">Signing in as</p>
