@@ -258,8 +258,10 @@ export default function ProfilePage() {
                                     </div>
 
                                     {/* Bottom Signatures Area */}
-                                    <div className="px-8 pb-1 mt-auto flex justify-between items-end relative z-30 pl-12">
+                                    <div className="px-8 pb-3.5 mt-auto flex justify-between items-end relative z-30 pl-12 shrink-0">
                                         <div className="text-center">
+                                            {/* Spacer to match ANO side's s/d- height for perfect line alignment */}
+                                            <div className="h-[10.5px] mb-0.5" />
                                             <div className="w-20 border-b border-gray-300 mb-1" />
                                             <p className="text-[7px] font-bold text-gray-400 uppercase tracking-tighter">Sign of Cadet</p>
                                         </div>
