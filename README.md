@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://nccrgu.vercel.app">🌐 Live Demo</a>
+  <a href="https://nccrgu.vercel.app" target="_blank">🌐 Live Demo</a>
   &nbsp;·&nbsp;
   <a href="#features">Features</a>
   &nbsp;·&nbsp;
