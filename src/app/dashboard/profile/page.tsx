@@ -85,17 +85,38 @@ export default function ProfilePage() {
         <div className="space-y-8 max-w-5xl mx-auto pb-12 print:p-0">
             <style jsx global>{`
                 @media print {
+                    /* Hide everything by default */
+                    body, html {
+                        background: white !important;
+                        overscroll-behavior: none;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    
+                    /* Hide all parents background and overflow */
+                    div, section, main, header, aside {
+                        background: transparent !important;
+                        border: none !important;
+                        box-shadow: none !important;
+                        overflow: visible !important;
+                        height: auto !important;
+                    }
+
                     body * {
                         visibility: hidden;
                     }
+                    
+                    /* Only show the print container */
                     .print-container, .print-container * {
                         visibility: visible;
                     }
+                    
                     .print-container {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100% !important;
+                        position: fixed !important;
+                        left: 50% !important;
+                        top: 50% !important;
+                        transform: translate(-50%, -50%) !important;
+                        width: auto !important;
                         height: auto !important;
                         padding: 0 !important;
                         margin: 0 !important;
@@ -103,7 +124,14 @@ export default function ProfilePage() {
                         justify-content: center !important;
                         align-items: center !important;
                         background: white !important;
+                        z-index: 9999 !important;
                     }
+                    
+                    @page {
+                        size: landscape;
+                        margin: 0;
+                    }
+
                     .no-print {
                         display: none !important;
                     }
