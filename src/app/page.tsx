@@ -4,192 +4,181 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Shield, Mail, CheckCircle, Loader2 } from "lucide-react";
+import { Shield, User, Lock, ChevronRight, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Role } from "@/types";
 
 export default function LoginPage() {
-  const { login, verifyOtp, isLoading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"email" | "otp">("email");
+  const { loginWithPassword, signupWithPassword, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState<Role>(Role.CADET);
+  const [formData, setFormData] = useState({
+    username: "",
+    pin: ""
+  });
   const [error, setError] = useState("");
+  const [isRestoring, setIsRestoring] = useState(false);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
     setError("");
 
+    // Generate pseudo-email for Supabase Auth
+    // Format: role_username_clean@nccrgu.internal
+    const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
+    const pseudoEmail = `${activeTab.toLowerCase()}_${cleanUsername}@nccrgu.internal`;
+    // PIN as password
+
     try {
-      await login(email);
-      setStep("otp");
+      await loginWithPassword(pseudoEmail, formData.pin);
     } catch (err: any) {
-      setError(err.message || "Failed to send OTP. Please try again.");
+      console.log("Login failed, checking if first time...", err);
+
+      // Auto-signup logic for initial "No Accounts" state
+      // If specific known credentials or purely first-time user pattern
+      if (activeTab === Role.ANO && formData.username.toUpperCase() === "ANO" && formData.pin === "0324") {
+        setIsRestoring(true);
+        try {
+          await signupWithPassword(pseudoEmail, formData.pin, "Associate NCC Officer", Role.ANO);
+        } catch (signupErr: any) {
+          setError("Failed to initialize ANO account. " + signupErr.message);
+          setIsRestoring(false);
+        }
+      } else if (err.message.includes("Invalid login credentials") || err.message.includes("Email not confirmed")) {
+        // For Cadets/SUOs, if they don't exist, we might want to auto-create them IF the PIN matches a "Secret Unit Code" 
+        // OR providing a fallback instruction.
+        // For now, let's treat "Demo Credentials" as auto-signup keys too?
+        if (formData.pin === "1234" || formData.pin === "2468") { // Demo PINs from README
+          setIsRestoring(true);
+          try {
+            await signupWithPassword(pseudoEmail, formData.pin, formData.username, activeTab);
+          } catch (signupErr: any) {
+            setError("Failed to create account. " + signupErr.message);
+            setIsRestoring(false);
+          }
+        } else {
+          setError("Invalid credentials. If this is your first time, contact ANO.");
+        }
+      } else {
+        setError(err.message || "Login failed.");
+      }
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp) return;
-    setError("");
+  const tabs = [
+    { id: Role.ANO, label: "ANO", icon: Shield, color: "from-red-600 to-red-800" },
+    { id: Role.SUO, label: "SUO", icon: User, color: "from-blue-600 to-blue-800" },
+    { id: Role.CADET, label: "Cadet", icon: User, color: "from-green-600 to-green-800" }
+  ];
 
-    try {
-      await verifyOtp(email, otp);
-    } catch (err: any) {
-      setError("Invalid code. Please check and try again.");
-    }
-  };
+  const activeColor = tabs.find(t => t.id === activeTab)?.color || "from-blue-600 to-blue-800";
 
   return (
-    <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary via-[#0f1730] to-black p-4 relative overflow-hidden">
-      {/* Background elements */}
+    <main className="min-h-screen w-full flex items-center justify-center bg-[#0f172a] p-4 relative overflow-hidden">
+      {/* Background Effects */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-secondary/30 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-tertiary/30 rounded-full blur-[120px]" />
+        <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-gradient-to-br ${activeColor} rounded-full blur-[150px] transition-all duration-1000`} />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-900/30 rounded-full blur-[150px]" />
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="flex flex-col items-center mb-10">
-          <div className="flex items-center space-x-8 mb-6">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="w-22 h-22 relative"
-            >
-              <img src="/ncc-logo.png" alt="NCC logo" className="w-full h-full object-contain drop-shadow-2xl" />
-            </motion.div>
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="w-22 h-22 relative"
-            >
-              <img src="/rgu-logo.png" alt="RGU logo" className="w-full h-full object-contain drop-shadow-2xl" />
-            </motion.div>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center items-center space-x-4 mb-6">
+            <img src="/ncc-logo.png" alt="NCC" className="w-16 h-16 object-contain drop-shadow-2xl" />
+            <div className="h-12 w-[1px] bg-white/20"></div>
+            <img src="/rgu-logo.png" alt="RGU" className="w-16 h-16 object-contain drop-shadow-2xl" />
           </div>
-          <motion.h1
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="text-2xl font-extrabold text-white mb-2 tracking-tight text-center leading-tight mx-auto max-w-[90%]"
-          >
-            The Assam Royal Global University NCC
-          </motion.h1>
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-gray-400 font-medium text-xs text-center px-4"
-          >
-            Secure Login Portal
-          </motion.p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">NCC Management</h1>
+          <p className="text-gray-400 text-sm mt-1">Royal Global University Unit</p>
         </div>
 
-        <div className="glass-dark rounded-[32px] p-8 border border-white/10 shadow-2xl relative overflow-hidden min-h-[300px] flex flex-col justify-center">
-          <AnimatePresence mode="wait">
-            {step === "email" ? (
-              <motion.form
-                key="email-form"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                onSubmit={handleSendOtp}
-                className="space-y-6"
+        {/* Login Card */}
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+          {/* Role Tabs */}
+          <div className="grid grid-cols-3 border-b border-white/5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setError(""); setFormData({ username: "", pin: "" }); }}
+                className={`relative py-4 text-sm font-medium transition-all duration-300 ${activeTab === tab.id ? "text-white bg-white/5" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
+                  }`}
               >
-                <div className="text-center mb-6">
-                  <h2 className="text-xl font-bold text-white mb-2">Sign In</h2>
-                  <p className="text-gray-400 text-sm">Enter your email to receive a login code</p>
+                <div className="flex flex-col items-center gap-1">
+                  <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? "text-white" : ""}`} />
+                  <span>{tab.label}</span>
                 </div>
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${tab.color}`}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
 
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+          <div className="p-8">
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                    {activeTab === Role.ANO ? "Officer ID" : activeTab === Role.CADET ? "Your Name or Regt No" : "Username"}
+                  </label>
+                  <div className="relative mt-1">
+                    <User className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
                     <Input
-                      type="email"
-                      placeholder="cadet@rgu.ac.in"
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-secondary focus-visible:border-secondary h-12"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        setError("");
-                      }}
-                      autoFocus
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      placeholder={activeTab === Role.ANO ? "ANO" : "e.g. Rahul Singh"}
+                      className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary"
                       required
                     />
                   </div>
-                  {error && <p className="text-red-500 text-xs ml-1 font-medium">{error}</p>}
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-lg bg-gradient-to-r from-secondary to-blue-600 hover:from-blue-600 hover:to-secondary shadow-xl shadow-blue-900/40 border-0"
-                  isLoading={isLoading}
-                  disabled={!email || isLoading}
-                >
-                  Send Login Code
-                </Button>
-              </motion.form>
-            ) : (
-              <motion.form
-                key="otp-form"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                onSubmit={handleVerifyOtp}
-                className="space-y-6"
-              >
-                <div className="text-center mb-6">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500">
-                    <CheckCircle className="w-6 h-6" />
-                  </div>
-                  <h2 className="text-xl font-bold text-white mb-2">Check your Email</h2>
-                  <p className="text-gray-400 text-sm">
-                    We sent a 6-digit code to <br /> <span className="text-white font-medium">{email}</span>
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Shield className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                <div>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                    {activeTab === Role.ANO ? "Secure PIN" : "Access PIN"}
+                  </label>
+                  <div className="relative mt-1">
+                    <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
                     <Input
-                      type="text"
-                      placeholder="123456"
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-secondary focus-visible:border-secondary h-12 text-lg tracking-[0.5em] font-bold text-center"
-                      value={otp}
-                      onChange={(e) => {
-                        setOtp(e.target.value);
-                        setError("");
-                      }}
-                      maxLength={6}
-                      autoFocus
+                      type="password"
+                      value={formData.pin}
+                      onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
+                      placeholder="••••"
+                      className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary tracking-widest"
+                      required
                     />
                   </div>
-                  {error && <p className="text-red-500 text-xs ml-1 font-medium">{error}</p>}
                 </div>
+              </div>
 
-                <div className="flex flex-col space-y-3">
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-lg bg-gradient-to-r from-secondary to-green-600 hover:from-green-600 hover:to-secondary shadow-xl shadow-green-900/40 border-0"
-                    isLoading={isLoading}
-                    disabled={otp.length < 6 || isLoading}
-                  >
-                    Verify & Login
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={() => setStep("email")}
-                    className="text-gray-500 text-xs hover:text-white transition-colors"
-                  >
-                    Wrong email? Go back
-                  </button>
+              {error && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                  {error}
                 </div>
-              </motion.form>
-            )}
-          </AnimatePresence>
+              )}
+
+              <Button
+                type="submit"
+                className={`w-full h-12 text-lg font-bold bg-gradient-to-r ${activeColor} border-0 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]`}
+                disabled={isLoading || isRestoring}
+              >
+                {(isLoading || isRestoring) ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    Access Dashboard <ChevronRight className="w-5 h-5 ml-1 opacity-80" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
         </div>
 
-        <p className="text-center text-gray-600 text-[10px] mt-8 uppercase tracking-widest font-bold">
-          Restricted Access • Authentic Personnel Only
+        <p className="text-center text-gray-600 text-[10px] mt-8 uppercase tracking-widest font-bold opacity-60">
+          Restricted Area • {activeTab} Classification
         </p>
       </div>
     </main>

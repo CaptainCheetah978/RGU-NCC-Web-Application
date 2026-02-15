@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 
 interface AuthContextType {
     user: User | null;
-    login: (email: string) => Promise<void>; // Changed to email for OTP/Magic Link
+    login: (email: string) => Promise<void>;
     verifyOtp: (email: string, token: string) => Promise<void>;
+    loginWithPassword: (email: string, pin: string) => Promise<void>;
+    signupWithPassword: (email: string, pin: string, name: string, role: Role) => Promise<void>;
     logout: () => Promise<void>;
     isLoading: boolean;
 }
@@ -129,8 +131,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push("/");
     };
 
+    const loginWithPassword = async (email: string, pin: string) => {
+        setIsLoading(true);
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password: pin,
+            });
+
+            if (error) {
+                // If invalid login, maybe user doesn't exist?
+                // We could auto-signup here if it's a known pattern, but better to let UI handle "User not found"
+                throw error;
+            }
+
+            if (data.user) {
+                await fetchProfile(data.user.id);
+                router.push("/dashboard");
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const signupWithPassword = async (email: string, pin: string, name: string, role: Role) => {
+        setIsLoading(true);
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password: pin,
+                options: {
+                    data: {
+                        full_name: name,
+                        role: role,
+                    }
+                }
+            });
+
+            if (error) throw error;
+
+            if (data.user) {
+                // Supabase trigger should handle profile creation if set up, 
+                // OR we manually create it here to be safe
+                const { error: profileError } = await supabase.from('profiles').upsert({
+                    id: data.user.id,
+                    full_name: name,
+                    role: role,
+                    updated_at: new Date().toISOString(),
+                });
+
+                if (profileError) {
+                    console.error("Profile creation error:", profileError);
+                }
+
+                await fetchProfile(data.user.id);
+                router.push("/dashboard");
+            }
+        } catch (error) {
+            console.error("Signup error:", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, verifyOtp, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, login, verifyOtp, loginWithPassword, signupWithPassword, logout, isLoading }}>
             {children}
         </AuthContext.Provider>
     );
