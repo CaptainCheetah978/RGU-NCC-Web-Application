@@ -134,14 +134,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const loginWithPassword = async (email: string, pin: string) => {
         setIsLoading(true);
         try {
+            // Salt/Pad the PIN to meet Supabase's 6-char requirement
+            const securePassword = `${pin}-ncc-rgu`;
+
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
-                password: pin,
+                password: securePassword,
             });
 
             if (error) {
-                // If invalid login, maybe user doesn't exist?
-                // We could auto-signup here if it's a known pattern, but better to let UI handle "User not found"
                 throw error;
             }
 
@@ -160,9 +161,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const signupWithPassword = async (email: string, pin: string, name: string, role: Role) => {
         setIsLoading(true);
         try {
+            // Salt/Pad the PIN to meet Supabase's 6-char requirement
+            const securePassword = `${pin}-ncc-rgu`;
+
             const { data, error } = await supabase.auth.signUp({
                 email,
-                password: pin,
+                password: securePassword,
                 options: {
                     data: {
                         full_name: name,
@@ -174,8 +178,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (error) throw error;
 
             if (data.user) {
-                // Supabase trigger should handle profile creation if set up, 
-                // OR we manually create it here to be safe
                 const { error: profileError } = await supabase.from('profiles').upsert({
                     id: data.user.id,
                     full_name: name,
