@@ -52,13 +52,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchProfile = async (userId: string) => {
         try {
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
-            if (error) {
+            if (error && error.code === 'PGRST116') {
+                // Profile not found, but user is authenticated. 
+                // Attempt to create a default profile (self-healing)
+                console.log("Profile missing, attempting to create default profile...");
+
+                // Fetch the user email/metadata from auth to help populate
+                const { data: { user: authUser } } = await supabase.auth.getUser();
+
+                if (authUser) {
+                    const isANO = authUser.email?.startsWith('ano_') || false;
+
+                    const { data: newProfile, error: createError } = await supabase
+                        .from('profiles')
+                        .insert({
+                            id: userId,
+                            full_name: isANO ? 'Associate NCC Officer' : 'New User',
+                            role: isANO ? Role.ANO : Role.CADET,
+                            email: authUser.email,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .select()
+                        .single();
+
+                    if (!createError && newProfile) {
+                        data = newProfile;
+                        error = null;
+                    } else {
+                        console.error("Failed to auto-create profile:", createError);
+                    }
+                }
+            } else if (error) {
                 console.error('Error fetching profile:', error);
                 return;
             }
@@ -71,9 +101,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     role: (data.role as Role) || Role.CADET,
                     regimentalNumber: data.regimental_number,
                     avatarUrl: data.avatar_url,
-                    // Map other fields if necessary for the User interface
-                    // rank: data.rank,
-                    // wing: data.wing
                 };
                 setUser(appUser);
             }
