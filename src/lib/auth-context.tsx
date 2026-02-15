@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const loginWithPassword = async (email: string, pin: string) => {
         setIsLoading(true);
         try {
-            // Salt/Pad the PIN to meet Supabase's 6-char requirement
+            // 1. Try with the SECURE padded PIN first (New accounts)
             const securePassword = `${pin}-ncc-rgu`;
 
             const { data, error } = await supabase.auth.signInWithPassword({
@@ -169,13 +169,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 password: securePassword,
             });
 
-            if (error) {
-                throw error;
-            }
-
             if (data.user) {
+                // Success!
                 await fetchProfile(data.user.id);
                 router.push("/dashboard");
+                return;
+            }
+
+            // 2. If that failed, try with the RAW PIN (Legacy accounts created before fix)
+            if (error) {
+                console.log("Secure login failed, trying legacy PIN...", error.message);
+
+                const { data: legacyData, error: legacyError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password: pin, // Try raw PIN (e.g., '0324')
+                });
+
+                if (legacyData.user) {
+                    console.log("Legacy login success! Upgrading security...");
+                    // Automatically upgrade their password to the secure format
+                    await supabase.auth.updateUser({ password: securePassword });
+
+                    await fetchProfile(legacyData.user.id);
+                    router.push("/dashboard");
+                    return;
+                }
+
+                // If both failed, throw original error
+                throw error;
             }
         } catch (error) {
             console.error("Login error:", error);
