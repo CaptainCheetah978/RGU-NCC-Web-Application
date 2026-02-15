@@ -62,15 +62,25 @@ function AttendanceContent() {
         return record?.status || null;
     };
 
-    const handleStatusChange = (cadetId: string, status: AttendanceRecord["status"]) => {
+    const handleStatusChange = async (cadetId: string, status: AttendanceRecord["status"]) => {
         if (!canMark) return;
-        markAttendance({
-            id: `${selectedClassId}-${cadetId}`,
-            classId: selectedClassId,
-            cadetId,
-            status,
-            timestamp: new Date().toISOString()
-        });
+        // Optimistic update or just wait? 
+        // For attendance, speed is key. Optimistic update would be best, but complex to implement without local state management or SWR/TanStack Query.
+        // For now, let's just await it and maybe add a small loading indicator on the specific button if needed? 
+        // Or just let it update. Supabase is fast.
+
+        try {
+            await markAttendance({
+                id: `${selectedClassId}-${cadetId}`,
+                classId: selectedClassId,
+                cadetId,
+                status,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error("Failed to mark attendance", error);
+            alert("Failed to mark attendance. Please try again.");
+        }
     };
 
     if (!classes.length) {

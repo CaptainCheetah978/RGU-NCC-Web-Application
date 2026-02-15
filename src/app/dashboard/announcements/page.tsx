@@ -20,6 +20,8 @@ export default function AnnouncementsPage() {
     const [content, setContent] = useState("");
     const [priority, setPriority] = useState<Announcement["priority"]>("normal");
 
+    const [isLoading, setIsLoading] = useState(false);
+
     if (!user) return null;
 
     const canPost = [Role.ANO, Role.SUO].includes(user.role);
@@ -30,8 +32,9 @@ export default function AnnouncementsPage() {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-    const handlePost = () => {
+    const handlePost = async () => {
         if (!title.trim() || !content.trim()) return;
+        setIsLoading(true);
 
         const announcement: Announcement = {
             id: `ann-${Date.now()}`,
@@ -43,18 +46,30 @@ export default function AnnouncementsPage() {
             createdAt: new Date().toISOString(),
         };
 
-        addAnnouncement(announcement);
-        logActivity("Posted announcement", user.id, user.name, title.trim());
-        setIsModalOpen(false);
-        setTitle("");
-        setContent("");
-        setPriority("normal");
+        try {
+            await addAnnouncement(announcement);
+            if (logActivity) logActivity("Posted announcement", user.id, user.name, title.trim());
+            setIsModalOpen(false);
+            setTitle("");
+            setContent("");
+            setPriority("normal");
+        } catch (error) {
+            console.error("Failed to post announcement", error);
+            alert("Failed to post announcement.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleDelete = (ann: Announcement) => {
+    const handleDelete = async (ann: Announcement) => {
         if (confirm(`Delete announcement "${ann.title}"?`)) {
-            deleteAnnouncement(ann.id);
-            logActivity("Deleted announcement", user.id, user.name, ann.title);
+            try {
+                await deleteAnnouncement(ann.id);
+                if (logActivity) logActivity("Deleted announcement", user.id, user.name, ann.title);
+            } catch (error) {
+                console.error("Failed to delete announcement", error);
+                alert("Failed to delete announcement.");
+            }
         }
     };
 
@@ -100,8 +115,8 @@ export default function AnnouncementsPage() {
                             transition={{ delay: i * 0.04 }}
                         >
                             <Card className={`transition-all hover:shadow-md ${ann.priority === "urgent"
-                                    ? "border-red-200 bg-red-50/50 shadow-sm shadow-red-100"
-                                    : "border-gray-100"
+                                ? "border-red-200 bg-red-50/50 shadow-sm shadow-red-100"
+                                : "border-gray-100"
                                 }`}>
                                 <CardContent className="p-6">
                                     <div className="flex items-start justify-between">
@@ -178,8 +193,8 @@ export default function AnnouncementsPage() {
                             <button
                                 type="button"
                                 className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-bold transition-all ${priority === "normal"
-                                        ? "border-primary bg-primary/10 text-primary"
-                                        : "border-gray-200 text-gray-500 hover:border-gray-300"
+                                    ? "border-primary bg-primary/10 text-primary"
+                                    : "border-gray-200 text-gray-500 hover:border-gray-300"
                                     }`}
                                 onClick={() => setPriority("normal")}
                             >
@@ -188,8 +203,8 @@ export default function AnnouncementsPage() {
                             <button
                                 type="button"
                                 className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-bold transition-all ${priority === "urgent"
-                                        ? "border-red-500 bg-red-50 text-red-600"
-                                        : "border-gray-200 text-gray-500 hover:border-gray-300"
+                                    ? "border-red-500 bg-red-50 text-red-600"
+                                    : "border-gray-200 text-gray-500 hover:border-gray-300"
                                     }`}
                                 onClick={() => setPriority("urgent")}
                             >
@@ -199,8 +214,8 @@ export default function AnnouncementsPage() {
                         </div>
                     </div>
                     <div className="pt-4 flex justify-end space-x-3">
-                        <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                        <Button onClick={handlePost}>Post Announcement</Button>
+                        <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={isLoading}>Cancel</Button>
+                        <Button onClick={handlePost} isLoading={isLoading} disabled={isLoading}>Post Announcement</Button>
                     </div>
                 </div>
             </Modal>

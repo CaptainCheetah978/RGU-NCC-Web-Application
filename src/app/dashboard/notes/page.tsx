@@ -41,6 +41,8 @@ export default function NotesPage() {
     const [selectedNote, setSelectedNote] = useState<Note | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
 
+    const [isLoading, setIsLoading] = useState(false);
+
     // Form State
     const [formData, setFormData] = useState({
         recipientId: "",
@@ -48,19 +50,21 @@ export default function NotesPage() {
         content: "",
     });
 
-    if (!user) return null;
-
     const inboxNotes = useMemo(() => {
+        if (!user) return [];
         return notes
             .filter(n => n.recipientId === user.id)
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    }, [notes, user.id]);
+    }, [notes, user]);
 
     const sentNotes = useMemo(() => {
+        if (!user) return [];
         return notes
             .filter(n => n.senderId === user.id)
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    }, [notes, user.id]);
+    }, [notes, user]);
+
+    if (!user) return null;
 
     const filteredNotes = useMemo(() => {
         const baseNotes = activeTab === "inbox" ? inboxNotes : sentNotes;
@@ -74,11 +78,15 @@ export default function NotesPage() {
         );
     }, [activeTab, inboxNotes, sentNotes, searchQuery]);
 
-    const handleSendNote = (e: React.FormEvent) => {
+    const handleSendNote = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
 
         const recipient = messageableUsers.find(u => u.id === formData.recipientId);
-        if (!recipient) return;
+        if (!recipient) {
+            setIsLoading(false);
+            return;
+        }
 
         const newNote: Note = {
             id: `note-${Date.now()}`,
@@ -92,23 +100,41 @@ export default function NotesPage() {
             isRead: false,
         };
 
-        sendNote(newNote);
-        setIsComposeModalOpen(false);
-        setFormData({ recipientId: "", subject: "", content: "" });
-    };
-
-    const handleNoteClick = (note: Note) => {
-        setSelectedNote(note);
-        if (activeTab === "inbox" && !note.isRead) {
-            markNoteAsRead(note.id);
+        try {
+            await sendNote(newNote);
+            setIsComposeModalOpen(false);
+            setFormData({ recipientId: "", subject: "", content: "" });
+        } catch (error) {
+            console.error("Failed to send note", error);
+            alert("Failed to send note.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleForward = (note: Note) => {
+    const handleNoteClick = async (note: Note) => {
+        setSelectedNote(note);
+        if (activeTab === "inbox" && !note.isRead) {
+            try {
+                await markNoteAsRead(note.id);
+            } catch (error) {
+                console.error("Failed to mark note as read", error);
+            }
+        }
+    };
+
+    const handleForward = async (note: Note) => {
         const ano = messageableUsers.find(u => u.role === Role.ANO);
         if (ano) {
-            forwardNoteToANO(note.id, ano.id, ano.name);
-            alert(`Note forwarded to ${ano.name}`);
+            if (confirm(`Forward this note to ${ano.name}?`)) {
+                try {
+                    await forwardNoteToANO(note.id, ano.id, ano.name);
+                    alert(`Note forwarded to ${ano.name}`);
+                } catch (error) {
+                    console.error("Failed to forward note", error);
+                    alert("Failed to forward note.");
+                }
+            }
         } else {
             alert("No ANO found to forward to.");
         }
@@ -275,7 +301,16 @@ export default function NotesPage() {
                                             </Button>
                                         )}
                                         <button
-                                            onClick={() => { deleteNote(selectedNote.id); setSelectedNote(null); }}
+                                            onClick={async () => {
+                                                if (confirm("Are you sure you want to delete this note?")) {
+                                                    try {
+                                                        await deleteNote(selectedNote.id);
+                                                        setSelectedNote(null);
+                                                    } catch (e) {
+                                                        console.error("Failed to delete note", e);
+                                                    }
+                                                }
+                                            }}
                                             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                         >
                                             <Trash2 className="w-5 h-5" />
@@ -360,8 +395,8 @@ export default function NotesPage() {
                     </div>
 
                     <div className="pt-4 flex justify-end space-x-3">
-                        <Button type="button" variant="ghost" onClick={() => setIsComposeModalOpen(false)}>Cancel</Button>
-                        <Button type="submit" className="px-8 shadow-lg shadow-primary/25">
+                        <Button type="button" variant="ghost" onClick={() => setIsComposeModalOpen(false)} disabled={isLoading}>Cancel</Button>
+                        <Button type="submit" className="px-8 shadow-lg shadow-primary/25" isLoading={isLoading} disabled={isLoading}>
                             <Send className="w-4 h-4 mr-2" />
                             Send Note
                         </Button>

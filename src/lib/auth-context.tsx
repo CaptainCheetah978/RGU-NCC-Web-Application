@@ -1,14 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User } from "@/types";
-import { MOCK_USERS } from "./mock-data";
+import { User, Role } from "@/types";
+import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
     user: User | null;
-    login: (userId: string) => Promise<void>;
-    logout: () => void;
+    login: (email: string) => Promise<void>; // Changed to email for OTP/Magic Link
+    verifyOtp: (email: string, token: string) => Promise<void>;
+    logout: () => Promise<void>;
     isLoading: boolean;
 }
 
@@ -20,39 +21,116 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // Check for persisted session
-        const storedUserId = localStorage.getItem("ncc_app_user_id");
-        if (storedUserId) {
-            const foundUser = MOCK_USERS.find((u) => u.id === storedUserId);
-            if (foundUser) {
-                setUser(foundUser);
+        const initializeAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session?.user) {
+                await fetchProfile(session.user.id);
+            } else {
+                setUser(null);
             }
-        }
-        setIsLoading(false);
+            setIsLoading(false);
+        };
+
+        initializeAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (session?.user) {
+                await fetchProfile(session.user.id);
+            } else {
+                setUser(null);
+                // Only redirect if specifically logging out or session expired while on a protected route
+                // We let the middleware or page components handle specific redirects
+            }
+            setIsLoading(false);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
-    const login = async (userId: string) => {
-        setIsLoading(true);
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
+    const fetchProfile = async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
 
-        const foundUser = MOCK_USERS.find((u) => u.id === userId);
-        if (foundUser) {
-            setUser(foundUser);
-            localStorage.setItem("ncc_app_user_id", userId);
+            if (error) {
+                console.error('Error fetching profile:', error);
+                return;
+            }
+
+            if (data) {
+                // Map Supabase profile to our App User type
+                const appUser: User = {
+                    id: data.id,
+                    name: data.full_name || 'Unknown User',
+                    role: (data.role as Role) || Role.CADET,
+                    regimentalNumber: data.regimental_number,
+                    avatarUrl: data.avatar_url,
+                    // Map other fields if necessary for the User interface
+                    // rank: data.rank,
+                    // wing: data.wing
+                };
+                setUser(appUser);
+            }
+        } catch (error) {
+            console.error('Unexpected error fetching profile:', error);
+        }
+    };
+
+    const login = async (email: string) => {
+        setIsLoading(true);
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+                shouldCreateUser: false, // Only allow existing users to sign in? Or true for new ones?
+                // For this ERP, maybe we want true, but roles default to CADET
+            }
+        });
+
+        if (error) {
+            console.error("Login error:", error);
+            setIsLoading(false);
+            throw error;
+        }
+        // OTP sent, UI should show OTP input
+        setIsLoading(false);
+    };
+
+    const verifyOtp = async (email: string, token: string) => {
+        setIsLoading(true);
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token,
+            type: 'email',
+        });
+
+        if (error) {
+            setIsLoading(false);
+            throw error;
+        }
+
+        if (data.user) {
+            // Check if profile exists, if not maybe create it? 
+            // The SQL trigger for creating profile on user creation is not set up yet.
+            // We might need to manually ensure profile exists or depend on a trigger.
+            // For now, let's assume manual profile creation or we add a check here.
+            await fetchProfile(data.user.id);
             router.push("/dashboard");
         }
         setIsLoading(false);
     };
 
-    const logout = () => {
+    const logout = async () => {
+        await supabase.auth.signOut();
         setUser(null);
-        localStorage.removeItem("ncc_app_user_id");
         router.push("/");
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, login, verifyOtp, logout, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

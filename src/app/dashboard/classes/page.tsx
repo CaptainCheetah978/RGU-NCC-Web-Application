@@ -16,8 +16,7 @@ import { cn } from "@/lib/utils";
 export default function ClassesPage() {
     const { classes, addClass, deleteClass } = useData();
     const { user } = useAuth();
-
-    if (!user) return null;
+    const [isLoading, setIsLoading] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -29,11 +28,14 @@ export default function ClassesPage() {
         description: "",
     });
 
+    if (!user) return null;
+
     const canEdit = user && [Role.ANO, Role.SUO, Role.UO].includes(user.role);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
+        setIsLoading(true);
 
         const newClass = {
             id: `cls-${Date.now()}`,
@@ -45,9 +47,32 @@ export default function ClassesPage() {
             description: formData.description
         };
 
-        addClass(newClass);
-        setIsModalOpen(false);
-        setFormData({ title: "", date: "", time: "", description: "" });
+        try {
+            await addClass(newClass);
+            setIsModalOpen(false);
+            setFormData({ title: "", date: "", time: "", description: "" });
+        } catch (error) {
+            console.error("Failed to schedule class", error);
+            alert("Failed to schedule class. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (confirm("Are you sure you want to delete this class session?")) {
+            // Optimistic update or waiting? Let's wait for now to be safe.
+            // Ideally we should have a local loading state for this specific item if list is long, 
+            // but global loading is okay for now or just no loading state for delete (background).
+            // Let's wrapping it in try-catch without blocking UI too much, but disable the button?
+            // Since we map over classes, maintaining a "deletingId" state is better.
+            try {
+                await deleteClass(id);
+            } catch (error) {
+                console.error("Failed to delete class", error);
+                alert("Failed to delete class.");
+            }
+        }
     };
 
     return (
@@ -90,7 +115,7 @@ export default function ClassesPage() {
                                         </div>
                                         {canEdit && (
                                             <button
-                                                onClick={() => deleteClass(cls.id)}
+                                                onClick={() => handleDelete(cls.id)}
                                                 className="text-gray-300 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-full"
                                                 title="Delete Class"
                                             >
@@ -115,7 +140,8 @@ export default function ClassesPage() {
                                 <CardFooter className="bg-gray-50/50 border-t border-gray-100 flex justify-between items-center p-4">
                                     <div className="flex items-center text-sm text-gray-500 font-medium">
                                         <Users className="w-4 h-4 mr-2 text-gray-400" />
-                                        {cls.attendees.length} Cadets
+                                        {/* Attendees count might be inaccurate if not joined, but relying on what's in classes state */}
+                                        {cls.attendees?.length || 0} Cadets
                                     </div>
                                     <Link href={`/dashboard/attendance?classId=${cls.id}`}>
                                         <Button variant="ghost" size="sm" className="text-primary hover:text-white hover:bg-primary border border-primary/20 hover:border-primary transition-all">
@@ -164,8 +190,8 @@ export default function ClassesPage() {
                         />
                     </div>
                     <div className="pt-4 flex justify-end space-x-3">
-                        <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                        <Button type="submit">Schedule Class</Button>
+                        <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} disabled={isLoading}>Cancel</Button>
+                        <Button type="submit" isLoading={isLoading} disabled={isLoading}>Schedule Class</Button>
                     </div>
                 </form>
             </Modal>

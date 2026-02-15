@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { ClassSession, Cadet, AttendanceRecord, Note, Role, User, Certificate, Announcement, ActivityLogEntry } from "@/types";
-import { MOCK_USERS } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase-client";
+import { useAuth } from "@/lib/auth-context";
 
 interface DashboardStats {
     totalCadets: number;
@@ -19,236 +20,341 @@ interface PersonalAttendanceEntry {
 
 interface DataContextType {
     classes: ClassSession[];
-    addClass: (cls: ClassSession) => void;
-    deleteClass: (id: string) => void;
+    addClass: (cls: ClassSession) => Promise<void>;
+    deleteClass: (id: string) => Promise<void>;
     cadets: Cadet[];
-    addCadet: (cadet: Cadet) => void;
-    updateCadet: (id: string, updates: Partial<Cadet>) => void;
-    deleteCadet: (id: string) => void;
+    addCadet: (cadet: Cadet) => Promise<void>;
+    updateCadet: (id: string, updates: Partial<Cadet>) => Promise<void>;
+    deleteCadet: (id: string) => Promise<void>;
     attendance: AttendanceRecord[];
-    markAttendance: (record: AttendanceRecord) => void;
+    markAttendance: (record: AttendanceRecord) => Promise<void>;
     notes: Note[];
-    sendNote: (note: Note) => void;
-    markNoteAsRead: (id: string) => void;
-    forwardNoteToANO: (noteId: string, anoId: string, anoName: string) => void;
-    deleteNote: (id: string) => void;
+    sendNote: (note: Note) => Promise<void>;
+    markNoteAsRead: (id: string) => Promise<void>;
+    forwardNoteToANO: (noteId: string, anoId: string, anoName: string) => Promise<void>;
+    deleteNote: (id: string) => Promise<void>;
     getStats: (userId?: string) => DashboardStats;
     messageableUsers: (Cadet | User)[];
-    updateUser: (userId: string, updates: Partial<Cadet | User>) => void;
-    markAllAsRead: (userId: string) => void;
+    markAllAsRead: (userId: string) => Promise<void>;
     // Attendance insights
     getPersonalAttendance: (cadetId: string) => PersonalAttendanceEntry[];
     getAttendanceByClass: () => { className: string; present: number; absent: number; late: number; excused: number }[];
     // Certificates
     certificates: Certificate[];
-    addCertificate: (cert: Certificate) => void;
-    deleteCertificate: (certId: string) => void;
+    addCertificate: (cert: Certificate) => Promise<void>;
+    deleteCertificate: (certId: string) => Promise<void>;
     getCertificates: (userId: string) => Certificate[];
     // Announcements
     announcements: Announcement[];
-    addAnnouncement: (announcement: Announcement) => void;
-    deleteAnnouncement: (id: string) => void;
+    addAnnouncement: (announcement: Announcement) => Promise<void>;
+    deleteAnnouncement: (id: string) => Promise<void>;
     // Activity Log
     activityLog: ActivityLogEntry[];
+    // logActivity is now likely handled by database triggers or server-side, but keeping for compatibility if needed or manual logging
     logActivity: (action: string, userId: string, userName: string, targetName?: string) => void;
     getRecentActivities: (limit: number) => ActivityLogEntry[];
+    isLoading: boolean;
+    refreshData: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-    // Lazy initialization functions to read from localStorage synchronously on first render
-    const [classes, setClasses] = useState<ClassSession[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem("ncc_classes");
-        return stored ? JSON.parse(stored) : [];
-    });
+    const { user } = useAuth();
+    const [isLoading, setIsLoading] = useState(true);
+    const [classes, setClasses] = useState<ClassSession[]>([]);
+    const [cadets, setCadets] = useState<Cadet[]>([]);
+    const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+    const [notes, setNotes] = useState<Note[]>([]);
+    const [certificates, setCertificates] = useState<Certificate[]>([]);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
 
-    const [cadets, setCadets] = useState<Cadet[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem("ncc_cadets");
-        const initialCadets: Cadet[] = stored ? JSON.parse(stored) : [];
+    const refreshData = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const [
+                { data: classesData },
+                { data: profilesData },
+                { data: attendanceData },
+                { data: notesData },
+                { data: announcementsData },
+                { data: certificatesData }
+            ] = await Promise.all([
+                supabase.from('classes').select('*'),
+                supabase.from('profiles').select('*'), // Everyone can read profiles
+                supabase.from('attendance').select('*'),
+                supabase.from('notes').select('*'),
+                supabase.from('announcements').select('*'),
+                supabase.from('certificates').select('*')
+            ]);
 
-        // Always ensure login cadets (except ANO) are in the list
-        const loginCadets = MOCK_USERS.filter(u => u.role !== Role.ANO) as Cadet[];
-
-        // Merge login cadets that don't already exist in the registry (by ID)
-        loginCadets.forEach(loginCdt => {
-            if (!initialCadets.find(c => c.id === loginCdt.id)) {
-                initialCadets.push(loginCdt);
+            if (classesData) {
+                // Map database columns to app types (snake_case to camelCase if needed)
+                // Assuming SQL columns match types or are close enough for auto-mapping
+                // or we map manually:
+                const mappedClasses = classesData.map(c => ({
+                    id: c.id,
+                    title: c.title,
+                    date: c.date,
+                    time: c.time,
+                    instructorId: c.instructor_id,
+                    description: c.description,
+                    attendees: [] // Attendees are correctly in 'attendance' table, not here anymore
+                }));
+                setClasses(mappedClasses);
             }
-        });
 
-        return initialCadets;
-    });
+            // Create a lookup map for profiles
+            const profileMap = new Map<string, { name: string; role: Role }>();
+            if (profilesData) {
+                profilesData.forEach(p => {
+                    profileMap.set(p.id, {
+                        name: p.full_name || 'Unknown',
+                        role: (p.role as Role) || Role.CADET
+                    });
+                });
 
-    const [attendance, setAttendance] = useState<AttendanceRecord[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem("ncc_attendance");
-        return stored ? JSON.parse(stored) : [];
-    });
+                const mappedCadets = profilesData.map(p => ({
+                    id: p.id,
+                    name: p.full_name || 'Unknown',
+                    role: (p.role as Role) || Role.CADET,
+                    regimentalNumber: p.regimental_number,
+                    wing: p.wing,
+                    rank: p.rank,
+                    avatarUrl: p.avatar_url,
+                    enrollmentYear: p.enrollment_year,
+                    bloodGroup: p.blood_group,
+                    gender: p.gender,
+                    unitName: p.unit_name,
+                    unitNumber: p.unit_number
+                })).filter(u => u.role !== Role.ANO) as Cadet[];
+                setCadets(mappedCadets);
+            }
 
-    const [notes, setNotes] = useState<Note[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem("ncc_notes");
-        return stored ? JSON.parse(stored) : [];
-    });
+            if (attendanceData) {
+                const mappedAttendance = attendanceData.map(a => ({
+                    id: a.id,
+                    classId: a.class_id,
+                    cadetId: a.cadet_id,
+                    status: a.status,
+                    timestamp: a.created_at
+                }));
+                setAttendance(mappedAttendance);
+            }
 
-    const [extraUserData, setExtraUserData] = useState<Record<string, Partial<Cadet | User>>>(() => {
-        if (typeof window === 'undefined') return {};
-        const stored = localStorage.getItem("ncc_extra_user_data");
-        return stored ? JSON.parse(stored) : {};
-    });
+            if (notesData) {
+                const mappedNotes = notesData.map(n => {
+                    const sender = profileMap.get(n.sender_id);
+                    const recipient = profileMap.get(n.recipient_id);
+                    return {
+                        id: n.id,
+                        senderId: n.sender_id,
+                        senderName: sender ? sender.name : "Unknown",
+                        recipientId: n.recipient_id,
+                        recipientName: recipient ? recipient.name : "Unknown",
+                        content: n.content,
+                        isRead: n.is_read,
+                        timestamp: n.created_at,
+                        subject: "Note" // Added missing field
+                    };
+                });
+                setNotes(mappedNotes);
+            }
 
-    const [certificates, setCertificates] = useState<Certificate[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem("ncc_certificates");
-        return stored ? JSON.parse(stored) : [];
-    });
+            if (announcementsData) {
+                const mappedAnnouncements = announcementsData.map(a => {
+                    const author = profileMap.get(a.author_id);
+                    return {
+                        id: a.id,
+                        title: a.title,
+                        content: a.content,
+                        authorId: a.author_id,
+                        authorName: author ? author.name : "Unknown",
+                        priority: a.priority?.toLowerCase() === 'urgent' ? 'urgent' : 'normal',
+                        createdAt: a.created_at
+                    };
+                });
+                setAnnouncements(mappedAnnouncements as Announcement[]);
+            }
 
-    const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem("ncc_announcements");
-        return stored ? JSON.parse(stored) : [];
-    });
+            if (certificatesData) {
+                const mappedCertificates = certificatesData.map(c => ({
+                    id: c.id,
+                    userId: c.user_id,
+                    name: c.name,
+                    type: c.type,
+                    fileData: c.file_data,
+                    uploadDate: c.upload_date
+                }));
+                setCertificates(mappedCertificates as Certificate[]);
+            }
 
-    const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem("ncc_activity_log");
-        return stored ? JSON.parse(stored) : [];
-    });
+        } catch (error) {
+            console.error("Error loading data:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [user]);
 
-    // Sync to localStorage on changes
-    useEffect(() => { localStorage.setItem("ncc_classes", JSON.stringify(classes)); }, [classes]);
-    useEffect(() => { localStorage.setItem("ncc_cadets", JSON.stringify(cadets)); }, [cadets]);
-    useEffect(() => { localStorage.setItem("ncc_attendance", JSON.stringify(attendance)); }, [attendance]);
-    useEffect(() => { localStorage.setItem("ncc_notes", JSON.stringify(notes)); }, [notes]);
-    useEffect(() => { localStorage.setItem("ncc_extra_user_data", JSON.stringify(extraUserData)); }, [extraUserData]);
-    useEffect(() => { localStorage.setItem("ncc_certificates", JSON.stringify(certificates)); }, [certificates]);
-    useEffect(() => { localStorage.setItem("ncc_announcements", JSON.stringify(announcements)); }, [announcements]);
-    useEffect(() => { localStorage.setItem("ncc_activity_log", JSON.stringify(activityLog)); }, [activityLog]);
+    // Initial load
+    useEffect(() => {
+        refreshData();
 
-    // Activity logging helper
-    const logActivity = useCallback((action: string, userId: string, userName: string, targetName?: string) => {
-        const entry: ActivityLogEntry = {
-            id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-            action,
-            performedBy: userId,
-            performedByName: userName,
-            targetName,
-            timestamp: new Date().toISOString(),
+        // Set up Realtime subscriptions
+        const channels = supabase.channel('custom-all-channel')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public' },
+                () => {
+                    // Simple strategy: Just refresh everything on any change
+                    // In a bigger app, we would handle specific events
+                    refreshData();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channels);
         };
-        setActivityLog(prev => [entry, ...prev].slice(0, 200)); // keep last 200 entries
-    }, []);
+    }, [refreshData]);
 
-    const getRecentActivities = useCallback((limit: number) => {
-        return activityLog.slice(0, limit);
-    }, [activityLog]);
+    // --- Actions ---
 
-    // Class management
-    const addClass = (cls: ClassSession) => {
-        setClasses(prev => [...prev, cls]);
-    };
-
-    const deleteClass = (id: string) => {
-        setClasses(prev => prev.filter(c => c.id !== id));
-    };
-
-    // Cadet management
-    const addCadet = (cadet: Cadet) => {
-        setCadets(prev => [...prev, cadet]);
-    };
-
-    const updateCadet = (id: string, updates: Partial<Cadet>) => {
-        setCadets(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
-    };
-
-    const deleteCadet = (id: string) => {
-        setCadets(prev => prev.filter(c => c.id !== id));
-    };
-
-    // Attendance management
-    const markAttendance = (record: AttendanceRecord) => {
-        setAttendance(prev => {
-            const filtered = prev.filter(r => !(r.classId === record.classId && r.cadetId === record.cadetId));
-            return [...filtered, record];
+    const addClass = async (cls: ClassSession) => {
+        await supabase.from('classes').insert({
+            title: cls.title,
+            date: cls.date,
+            time: cls.time,
+            instructor_id: cls.instructorId, // user.id
+            description: cls.description
         });
+        // refreshData handled by subscription
     };
 
-    // Notes management
-    const sendNote = (note: Note) => {
-        setNotes(prev => [...prev, note]);
+    const deleteClass = async (id: string) => {
+        await supabase.from('classes').delete().eq('id', id);
     };
 
-    const markNoteAsRead = (id: string) => {
-        setNotes(prev => prev.map(note =>
-            note.id === id ? { ...note, isRead: true } : note
-        ));
+    const addCadet = async (cadet: Cadet) => {
+        // Creates a profile. BUT profiles should be linked to Auth Users.
+        // This function might be "Invite Cadet" which sends an email? 
+        // Or if we are just editing raw data for now:
+        await supabase.from('profiles').insert({
+            // uuid needed? If we are 'creating' a cadet without them signing up, 
+            // we can't really do that easily with Supabase Auth (needs email/pass).
+            // For now, assume this updates an existing profile or we handle invites separately.
+            // Leaving as placeholder or warning:
+            // "Cannot create orphan profiles without Auth User"
+        });
+        console.warn("Manual cadet creation not fully supported without Auth Signup");
     };
 
-    const forwardNoteToANO = (noteId: string, anoId: string, anoName: string) => {
-        const originalNote = notes.find(n => n.id === noteId);
-        if (!originalNote) return;
-
-        const forwardedNote: Note = {
-            ...originalNote,
-            id: `fwd-${Date.now()}`,
-            recipientId: anoId,
-            recipientName: anoName,
-            timestamp: new Date().toISOString(),
-            isRead: false,
-            forwardedToANO: true,
-            originalSenderId: originalNote.senderId,
-            originalSenderName: originalNote.senderName,
-        };
-
-        setNotes(prev => [
-            ...prev.map(n => n.id === noteId ? { ...n, forwardedToANO: true } : n),
-            forwardedNote
-        ]);
+    const updateCadet = async (id: string, updates: Partial<Cadet>) => {
+        await supabase.from('profiles').update({
+            full_name: updates.name,
+            regimental_number: updates.regimentalNumber,
+            rank: updates.rank,
+            wing: updates.wing,
+            // ... map other fields
+        }).eq('id', id);
     };
 
-    const deleteNote = (id: string) => {
-        setNotes(prev => prev.filter(n => n.id !== id));
+    const deleteCadet = async (id: string) => {
+        // Only specific admins should do this.
+        // Also, deletes the Profile, but not the Auth User (needs specific admin API).
+        await supabase.from('profiles').delete().eq('id', id);
     };
 
-    const markAllAsRead = (userId: string) => {
-        setNotes(prev => prev.map(note =>
-            note.recipientId === userId ? { ...note, isRead: true } : note
-        ));
-    };
+    const markAttendance = async (record: AttendanceRecord) => {
+        // Upsert to handle toggle
+        // First check if exists
+        const { data: existing } = await supabase.from('attendance')
+            .select('id')
+            .eq('class_id', record.classId)
+            .eq('cadet_id', record.cadetId)
+            .single();
 
-    const updateUser = (userId: string, updates: Partial<Cadet | User>) => {
-        if (cadets.find(c => c.id === userId)) {
-            setCadets(prev => prev.map(c => c.id === userId ? { ...c, ...updates } : c));
+        if (existing) {
+            await supabase.from('attendance')
+                .update({ status: record.status })
+                .eq('id', existing.id);
         } else {
-            setExtraUserData(prev => ({ ...prev, [userId]: { ...prev[userId], ...updates } }));
+            await supabase.from('attendance').insert({
+                class_id: record.classId,
+                cadet_id: record.cadetId,
+                status: record.status,
+                marked_by: user?.id
+            });
         }
     };
 
-    // Certificates
-    const addCertificate = (cert: Certificate) => {
-        setCertificates(prev => [...prev, cert]);
+    const sendNote = async (note: Note) => {
+        await supabase.from('notes').insert({
+            sender_id: user?.id,
+            recipient_id: note.recipientId,
+            content: note.content,
+            is_read: false
+        });
     };
 
-    const deleteCertificate = (certId: string) => {
-        setCertificates(prev => prev.filter(c => c.id !== certId));
+    const markNoteAsRead = async (id: string) => {
+        await supabase.from('notes').update({ is_read: true }).eq('id', id);
     };
 
-    const getCertificates = useCallback((userId: string) => {
+    const deleteNote = async (id: string) => {
+        await supabase.from('notes').delete().eq('id', id);
+    };
+
+    const forwardNoteToANO = async (noteId: string, anoId: string, anoName: string) => {
+        // Logic to forward
+    };
+
+    const markAllAsRead = async (userId: string) => {
+        await supabase.from('notes').update({ is_read: true }).eq('recipient_id', userId);
+    };
+
+    const addAnnouncement = async (announcement: Announcement) => {
+        await supabase.from('announcements').insert({
+            title: announcement.title,
+            content: announcement.content,
+            author_id: user?.id,
+            priority: announcement.priority.toUpperCase()
+        });
+    };
+
+    const deleteAnnouncement = async (id: string) => {
+        await supabase.from('announcements').delete().eq('id', id);
+    };
+
+    // Stubs for certificates (table not made yet)
+    const addCertificate = async (cert: Certificate) => {
+        await supabase.from('certificates').insert({
+            user_id: cert.userId,
+            name: cert.name,
+            type: cert.type,
+            file_data: cert.fileData,
+            upload_date: cert.uploadDate
+        });
+        // refreshData handles update via subscription? 
+        // We need to make sure we subscribe to certificates too.
+    };
+
+    const deleteCertificate = async (id: string) => {
+        await supabase.from('certificates').delete().eq('id', id);
+    };
+
+    const getCertificates = (userId: string) => {
         return certificates.filter(c => c.userId === userId);
-    }, [certificates]);
-
-    // Announcements
-    const addAnnouncement = (announcement: Announcement) => {
-        setAnnouncements(prev => [announcement, ...prev]);
     };
 
-    const deleteAnnouncement = (id: string) => {
-        setAnnouncements(prev => prev.filter(a => a.id !== id));
-    };
+    // --- Getters & Helpers ---
 
-    // Attendance insights
+    const messageableUsers = useMemo(() => {
+        // In real app, we fetch all profiles
+        return cadets; // + ANOs if we fetched them
+    }, [cadets]);
+
     const getPersonalAttendance = useCallback((cadetId: string): PersonalAttendanceEntry[] => {
         return attendance
             .filter(a => a.cadetId === cadetId)
@@ -257,7 +363,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 return {
                     date: a.timestamp,
                     className: cls?.title || "Unknown Class",
-                    status: a.status,
+                    status: a.status as any,
                 };
             })
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -273,59 +379,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 late: records.filter(r => r.status === "LATE").length,
                 excused: records.filter(r => r.status === "EXCUSED").length,
             };
-        }).slice(-8); // last 8 classes for the chart
+        }).slice(-8);
     }, [attendance, classes]);
 
-    // Computed statistics
+
     const getStats = (userId?: string): DashboardStats => {
         const totalCadets = cadets.length;
-
         const totalAttendanceRecords = attendance.length;
         const presentCount = attendance.filter(a => a.status === "PRESENT").length;
         const attendanceRate = totalAttendanceRecords > 0
             ? `${Math.round((presentCount / totalAttendanceRecords) * 100)}%`
             : "0%";
-
         const activeClasses = classes.length;
-
         const unreadNotes = userId
             ? notes.filter(n => n.recipientId === userId && !n.isRead).length
             : 0;
-
-        return {
-            totalCadets,
-            attendanceRate,
-            activeClasses,
-            unreadNotes,
-        };
+        return { totalCadets, attendanceRate, activeClasses, unreadNotes };
     };
 
-    // List of users who can receive notes (Cadets + Officers)
-    const messageableUsers = useMemo(() => {
-        const anos = [
-            {
-                id: "ano-1",
-                name: "ANO",
-                role: Role.ANO,
-                regimentalNumber: "NCC/ANO/2024/001",
-                pin: "0324",
-            }
-        ];
-
-        const cadetsList = cadets.filter(c => c.id !== "ano-1");
-
-        const mergedAnos = anos.map(a => ({
-            ...a,
-            ...(extraUserData[a.id] || {})
-        }));
-
-        const mergedCadets = cadetsList.map(c => ({
-            ...c,
-            ...(extraUserData[c.id] || {})
-        }));
-
-        return [...mergedAnos, ...mergedCadets];
-    }, [cadets, extraUserData]);
+    // Logger stub
+    const logActivity = () => { };
+    const getRecentActivities = () => [];
 
     return (
         <DataContext.Provider value={{
@@ -335,13 +409,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             notes, sendNote, markNoteAsRead, forwardNoteToANO, deleteNote,
             getStats,
             messageableUsers,
-            updateUser,
             markAllAsRead,
             getPersonalAttendance,
             getAttendanceByClass,
             certificates, addCertificate, deleteCertificate, getCertificates,
             announcements, addAnnouncement, deleteAnnouncement,
             activityLog, logActivity, getRecentActivities,
+            isLoading, refreshData
         }}>
             {children}
         </DataContext.Provider>

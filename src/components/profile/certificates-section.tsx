@@ -2,7 +2,7 @@
 
 import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
-import { Certificate } from "@/types";
+import { Certificate, Role } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -65,7 +65,16 @@ export function CertificatesSection({ userId }: { userId: string }) {
         reader.readAsDataURL(uploadFile);
     };
 
+    const canDelete = (cert: Certificate) => {
+        if (!user) return false;
+        // Owner can delete
+        if (user.id === cert.userId) return true;
+        // ANO can delete anyone's
+        return user.role === Role.ANO;
+    };
+
     const handleDelete = (cert: Certificate) => {
+        if (!canDelete(cert)) return;
         if (confirm(`Delete "${cert.name}"?`)) {
             deleteCertificate(cert.id);
             if (user) {
@@ -119,9 +128,11 @@ export function CertificatesSection({ userId }: { userId: string }) {
                                         <button onClick={() => setViewingCert(cert)} className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-white transition-colors">
                                             <Eye className="w-3.5 h-3.5" />
                                         </button>
-                                        <button onClick={() => handleDelete(cert)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-white transition-colors">
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
+                                        {canDelete(cert) && (
+                                            <button onClick={() => handleDelete(cert)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-white transition-colors">
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
                                     </div>
                                 </motion.div>
                             ))}

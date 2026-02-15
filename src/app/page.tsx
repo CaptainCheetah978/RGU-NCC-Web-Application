@@ -1,65 +1,42 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useData } from "@/lib/data-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useMemo } from "react";
-import { Role } from "@/types";
-import { Shield, ChevronRight, Lock, Users, ArrowLeft, Search } from "lucide-react";
+import { useState } from "react";
+import { Shield, Mail, CheckCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-type LoginStep = "selection" | "ano-pin" | "cadet-list" | "cadet-pin";
-
 export default function LoginPage() {
-  const { login, isLoading } = useAuth();
-  const { messageableUsers } = useData();
-  const [step, setStep] = useState<LoginStep>("selection");
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [pin, setPin] = useState("");
+  const { login, verifyOtp, isLoading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"email" | "otp">("email");
   const [error, setError] = useState("");
 
-  const filteredCadets = useMemo(() => {
-    return messageableUsers.filter(u =>
-      u.role !== Role.ANO &&
-      (u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.regimentalNumber?.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  }, [messageableUsers, searchQuery]);
-
-  const handleUserSelect = (userId: string) => {
-    const user = messageableUsers.find(u => u.id === userId);
-    if (!user) return;
-
-    setSelectedUser(userId);
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
     setError("");
-    setPin("");
 
-    // Check if user needs PIN
-    if (user.role !== Role.CADET && user.role !== Role.CPL && user.role !== Role.LCPL) {
-      setStep(user.role === Role.ANO ? "ano-pin" : "cadet-pin");
-    } else {
-      handleLogin(userId);
+    try {
+      await login(email);
+      setStep("otp");
+    } catch (err: any) {
+      setError(err.message || "Failed to send OTP. Please try again.");
     }
   };
 
-  const handleLogin = async (userId?: string, overridePin?: string) => {
-    const id = userId || selectedUser;
-    if (!id) return;
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp) return;
+    setError("");
 
-    const user = messageableUsers.find(u => u.id === id);
-    const pinToSubmit = overridePin || pin;
-
-    // PIN check for officers
-    if (user?.role !== Role.CADET && user?.role !== Role.CPL && user?.role !== Role.LCPL) {
-      if (!user?.pin || pinToSubmit !== user.pin) {
-        setError("Invalid Access PIN");
-        return;
-      }
+    try {
+      await verifyOtp(email, otp);
+    } catch (err: any) {
+      setError("Invalid code. Please check and try again.");
     }
-
-    await login(id);
   };
 
   return (
@@ -95,7 +72,7 @@ export default function LoginPage() {
             transition={{ delay: 0.1 }}
             className="text-2xl font-extrabold text-white mb-2 tracking-tight text-center leading-tight mx-auto max-w-[90%]"
           >
-            Welcome to The Assam Royal Global University NCC
+            The Assam Royal Global University NCC
           </motion.h1>
           <motion.p
             initial={{ y: 20, opacity: 0 }}
@@ -103,183 +80,117 @@ export default function LoginPage() {
             transition={{ delay: 0.2 }}
             className="text-gray-400 font-medium text-xs text-center px-4"
           >
-            Please select from below for proceeding to dashboard
+            Secure Login Portal
           </motion.p>
         </div>
 
-        <div className="glass-dark rounded-[32px] p-8 border border-white/10 shadow-2xl relative overflow-hidden min-h-[400px] flex flex-col">
+        <div className="glass-dark rounded-[32px] p-8 border border-white/10 shadow-2xl relative overflow-hidden min-h-[300px] flex flex-col justify-center">
           <AnimatePresence mode="wait">
-            {step === "selection" && (
-              <motion.div
-                key="selection"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="space-y-6 flex-1 flex flex-col justify-center"
+            {step === "email" ? (
+              <motion.form
+                key="email-form"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleSendOtp}
+                className="space-y-6"
               >
                 <div className="text-center mb-6">
-                  <h2 className="text-xl font-bold text-white mb-2">Identify Yourself</h2>
-                  <p className="text-gray-400 text-sm">Select your role to proceed</p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  <button
-                    onClick={() => handleUserSelect("ano-1")}
-                    className="group relative p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-secondary/50 hover:bg-white/10 transition-all text-left overflow-hidden h-32 flex items-center"
-                  >
-                    <div className="w-16 h-16 rounded-2xl bg-secondary/20 flex items-center justify-center mr-6 group-hover:scale-110 transition-transform">
-                      <Shield className="w-8 h-8 text-secondary" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white">ANO Login</h3>
-                      <p className="text-gray-400 text-sm">Officer entry point</p>
-                    </div>
-                    <ChevronRight className="absolute right-6 w-6 h-6 text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                  </button>
-
-                  <button
-                    onClick={() => setStep("cadet-list")}
-                    className="group relative p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-white/10 transition-all text-left overflow-hidden h-32 flex items-center"
-                  >
-                    <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mr-6 group-hover:scale-110 transition-transform">
-                      <Users className="w-8 h-8 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white">Cadet Login</h3>
-                      <p className="text-gray-400 text-sm">Unit member access</p>
-                    </div>
-                    <ChevronRight className="absolute right-6 w-6 h-6 text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {step === "cadet-list" && (
-              <motion.div
-                key="cadet-list"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4 flex-1 flex flex-col"
-              >
-                <div className="flex items-center mb-2">
-                  <button onClick={() => setStep("selection")} className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors">
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <h2 className="text-xl font-bold text-white ml-2">Find Your Profile</h2>
-                </div>
-
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
-                  <input
-                    type="text"
-                    placeholder="Search name or rank..."
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-
-                <div className="flex-1 overflow-y-auto pr-2 space-y-2 max-h-[300px] custom-scrollbar">
-                  {filteredCadets.length > 0 ? (
-                    filteredCadets.map((user) => (
-                      <motion.button
-                        key={user.id}
-                        whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => handleUserSelect(user.id)}
-                        className="w-full flex items-center p-3 rounded-xl bg-white/5 border border-transparent hover:border-white/10 transition-all text-left"
-                      >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-sm font-bold text-white mr-3 shadow-lg overflow-hidden">
-                          {user.avatarUrl ? (
-                            <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
-                          ) : (
-                            user.name.charAt(0)
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-white font-medium text-sm">{user.name}</h3>
-                          <span className="text-[10px] text-primary/70 font-bold uppercase tracking-wider">
-                            {user.role}
-                          </span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-600" />
-                      </motion.button>
-                    ))
-                  ) : (
-                    <div className="py-10 text-center text-gray-500">
-                      <p className="text-sm">No profiles match your search.</p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {(step === "ano-pin" || step === "cadet-pin") && (
-              <motion.div
-                key="pin-input"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="space-y-6 flex-1 flex flex-col justify-center"
-              >
-                <div className="flex items-center mb-2">
-                  <button onClick={() => setStep(step === "ano-pin" ? "selection" : "cadet-list")} className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors">
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <h2 className="text-xl font-bold text-white ml-2">Verification Required</h2>
-                </div>
-
-                <div className="flex items-center p-4 rounded-2xl bg-white/5 border border-white/5">
-                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold mr-4 shadow-lg shrink-0 overflow-hidden">
-                    {(() => {
-                      const selected = messageableUsers.find(u => u.id === selectedUser);
-                      return selected?.avatarUrl ? (
-                        <img src={selected.avatarUrl} alt={selected.name} className="w-full h-full object-cover" />
-                      ) : (
-                        selected?.name.charAt(0)
-                      );
-                    })()}
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs">Signing in as</p>
-                    <h3 className="text-white font-bold">{messageableUsers.find(u => u.id === selectedUser)?.name}</h3>
-                  </div>
+                  <h2 className="text-xl font-bold text-white mb-2">Sign In</h2>
+                  <p className="text-gray-400 text-sm">Enter your email to receive a login code</p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 ml-1">Access PIN</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                    <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
                     <Input
-                      type="password"
-                      placeholder="Enter 4-digit PIN"
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-secondary focus-visible:border-secondary h-12 text-lg tracking-[0.5em] font-bold"
-                      value={pin}
+                      type="email"
+                      placeholder="cadet@rgu.ac.in"
+                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-secondary focus-visible:border-secondary h-12"
+                      value={email}
                       onChange={(e) => {
-                        setPin(e.target.value);
-                        if (error) setError("");
+                        setEmail(e.target.value);
+                        setError("");
                       }}
-                      error={error}
                       autoFocus
+                      required
                     />
                   </div>
                   {error && <p className="text-red-500 text-xs ml-1 font-medium">{error}</p>}
                 </div>
 
                 <Button
-                  className="w-full h-12 text-lg bg-gradient-to-r from-secondary to-red-600 hover:from-red-600 hover:to-secondary shadow-xl shadow-red-900/40 border-0"
-                  onClick={() => handleLogin()}
+                  type="submit"
+                  className="w-full h-12 text-lg bg-gradient-to-r from-secondary to-blue-600 hover:from-blue-600 hover:to-secondary shadow-xl shadow-blue-900/40 border-0"
                   isLoading={isLoading}
-                  disabled={pin.length < 4}
+                  disabled={!email || isLoading}
                 >
-                  Confirm Identity
+                  Send Login Code
                 </Button>
-              </motion.div>
+              </motion.form>
+            ) : (
+              <motion.form
+                key="otp-form"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                onSubmit={handleVerifyOtp}
+                className="space-y-6"
+              >
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500">
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white mb-2">Check your Email</h2>
+                  <p className="text-gray-400 text-sm">
+                    We sent a 6-digit code to <br /> <span className="text-white font-medium">{email}</span>
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Shield className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                    <Input
+                      type="text"
+                      placeholder="123456"
+                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-secondary focus-visible:border-secondary h-12 text-lg tracking-[0.5em] font-bold text-center"
+                      value={otp}
+                      onChange={(e) => {
+                        setOtp(e.target.value);
+                        setError("");
+                      }}
+                      maxLength={6}
+                      autoFocus
+                    />
+                  </div>
+                  {error && <p className="text-red-500 text-xs ml-1 font-medium">{error}</p>}
+                </div>
+
+                <div className="flex flex-col space-y-3">
+                  <Button
+                    type="submit"
+                    className="w-full h-12 text-lg bg-gradient-to-r from-secondary to-green-600 hover:from-green-600 hover:to-secondary shadow-xl shadow-green-900/40 border-0"
+                    isLoading={isLoading}
+                    disabled={otp.length < 6 || isLoading}
+                  >
+                    Verify & Login
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setStep("email")}
+                    className="text-gray-500 text-xs hover:text-white transition-colors"
+                  >
+                    Wrong email? Go back
+                  </button>
+                </div>
+              </motion.form>
             )}
           </AnimatePresence>
         </div>
+
+        <p className="text-center text-gray-600 text-[10px] mt-8 uppercase tracking-widest font-bold">
+          Restricted Access • Authentic Personnel Only
+        </p>
       </div>
     </main>
   );
