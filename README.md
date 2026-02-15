@@ -1,14 +1,14 @@
 <p align="center">
-  <img src="public/ncc-logo.png" alt="NCC Logo" width="80" />
-  &nbsp;&nbsp;&nbsp;
-  <img src="public/rgu-logo.png" alt="RGU Logo" width="80" />
+  <img src="public/ncc-logo.png" alt="NCC Logo" width="100" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="public/rgu-logo.png" alt="RGU Logo" width="100" />
 </p>
 
 <h1 align="center">NCC RGU — Cadet Management System</h1>
 
 <p align="center">
-  A comprehensive web application for the <strong>National Cadet Corps (NCC)</strong> unit at <strong>Royal Global University (RGU)</strong>, Guwahati, Assam.<br/>
-  Built for ANOs, SUOs, and Cadets to manage attendance, classes, communications, and records — all in one place.
+  A comprehensive, role-based web application for the <strong>National Cadet Corps (NCC)</strong> unit at <strong>Royal Global University (RGU)</strong>.<br/>
+  Now powered by a <strong>Supabase Backend</strong> for real-time data persistence, secure authentication, and cloud storage.
 </p>
 
 <p align="center">
@@ -20,150 +20,92 @@
   &nbsp;·&nbsp;
   <a href="#tech-stack">Tech Stack</a>
   &nbsp;·&nbsp;
-  <a href="#role-based-access">Roles</a>
+  <a href="#deployment">Deployment</a>
 </p>
 
 ---
 
-## Features
+## 🚀 Features
 
 | Module | Description |
 |--------|-------------|
-| **📊 Dashboard** | Dynamic stats (total cadets, attendance rate, active classes, unread notes), attendance chart, announcements banner, and live recent activity feed |
-| **📅 Attendance** | Mark cadets as Present / Absent / Late / Excused per class. Export attendance as CSV |
-| **📚 Classes** | Schedule, view, and delete training sessions with instructor assignment |
-| **🎖️ Cadet Registry** | Enroll, edit, and delete cadets. Export full registry as CSV. Wing-based unit auto-fill (Army → Bn, Air → Air Sqn, Navy → Naval) |
-| **💬 Private Notes** | Hierarchical messaging — Cadets ↔ SUOs ↔ ANO. Send, reply, forward to ANO, and delete notes |
-| **📢 Announcements** | Post urgent or normal announcements visible to all users. ANOs and SUOs can manage posts |
-| **📋 Activity Log** | ANO-only audit trail of all system actions with timeline view and action-type filtering |
-| **🪪 Digital ID Card** | Profile page with downloadable NCC ID card featuring QR code for instant verification |
-| **📜 Certificates** | Upload and manage NCC certificates (A/B/C/Camp/Award) per cadet |
-| **📁 File Sharing** | Upload and share PDFs, images, and videos across the unit |
-| **🌙 Dark Mode** | Toggle between light and dark themes with persistent preference |
+| **📊 Smart Dashboard** | Real-time statistics (cadets, attendance %, active classes), live recent activity feed, and unread note counters. |
+| **🔐 Secure Auth** | OTP-based login via email. Role-based access control (RBAC) securely managed via Supabase RLS policies. |
+| **📅 Attendance** | Mark attendance (Present/Absent/Late/Excused). View attendance charts and export monthly reports. |
+| **📚 Class Management** | Schedule training sessions, assign instructors, and track completion status. |
+| **🎖️ Cadet Registry** | centralized database of all cadets with search, filter, and export (CSV) capabilities. Auto-unit assignment based on Wing. |
+| **📜 Certificates** | **New:** Digital Locker for cadets. Upload/View/Download A, B, C certificates. ANO has full admin control. |
+| **💬 Private Comms** | Secure internal messaging system. Cadets can message SUOs; SUOs can forward to ANO. |
+| **📢 Announcements** | Broadcast urgent updates to the entire unit. Priority flagging mechanisms included. |
+| **🪪 Digital ID** | Auto-generated NCC ID card with QR code for instant verification. |
+| **🌙 Dark Mode** | Fully responsive interface with a sleek, toggleable dark mode. |
 
-## Role-Based Access
+## 🛡️ Role-Based Access
 
-The application supports a **three-tier hierarchy**:
+The system enforces strict data privacy through **Row Level Security (RLS)**:
 
-| Role | Access Level |
+| Role | Permissions |
 |------|-------------|
-| **ANO** (Associate NCC Officer) | Full admin — manage cadets, classes, attendance, notes, announcements, activity log |
-| **SUO** (Senior Under Officer) | Manage classes, attendance, announcements. Forward notes to ANO |
-| **Cadet** | View dashboard, mark attendance (when allowed), send notes, view profile & certificates |
+| **ANO** (Super Admin) | **Full Access.** Manage all cadets, classes, attendance, logs, and global certificates. Can delete any record. |
+| **SUO** (Admin) | **Manage Unit.** Create classes, mark attendance, post announcements. Read-only access to sensitive certificates. |
+| **Cadet** (User) | **Personal Access.** View own dashboard, profile, attendance history, and uploaded certificates. Send notes to seniors. |
 
-### Demo Credentials
+## 🛠️ Tech Stack
 
-| Role | Username | PIN |
-|------|----------|-----|
-| ANO | `ANO` | `0324` |
-| SUO | `Pranay Borthakur` | `2468` |
-| Cadet | `Ananya Sharma` | `1234` |
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS v4
+- **Backend:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Realtime)
+- **Icons:** Lucide React
+- **Animations:** Framer Motion
+- **Deployment:** Vercel
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | [Next.js 16](https://nextjs.org/) (App Router, Turbopack) |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| Icons | [Lucide React](https://lucide.dev/) |
-| Animations | [Framer Motion](https://www.framer.com/motion/) |
-| QR Codes | [qrcode.react](https://www.npmjs.com/package/qrcode.react) |
-| ID Export | [html-to-image](https://www.npmjs.com/package/html-to-image) |
-| Deployment | [Vercel](https://vercel.com/) |
-| Data | Browser `localStorage` (no backend required) |
-
-## Getting Started
+## ⚡ Getting Started
 
 ### Prerequisites
-
-- **Node.js** 18+ 
-- **Git**
+- Node.js 18+
+- A Supabase Project
 
 ### Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/CaptainCheetah978/RGU-NCC-Web-Application.git
-cd RGU-NCC-Web-Application
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/CaptainCheetah978/RGU-NCC-Web-Application.git
+    cd RGU-NCC-Web-Application
+    ```
 
-# Install dependencies
-npm install
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-# Start the development server
-npm run dev
-```
+3.  **Environment Setup**
+    Create a `.env.local` file in the root directory:
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+4.  **Database Setup**
+    Run the provided SQL script (`supabase_schema.sql`) in your Supabase SQL Editor to create all tables and policies.
 
-### Production Build
+5.  **Run Locally**
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000).
 
-```bash
-npm run build
-npm start
-```
+## 🌍 Deployment
 
-## Project Structure
+### Vercel (Recommended)
 
-```
-src/
-├── app/
-│   ├── dashboard/
-│   │   ├── activity/        # Activity log (ANO-only)
-│   │   ├── announcements/   # Announcements page
-│   │   ├── attendance/      # Attendance marking
-│   │   ├── cadets/          # Cadet registry
-│   │   ├── classes/         # Class management
-│   │   ├── files/           # File sharing
-│   │   ├── notes/           # Private notes
-│   │   ├── profile/         # User profile & ID card
-│   │   ├── sheet/           # Attendance sheet
-│   │   ├── layout.tsx       # Dashboard shell
-│   │   └── page.tsx         # Dashboard home
-│   ├── verify/              # QR code verification page
-│   ├── layout.tsx           # Root layout
-│   ├── page.tsx             # Login page
-│   └── globals.css          # Design tokens & theme
-├── components/
-│   ├── dashboard/           # Dashboard widgets
-│   ├── profile/             # Profile components
-│   ├── ui/                  # Shared UI components
-│   ├── providers.tsx        # Context providers
-│   ├── sidebar.tsx          # Navigation sidebar
-│   └── topbar.tsx           # Top header bar
-├── lib/
-│   ├── auth-context.tsx     # Authentication state
-│   ├── data-context.tsx     # Data management & localStorage
-│   ├── theme-context.tsx    # Dark mode toggle
-│   ├── mock-data.ts         # Seed users & demo data
-│   └── utils.ts             # Utility functions
-└── types/
-    └── index.ts             # TypeScript type definitions
-```
-
-## Deployment
-
-The app is deployed on **Vercel** with automatic deployments on every push to `main`.
-
-1. Push your code to GitHub
-2. Import the repository on [Vercel](https://vercel.com/new)
-3. Vercel auto-detects Next.js and configures the build
-4. Click **Deploy** — done!
-
-## Data Persistence
-
-All data is stored in the browser's `localStorage`. This means:
-- ✅ No backend or database setup required
-- ✅ Instant, zero-latency operations
-- ⚠️ Data is per-browser and per-device
-- ⚠️ Clearing browser cache will reset all data
-
-## License
-
-This project is developed for the **NCC unit at Royal Global University, Guwahati, Assam**.
+1.  Push your code to GitHub.
+2.  Import the project into Vercel.
+3.  **CRITICAL:** Add the Environment Variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) in Vercel Settings.
+4.  Deploy!
 
 ---
 
 <p align="center">
-  Made with ❤️ for the National Cadet Corps
+  Made with ❤️ for the <strong>National Cadet Corps</strong>
 </p>
