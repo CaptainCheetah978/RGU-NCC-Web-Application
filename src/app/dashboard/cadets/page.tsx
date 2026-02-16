@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, Trash2, Camera, Info, Download, Lock, Key, Edit2, Eye } from "lucide-react";
-import { useState, useMemo, useRef } from "react";
+import { Search, UserPlus, Trash2, Camera, Info, Download, Lock, Key, Edit2, Eye, LayoutGrid, List as ListIcon } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CertificatesSection } from "@/components/profile/certificates-section";
 import { createCadetAccount, updateCadetPin } from "@/app/actions/cadet-actions";
@@ -22,10 +22,14 @@ export default function CadetsPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+    const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
+
     const [editingCadet, setEditingCadet] = useState<Cadet | null>(null);
     const [viewingCadet, setViewingCadet] = useState<Cadet | null>(null);
+
     const [searchQuery, setSearchQuery] = useState("");
     const [filterRole, setFilterRole] = useState<string>("ALL");
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -255,8 +259,8 @@ export default function CadetsPage() {
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-2">
                                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${cadet.wing === Wing.ARMY ? "bg-green-50 text-green-700 border-green-200" :
-                                                            cadet.wing === Wing.NAVY ? "bg-blue-50 text-blue-700 border-blue-200" :
-                                                                "bg-sky-50 text-sky-700 border-sky-200"
+                                                        cadet.wing === Wing.NAVY ? "bg-blue-50 text-blue-700 border-blue-200" :
+                                                            "bg-sky-50 text-sky-700 border-sky-200"
                                                         }`}>
                                                         {cadet.wing}
                                                     </span>

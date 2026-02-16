@@ -266,13 +266,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             regimental_number: updates.regimentalNumber,
             rank: updates.rank,
             wing: updates.wing,
-            // ... map other fields
-            // simplified for brevity, assume full mapping or partials are correct field names
-            // Actually, need to map camelCase updates to snake_case db fields if strictly typed
-            // But for now, let's assume the passed updates keys match db or are handled.
-            // Wait, `updates` keys are camelCase (Cadet interface). DB is snake_case.
-            // I need to map them properly if I want this to work.
-            // But the immediate goal is error throwing.
+            gender: updates.gender,
+            unit_number: updates.unitNumber,
+            unit_name: updates.unitName,
+            enrollment_year: updates.enrollmentYear,
+            blood_group: updates.bloodGroup,
+            // access_pin is usually handled separately for security/audit, but allowing it here if needed
+            access_pin: updates.access_pin
         }).eq('id', id);
         if (error) throw error;
         await refreshData();
