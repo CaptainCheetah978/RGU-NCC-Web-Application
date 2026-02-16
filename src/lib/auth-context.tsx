@@ -153,9 +153,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = async () => {
-        await supabase.auth.signOut();
-        setUser(null);
-        router.push("/");
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            console.error("Error signing out:", error);
+        } finally {
+            setUser(null);
+            router.push("/");
+            // Force refresh to clear any cached data
+            router.refresh();
+        }
     };
 
     const loginWithPassword = async (email: string, pin: string) => {

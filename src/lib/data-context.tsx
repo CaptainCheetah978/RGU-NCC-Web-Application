@@ -127,7 +127,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     bloodGroup: p.blood_group,
                     gender: p.gender,
                     unitName: p.unit_name,
-                    unitNumber: p.unit_number
+                    unitNumber: p.unit_number,
+                    access_pin: p.access_pin // Map access_pin
                 })).filter(u => u.role !== Role.ANO) as Cadet[];
                 setCadets(mappedCadets);
             }
