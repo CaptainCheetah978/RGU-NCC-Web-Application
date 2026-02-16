@@ -242,12 +242,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             description: cls.description
         });
         if (error) throw error;
-        // refreshData handled by subscription
+        await refreshData();
     };
 
     const deleteClass = async (id: string) => {
         const { error } = await supabase.from('classes').delete().eq('id', id);
         if (error) throw error;
+        await refreshData();
     };
 
     const addCadet = async (cadet: Cadet) => {
@@ -256,6 +257,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             // ...
         });
         if (error) throw error;
+        await refreshData();
     };
 
     const updateCadet = async (id: string, updates: Partial<Cadet>) => {
@@ -273,11 +275,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             // But the immediate goal is error throwing.
         }).eq('id', id);
         if (error) throw error;
+        await refreshData();
     };
 
     const deleteCadet = async (id: string) => {
         const { error } = await supabase.from('profiles').delete().eq('id', id);
         if (error) throw error;
+        await refreshData();
     };
 
     const markAttendance = async (record: AttendanceRecord) => {
@@ -305,6 +309,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             });
             if (error) throw error;
         }
+        await refreshData();
     };
 
     const sendNote = async (note: Note) => {
@@ -315,16 +320,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             is_read: false
         });
         if (error) throw error;
+        await refreshData();
     };
 
     const markNoteAsRead = async (id: string) => {
         const { error } = await supabase.from('notes').update({ is_read: true }).eq('id', id);
         if (error) throw error;
+        await refreshData();
     };
 
     const deleteNote = async (id: string) => {
         const { error } = await supabase.from('notes').delete().eq('id', id);
         if (error) throw error;
+        await refreshData();
     };
 
     const forwardNoteToANO = async (noteId: string, anoId: string, anoName: string) => {
@@ -334,6 +342,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const markAllAsRead = async (userId: string) => {
         const { error } = await supabase.from('notes').update({ is_read: true }).eq('recipient_id', userId);
         if (error) throw error;
+        await refreshData();
     };
 
     const addAnnouncement = async (announcement: Announcement) => {
@@ -344,11 +353,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             priority: announcement.priority.toUpperCase()
         });
         if (error) throw error;
+        await refreshData();
     };
 
     const deleteAnnouncement = async (id: string) => {
         const { error } = await supabase.from('announcements').delete().eq('id', id);
         if (error) throw error;
+        await refreshData();
     };
 
     // Stubs for certificates (table not made yet)
