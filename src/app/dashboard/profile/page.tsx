@@ -15,18 +15,19 @@ import { CertificatesSection } from "@/components/profile/certificates-section";
 
 export default function ProfilePage() {
     const { user } = useAuth();
-    const { updateCadet, getStats, messageableUsers } = useData();
+    const { updateCadet, getStats, currentUserProfile } = useData();
     const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [uploadError, setUploadError] = useState("");
     const [isDownloading, setIsDownloading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const idCardRef = useRef<HTMLDivElement>(null);
 
-    // Get the most up-to-date user data (including extras like photos)
-    const currentUser = messageableUsers.find(u => u.id === user?.id) as (User & Partial<Cadet>);
+    // Get the most up-to-date user data (including extras like photos) directly from context
+    // Falls back to auth user defaults if profile not fully loaded yet (though context handles loading)
+    const currentUser = currentUserProfile as (User & Partial<Cadet>);
     const stats = getStats(user?.id);
 
-    if (!currentUser) return null;
+    if (!currentUser) return <div className="p-8 text-center">Loading profile...</div>;
 
     // Helper function to format unit name for display
     const getFormattedUnit = (wing: Wing | undefined, unitNumber: string | undefined, unitName?: string): string => {

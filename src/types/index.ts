@@ -35,6 +35,7 @@ export interface Cadet extends User {
     battalion?: string;
     unitNumber: string;
     unitName?: string;
+    access_pin?: string; // Visible PIN for ANO/SUO
     enrollmentYear: number;
     bloodGroup?: string;
 }
