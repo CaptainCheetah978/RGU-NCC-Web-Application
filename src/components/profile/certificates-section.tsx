@@ -28,7 +28,7 @@ const CERT_COLORS: Record<string, string> = {
     Other: "bg-gray-50 text-gray-600 border-gray-200",
 };
 
-export function CertificatesSection({ userId }: { userId: string }) {
+export function CertificatesSection({ userId, isReadOnly = false }: { userId: string; isReadOnly?: boolean }) {
     const { getCertificates, addCertificate, deleteCertificate, logActivity } = useData();
     const { user } = useAuth();
     const certs = getCertificates(userId);
@@ -66,6 +66,7 @@ export function CertificatesSection({ userId }: { userId: string }) {
     };
 
     const canDelete = (cert: Certificate) => {
+        if (isReadOnly) return false;
         if (!user) return false;
         // Owner can delete
         if (user.id === cert.userId) return true;
@@ -91,9 +92,11 @@ export function CertificatesSection({ userId }: { userId: string }) {
                         <Award className="w-5 h-5 mr-2 text-secondary" />
                         Certificates & Achievements
                     </CardTitle>
-                    <Button size="sm" variant="ghost" onClick={() => setIsUploadOpen(true)} className="text-xs h-8">
-                        <Upload className="w-3.5 h-3.5 mr-1" /> Upload
-                    </Button>
+                    {!isReadOnly && (
+                        <Button size="sm" variant="ghost" onClick={() => setIsUploadOpen(true)} className="text-xs h-8">
+                            <Upload className="w-3.5 h-3.5 mr-1" /> Upload
+                        </Button>
+                    )}
                 </CardHeader>
                 <CardContent>
                     {certs.length === 0 ? (
