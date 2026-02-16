@@ -433,8 +433,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Logger stub
-    const logActivity = () => { };
-    const getRecentActivities = () => [];
+    const logActivity = (action: string, userId: string, userName: string, targetName?: string) => {
+        console.log("Activity Logged:", action, userId, userName, targetName);
+    };
+
+    const getRecentActivities = (limit: number) => {
+        return [];
+    };
 
     return (
         <DataContext.Provider value={{
