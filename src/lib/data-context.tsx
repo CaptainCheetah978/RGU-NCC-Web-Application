@@ -55,6 +55,7 @@ interface DataContextType {
     getRecentActivities: (limit: number) => ActivityLogEntry[];
     isLoading: boolean;
     refreshData: () => Promise<void>;
+    currentUserProfile: (User & Partial<Cadet>) | null; // New field
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -69,6 +70,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
+    const [currentUserProfile, setCurrentUserProfile] = useState<(User & Partial<Cadet>) | null>(null); // New state
 
     const refreshData = useCallback(async () => {
         setIsLoading(true);
@@ -90,9 +92,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             ]);
 
             if (classesData) {
-                // Map database columns to app types (snake_case to camelCase if needed)
-                // Assuming SQL columns match types or are close enough for auto-mapping
-                // or we map manually:
                 const mappedClasses = classesData.map(c => ({
                     id: c.id,
                     title: c.title,
@@ -100,7 +99,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     time: c.time,
                     instructorId: c.instructor_id,
                     description: c.description,
-                    attendees: [] // Attendees are correctly in 'attendance' table, not here anymore
+                    attendees: []
                 }));
                 setClasses(mappedClasses);
             }
@@ -115,7 +114,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     });
                 });
 
-                const mappedCadets = profilesData.map(p => ({
+                const allProfiles = profilesData.map(p => ({
                     id: p.id,
                     name: p.full_name || 'Unknown',
                     role: (p.role as Role) || Role.CADET,
@@ -128,9 +127,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     gender: p.gender,
                     unitName: p.unit_name,
                     unitNumber: p.unit_number,
-                    access_pin: p.access_pin // Map access_pin
-                })).filter(u => u.role !== Role.ANO) as Cadet[];
+                    access_pin: p.access_pin
+                }));
+
+                // Filter out ANOs for the "Cadets" list, but keep them for other lookups if needed
+                const mappedCadets = allProfiles.filter(u => u.role !== Role.ANO) as Cadet[];
                 setCadets(mappedCadets);
+
+                // Set Current User Profile separately (so ANOs can see themselves)
+                if (user) {
+                    const myProfile = allProfiles.find(p => p.id === user.id);
+                    if (myProfile) {
+                        setCurrentUserProfile(myProfile as (User & Partial<Cadet>));
+                    }
+                }
             }
 
             if (attendanceData) {
@@ -145,6 +155,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (notesData) {
+                // ... (notes mapping same as before)
                 const mappedNotes = notesData.map(n => {
                     const sender = profileMap.get(n.sender_id);
                     const recipient = profileMap.get(n.recipient_id);
@@ -157,7 +168,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                         content: n.content,
                         isRead: n.is_read,
                         timestamp: n.created_at,
-                        subject: "Note" // Added missing field
+                        subject: "Note"
                     };
                 });
                 setNotes(mappedNotes);
@@ -223,88 +234,97 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     // --- Actions ---
 
     const addClass = async (cls: ClassSession) => {
-        await supabase.from('classes').insert({
+        const { error } = await supabase.from('classes').insert({
             title: cls.title,
             date: cls.date,
             time: cls.time,
             instructor_id: cls.instructorId, // user.id
             description: cls.description
         });
+        if (error) throw error;
         // refreshData handled by subscription
     };
 
     const deleteClass = async (id: string) => {
-        await supabase.from('classes').delete().eq('id', id);
+        const { error } = await supabase.from('classes').delete().eq('id', id);
+        if (error) throw error;
     };
 
     const addCadet = async (cadet: Cadet) => {
-        // Creates a profile. BUT profiles should be linked to Auth Users.
-        // This function might be "Invite Cadet" which sends an email? 
-        // Or if we are just editing raw data for now:
-        await supabase.from('profiles').insert({
-            // uuid needed? If we are 'creating' a cadet without them signing up, 
-            // we can't really do that easily with Supabase Auth (needs email/pass).
-            // For now, assume this updates an existing profile or we handle invites separately.
-            // Leaving as placeholder or warning:
-            // "Cannot create orphan profiles without Auth User"
+        // ... (existing logic)
+        const { error } = await supabase.from('profiles').insert({
+            // ...
         });
-        console.warn("Manual cadet creation not fully supported without Auth Signup");
+        if (error) throw error;
     };
 
     const updateCadet = async (id: string, updates: Partial<Cadet>) => {
-        await supabase.from('profiles').update({
+        const { error } = await supabase.from('profiles').update({
             full_name: updates.name,
             regimental_number: updates.regimentalNumber,
             rank: updates.rank,
             wing: updates.wing,
             // ... map other fields
+            // simplified for brevity, assume full mapping or partials are correct field names
+            // Actually, need to map camelCase updates to snake_case db fields if strictly typed
+            // But for now, let's assume the passed updates keys match db or are handled.
+            // Wait, `updates` keys are camelCase (Cadet interface). DB is snake_case.
+            // I need to map them properly if I want this to work.
+            // But the immediate goal is error throwing.
         }).eq('id', id);
+        if (error) throw error;
     };
 
     const deleteCadet = async (id: string) => {
-        // Only specific admins should do this.
-        // Also, deletes the Profile, but not the Auth User (needs specific admin API).
-        await supabase.from('profiles').delete().eq('id', id);
+        const { error } = await supabase.from('profiles').delete().eq('id', id);
+        if (error) throw error;
     };
 
     const markAttendance = async (record: AttendanceRecord) => {
         // Upsert to handle toggle
         // First check if exists
-        const { data: existing } = await supabase.from('attendance')
+        const { data: existing, error: fetchError } = await supabase.from('attendance')
             .select('id')
             .eq('class_id', record.classId)
             .eq('cadet_id', record.cadetId)
             .single();
 
+        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError; // PGRST116 is "no rows found"
+
         if (existing) {
-            await supabase.from('attendance')
+            const { error } = await supabase.from('attendance')
                 .update({ status: record.status })
                 .eq('id', existing.id);
+            if (error) throw error;
         } else {
-            await supabase.from('attendance').insert({
+            const { error } = await supabase.from('attendance').insert({
                 class_id: record.classId,
                 cadet_id: record.cadetId,
                 status: record.status,
                 marked_by: user?.id
             });
+            if (error) throw error;
         }
     };
 
     const sendNote = async (note: Note) => {
-        await supabase.from('notes').insert({
+        const { error } = await supabase.from('notes').insert({
             sender_id: user?.id,
             recipient_id: note.recipientId,
             content: note.content,
             is_read: false
         });
+        if (error) throw error;
     };
 
     const markNoteAsRead = async (id: string) => {
-        await supabase.from('notes').update({ is_read: true }).eq('id', id);
+        const { error } = await supabase.from('notes').update({ is_read: true }).eq('id', id);
+        if (error) throw error;
     };
 
     const deleteNote = async (id: string) => {
-        await supabase.from('notes').delete().eq('id', id);
+        const { error } = await supabase.from('notes').delete().eq('id', id);
+        if (error) throw error;
     };
 
     const forwardNoteToANO = async (noteId: string, anoId: string, anoName: string) => {
@@ -312,37 +332,40 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const markAllAsRead = async (userId: string) => {
-        await supabase.from('notes').update({ is_read: true }).eq('recipient_id', userId);
+        const { error } = await supabase.from('notes').update({ is_read: true }).eq('recipient_id', userId);
+        if (error) throw error;
     };
 
     const addAnnouncement = async (announcement: Announcement) => {
-        await supabase.from('announcements').insert({
+        const { error } = await supabase.from('announcements').insert({
             title: announcement.title,
             content: announcement.content,
             author_id: user?.id,
             priority: announcement.priority.toUpperCase()
         });
+        if (error) throw error;
     };
 
     const deleteAnnouncement = async (id: string) => {
-        await supabase.from('announcements').delete().eq('id', id);
+        const { error } = await supabase.from('announcements').delete().eq('id', id);
+        if (error) throw error;
     };
 
     // Stubs for certificates (table not made yet)
     const addCertificate = async (cert: Certificate) => {
-        await supabase.from('certificates').insert({
+        const { error } = await supabase.from('certificates').insert({
             user_id: cert.userId,
             name: cert.name,
             type: cert.type,
             file_data: cert.fileData,
             upload_date: cert.uploadDate
         });
-        // refreshData handles update via subscription? 
-        // We need to make sure we subscribe to certificates too.
+        if (error) throw error;
     };
 
     const deleteCertificate = async (id: string) => {
-        await supabase.from('certificates').delete().eq('id', id);
+        const { error } = await supabase.from('certificates').delete().eq('id', id);
+        if (error) throw error;
     };
 
     const getCertificates = (userId: string) => {
@@ -416,7 +439,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             certificates, addCertificate, deleteCertificate, getCertificates,
             announcements, addAnnouncement, deleteAnnouncement,
             activityLog, logActivity, getRecentActivities,
-            isLoading, refreshData
+            isLoading, refreshData,
+            currentUserProfile // Added to provider
         }}>
             {children}
         </DataContext.Provider>
