@@ -8,12 +8,10 @@
 
 <p align="center">
   A comprehensive, role-based web application for the <strong>National Cadet Corps (NCC)</strong> unit at <strong>Royal Global University (RGU)</strong>.<br/>
-  Now powered by a <strong>Supabase Backend</strong> for real-time data persistence, secure authentication, and cloud storage.
+  Powered by a <strong>Supabase Backend</strong> for real-time data persistence, secure authentication, and cloud storage.
 </p>
 
 <p align="center">
-  <a href="https://nccrgu.vercel.app" target="_blank">🌐 Live Demo</a>
-  &nbsp;·&nbsp;
   <a href="#features">Features</a>
   &nbsp;·&nbsp;
   <a href="#getting-started">Getting Started</a>
@@ -25,22 +23,22 @@
 
 ---
 
-## 🚀 Features
+## Features
 
 | Module | Description |
 |--------|-------------|
-| **📊 Smart Dashboard** | Real-time statistics (cadets, attendance %, active classes), live recent activity feed, and unread note counters. |
-| **🔐 Secure Auth** | OTP-based login via email. Role-based access control (RBAC) securely managed via Supabase RLS policies. |
-| **📅 Attendance** | Mark attendance (Present/Absent/Late/Excused). View attendance charts and export monthly reports. |
-| **📚 Class Management** | Schedule training sessions, assign instructors, and track completion status. |
-| **🎖️ Cadet Registry** | centralized database of all cadets with search, filter, and export (CSV) capabilities. Auto-unit assignment based on Wing. |
-| **📜 Certificates** | **New:** Digital Locker for cadets. Upload/View/Download A, B, C certificates. ANO has full admin control. |
-| **💬 Private Comms** | Secure internal messaging system. Cadets can message SUOs; SUOs can forward to ANO. |
-| **📢 Announcements** | Broadcast urgent updates to the entire unit. Priority flagging mechanisms included. |
-| **🪪 Digital ID** | Auto-generated NCC ID card with QR code for instant verification. |
-| **🌙 Dark Mode** | Fully responsive interface with a sleek, toggleable dark mode. |
+| **Smart Dashboard** | Real-time statistics (cadets, attendance %, active classes), live recent activity feed, and unread note counters. |
+| **Secure Auth** | Role-based access control (RBAC) securely managed via Supabase RLS policies and Server Actions. |
+| **Attendance** | Mark attendance (Present/Absent/Late/Excused). View attendance charts and export monthly reports. |
+| **Class Management** | Schedule training sessions, assign instructors, and track completion status. |
+| **Cadet Registry** | Centralized database of all cadets with search, filter, and export (CSV) capabilities. Auto-unit assignment based on Wing. |
+| **Certificates** | Digital Locker for cadets. Upload/View/Download A, B, C certificates. ANO has full admin control. |
+| **Private Comms** | Secure internal messaging system. Cadets can message SUOs; SUOs can forward to ANO. |
+| **Announcements** | Broadcast urgent updates to the entire unit. Priority flagging mechanisms included. |
+| **Digital ID** | Auto-generated NCC ID card with QR code for instant verification. |
+| **Dark Mode** | Fully responsive interface with a sleek, toggleable dark mode. |
 
-## 🛡️ Role-Based Access
+## Role-Based Access
 
 The system enforces strict data privacy through **Row Level Security (RLS)**:
 
@@ -50,17 +48,17 @@ The system enforces strict data privacy through **Row Level Security (RLS)**:
 | **SUO** (Admin) | **Manage Unit.** Create classes, mark attendance, post announcements. Read-only access to sensitive certificates. |
 | **Cadet** (User) | **Personal Access.** View own dashboard, profile, attendance history, and uploaded certificates. Send notes to seniors. |
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
+- **Framework:** [Next.js](https://nextjs.org/) (App Router)
 - **Language:** TypeScript
-- **Styling:** Tailwind CSS v4
+- **Styling:** Tailwind CSS
 - **Backend:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Realtime)
 - **Icons:** Lucide React
 - **Animations:** Framer Motion
 - **Deployment:** Vercel
 
-## ⚡ Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+
@@ -84,10 +82,13 @@ The system enforces strict data privacy through **Row Level Security (RLS)**:
     ```env
     NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+    SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_secret
     ```
+    *(Note: `SUPABASE_SERVICE_ROLE_KEY` is required for Admin features like creating users and resetting passwords. Do not expose this variable to the client.)*
 
 4.  **Database Setup**
-    Run the provided SQL script (`supabase_schema.sql`) in your Supabase SQL Editor to create all tables and policies.
+    - Run the provided SQL policies in your Supabase SQL Editor to secure the database.
+    - Check `supabase-policies.sql` for the latest RLS definitions.
 
 5.  **Run Locally**
     ```bash
@@ -95,13 +96,16 @@ The system enforces strict data privacy through **Row Level Security (RLS)**:
     ```
     Open [http://localhost:3000](http://localhost:3000).
 
-## 🌍 Deployment
+## Deployment
 
 ### Vercel (Recommended)
 
 1.  Push your code to GitHub.
 2.  Import the project into Vercel.
-3.  **CRITICAL:** Add the Environment Variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) in Vercel Settings.
+3.  **CRITICAL:** Add the Environment Variables in Vercel Settings:
+    - `NEXT_PUBLIC_SUPABASE_URL`
+    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    - `SUPABASE_SERVICE_ROLE_KEY`
 4.  Deploy!
 
 ---
