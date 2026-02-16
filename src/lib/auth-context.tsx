@@ -52,13 +52,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchProfile = async (userId: string) => {
         try {
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
-            if (error) {
+            if (error && error.code === 'PGRST116') {
+                // Profile not found, but user is authenticated. 
+                // Attempt to create a default profile (self-healing)
+                console.log("Profile missing, attempting to create default profile...");
+
+                // Fetch the user email/metadata from auth to help populate
+                const { data: { user: authUser } } = await supabase.auth.getUser();
+
+                if (authUser) {
+                    const isANO = authUser.email?.startsWith('ano_') || false;
+
+                    const { data: newProfile, error: createError } = await supabase
+                        .from('profiles')
+                        .insert({
+                            id: userId,
+                            full_name: isANO ? 'Associate NCC Officer' : 'New User',
+                            role: isANO ? Role.ANO : Role.CADET,
+                            email: authUser.email,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .select()
+                        .single();
+
+                    if (!createError && newProfile) {
+                        data = newProfile;
+                        error = null;
+                    } else {
+                        console.error("Failed to auto-create profile:", createError);
+                    }
+                }
+            } else if (error) {
                 console.error('Error fetching profile:', error);
                 return;
             }
@@ -71,9 +101,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     role: (data.role as Role) || Role.CADET,
                     regimentalNumber: data.regimental_number,
                     avatarUrl: data.avatar_url,
-                    // Map other fields if necessary for the User interface
-                    // rank: data.rank,
-                    // wing: data.wing
                 };
                 setUser(appUser);
             }
@@ -134,14 +161,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const loginWithPassword = async (email: string, pin: string) => {
         setIsLoading(true);
         try {
+            // Salt/Pad the PIN to meet Supabase's 6-char requirement
+            const securePassword = `${pin}-ncc-rgu`;
+
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
-                password: pin,
+                password: securePassword,
             });
 
             if (error) {
-                // If invalid login, maybe user doesn't exist?
-                // We could auto-signup here if it's a known pattern, but better to let UI handle "User not found"
                 throw error;
             }
 
@@ -160,9 +188,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const signupWithPassword = async (email: string, pin: string, name: string, role: Role) => {
         setIsLoading(true);
         try {
+            // Salt/Pad the PIN to meet Supabase's 6-char requirement
+            const securePassword = `${pin}-ncc-rgu`;
+
             const { data, error } = await supabase.auth.signUp({
                 email,
-                password: pin,
+                password: securePassword,
                 options: {
                     data: {
                         full_name: name,
@@ -174,8 +205,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (error) throw error;
 
             if (data.user) {
-                // Supabase trigger should handle profile creation if set up, 
-                // OR we manually create it here to be safe
                 const { error: profileError } = await supabase.from('profiles').upsert({
                     id: data.user.id,
                     full_name: name,
