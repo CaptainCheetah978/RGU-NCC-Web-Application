@@ -2,25 +2,21 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { MOCK_USERS } from "@/lib/mock-data";
 import { Shield, CheckCircle2, XCircle, User, Award, Calendar } from "lucide-react";
 
 function VerifyContent() {
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
 
-    // Look up the user/cadet from mock data + localStorage
+    // Look up the user/cadet from localStorage (for now)
+    // TODO: Connect to Supabase for real verification
     let person: Record<string, string | undefined> | null = null;
 
     if (id && typeof window !== "undefined") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let merged: any = null;
 
-        // 1. Check mock users as base
-        const mockUser = MOCK_USERS.find(u => u.id === id);
-        if (mockUser) {
-            merged = { ...mockUser };
-        }
+        // 1. (Mock data removed)
 
         // 2. Override with localStorage cadets (has the latest edits)
         try {
