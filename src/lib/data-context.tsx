@@ -65,12 +65,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [classes, setClasses] = useState<ClassSession[]>([]);
     const [cadets, setCadets] = useState<Cadet[]>([]);
+    const [allProfiles, setAllProfiles] = useState<(User & Partial<Cadet>)[]>([]);
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
     const [notes, setNotes] = useState<Note[]>([]);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
-    const [currentUserProfile, setCurrentUserProfile] = useState<(User & Partial<Cadet>) | null>(null); // New state
+    const [currentUserProfile, setCurrentUserProfile] = useState<(User & Partial<Cadet>) | null>(null);
 
     const refreshData = useCallback(async () => {
         setIsLoading(true);
@@ -81,14 +82,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 { data: attendanceData },
                 { data: notesData },
                 { data: announcementsData },
-                { data: certificatesData }
+                { data: certificatesData },
+                { data: activityData }
             ] = await Promise.all([
                 supabase.from('classes').select('*'),
-                supabase.from('profiles').select('*'), // Everyone can read profiles
+                supabase.from('profiles').select('*'),
                 supabase.from('attendance').select('*'),
                 supabase.from('notes').select('*'),
                 supabase.from('announcements').select('*'),
-                supabase.from('certificates').select('*')
+                supabase.from('certificates').select('*'),
+                supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(100)
             ]);
 
             if (classesData) {
@@ -114,7 +117,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     });
                 });
 
-                const allProfiles = profilesData.map(p => ({
+                const mappedProfiles = profilesData.map(p => ({
                     id: p.id,
                     name: p.full_name || 'Unknown',
                     role: (p.role as Role) || Role.CADET,
@@ -130,13 +133,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     access_pin: p.access_pin
                 }));
 
-                // Filter out ANOs for the "Cadets" list, but keep them for other lookups if needed
-                const mappedCadets = allProfiles.filter(u => u.role !== Role.ANO) as Cadet[];
+                setAllProfiles(mappedProfiles as (User & Partial<Cadet>)[]);
+
+                // Filter out ANOs for the "Cadets" list
+                const mappedCadets = mappedProfiles.filter(u => u.role !== Role.ANO) as Cadet[];
                 setCadets(mappedCadets);
 
                 // Set Current User Profile separately (so ANOs can see themselves)
                 if (user) {
-                    const myProfile = allProfiles.find(p => p.id === user.id);
+                    const myProfile = mappedProfiles.find(p => p.id === user.id);
                     if (myProfile) {
                         setCurrentUserProfile(myProfile as (User & Partial<Cadet>));
                     }
@@ -155,7 +160,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (notesData) {
-                // ... (notes mapping same as before)
                 const mappedNotes = notesData.map(n => {
                     const sender = profileMap.get(n.sender_id);
                     const recipient = profileMap.get(n.recipient_id);
@@ -168,10 +172,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                         content: n.content,
                         isRead: n.is_read,
                         timestamp: n.created_at,
-                        subject: "Note"
+                        subject: n.subject || "Note",
+                        forwardedToANO: n.forwarded_to_ano || false,
+                        originalSenderId: n.original_sender_id,
+                        originalSenderName: n.original_sender_name
                     };
                 });
                 setNotes(mappedNotes);
+            }
+
+            if (activityData) {
+                const mappedActivity = activityData.map(a => ({
+                    id: a.id,
+                    action: a.action,
+                    performedBy: a.performed_by,
+                    performedByName: a.performed_by_name,
+                    targetName: a.target_name,
+                    timestamp: a.created_at
+                }));
+                setActivityLog(mappedActivity);
             }
 
             if (announcementsData) {
@@ -252,9 +271,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const addCadet = async (cadet: Cadet) => {
-        // ... (existing logic)
         const { error } = await supabase.from('profiles').insert({
-            // ...
+            id: cadet.id,
+            full_name: cadet.name,
+            role: cadet.role,
+            regimental_number: cadet.regimentalNumber,
+            rank: cadet.rank,
+            wing: cadet.wing,
+            gender: cadet.gender,
+            unit_number: cadet.unitNumber,
+            unit_name: cadet.unitName,
+            enrollment_year: cadet.enrollmentYear,
+            blood_group: cadet.bloodGroup,
+            access_pin: cadet.access_pin
         });
         if (error) throw error;
         await refreshData();
@@ -316,6 +345,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const { error } = await supabase.from('notes').insert({
             sender_id: user?.id,
             recipient_id: note.recipientId,
+            subject: note.subject,
             content: note.content,
             is_read: false
         });
@@ -336,7 +366,30 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const forwardNoteToANO = async (noteId: string, anoId: string, anoName: string) => {
-        // Logic to forward
+        // Find the original note
+        const originalNote = notes.find(n => n.id === noteId);
+        if (!originalNote) throw new Error("Note not found");
+
+        // Insert a new note to ANO with forward context
+        const { error: insertError } = await supabase.from('notes').insert({
+            sender_id: user?.id,
+            recipient_id: anoId,
+            subject: `[Forwarded] ${originalNote.subject}`,
+            content: `[Forwarded from ${originalNote.senderName}]\n\n${originalNote.content}`,
+            is_read: false,
+            forwarded_to_ano: true,
+            original_sender_id: originalNote.senderId,
+            original_sender_name: originalNote.senderName
+        });
+        if (insertError) throw insertError;
+
+        // Mark the original note as forwarded
+        const { error: updateError } = await supabase.from('notes')
+            .update({ forwarded_to_ano: true })
+            .eq('id', noteId);
+        if (updateError) throw updateError;
+
+        await refreshData();
     };
 
     const markAllAsRead = async (userId: string) => {
@@ -386,9 +439,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     // --- Getters & Helpers ---
 
     const messageableUsers = useMemo(() => {
-        // In real app, we fetch all profiles
-        return cadets; // + ANOs if we fetched them
-    }, [cadets]);
+        // Include ALL profiles (cadets + ANOs + SUOs) so anyone can receive notes
+        return allProfiles as (Cadet | User)[];
+    }, [allProfiles]);
 
     const getPersonalAttendance = useCallback((cadetId: string): PersonalAttendanceEntry[] => {
         return attendance
@@ -432,13 +485,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         return { totalCadets, attendanceRate, activeClasses, unreadNotes };
     };
 
-    // Logger stub
+    // Log activity to database
     const logActivity = (action: string, userId: string, userName: string, targetName?: string) => {
-        console.log("Activity Logged:", action, userId, userName, targetName);
+        supabase.from('activity_log').insert({
+            action,
+            performed_by: userId,
+            performed_by_name: userName,
+            target_name: targetName || null
+        }).then(({ error }) => {
+            if (error) console.error("Failed to log activity:", error);
+            else refreshData();
+        });
     };
 
     const getRecentActivities = (limit: number) => {
-        return [];
+        return activityLog.slice(0, limit);
     };
 
     return (

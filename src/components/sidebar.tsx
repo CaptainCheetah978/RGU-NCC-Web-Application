@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { useData } from "@/lib/data-context";
 import { useTheme } from "@/lib/theme-context";
 import { Role } from "@/types";
 import { cn } from "@/lib/utils";
@@ -24,9 +25,12 @@ import { motion } from "framer-motion";
 export function Sidebar() {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
+    const { getStats } = useData();
     const pathname = usePathname();
 
     if (!user) return null;
+
+    const unreadNotes = getStats(user.id).unreadNotes;
 
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [] }, // All
@@ -116,7 +120,12 @@ export function Sidebar() {
                                     />
                                 )}
                                 <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-400 group-hover:text-white")} />
-                                <span className="font-medium">{link.name}</span>
+                                <span className="font-medium flex-1">{link.name}</span>
+                                {link.href === "/dashboard/notes" && unreadNotes > 0 && (
+                                    <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
+                                        {unreadNotes > 9 ? "9+" : unreadNotes}
+                                    </span>
+                                )}
                             </div>
                         </Link>
                     );
