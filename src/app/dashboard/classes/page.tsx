@@ -14,7 +14,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export default function ClassesPage() {
-    const { classes, addClass, deleteClass } = useData();
+    const { classes, addClass, deleteClass, logActivity } = useData();
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -49,6 +49,7 @@ export default function ClassesPage() {
 
         try {
             await addClass(newClass);
+            if (logActivity) logActivity("Scheduled class", user.id, user.name, formData.title);
             setIsModalOpen(false);
             setFormData({ title: "", date: "", time: "", description: "" });
         } catch (error) {
@@ -59,15 +60,11 @@ export default function ClassesPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (id: string, title: string) => {
         if (confirm("Are you sure you want to delete this class session?")) {
-            // Optimistic update or waiting? Let's wait for now to be safe.
-            // Ideally we should have a local loading state for this specific item if list is long, 
-            // but global loading is okay for now or just no loading state for delete (background).
-            // Let's wrapping it in try-catch without blocking UI too much, but disable the button?
-            // Since we map over classes, maintaining a "deletingId" state is better.
             try {
                 await deleteClass(id);
+                if (logActivity) logActivity("Deleted class", user.id, user.name, title);
             } catch (error) {
                 console.error("Failed to delete class", error);
                 alert("Failed to delete class.");
@@ -115,7 +112,7 @@ export default function ClassesPage() {
                                         </div>
                                         {canEdit && (
                                             <button
-                                                onClick={() => handleDelete(cls.id)}
+                                                onClick={() => handleDelete(cls.id, cls.title)}
                                                 className="text-gray-300 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-full"
                                                 title="Delete Class"
                                             >

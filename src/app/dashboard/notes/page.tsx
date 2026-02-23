@@ -32,7 +32,8 @@ export default function NotesPage() {
         markNoteAsRead,
         forwardNoteToANO,
         deleteNote,
-        messageableUsers
+        messageableUsers,
+        logActivity
     } = useData();
     const { user } = useAuth();
 
@@ -102,6 +103,7 @@ export default function NotesPage() {
 
         try {
             await sendNote(newNote);
+            if (logActivity) logActivity("Sent a note", user.id, user.name, recipient.name);
             setIsComposeModalOpen(false);
             setFormData({ recipientId: "", subject: "", content: "" });
         } catch (error) {
@@ -129,6 +131,7 @@ export default function NotesPage() {
             if (confirm(`Forward this note to ${ano.name}?`)) {
                 try {
                     await forwardNoteToANO(note.id, ano.id, ano.name);
+                    if (logActivity) logActivity("Forwarded note to ANO", user.id, user.name, ano.name);
                     alert(`Note forwarded to ${ano.name}`);
                 } catch (error) {
                     console.error("Failed to forward note", error);
