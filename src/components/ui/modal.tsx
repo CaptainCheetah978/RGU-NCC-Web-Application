@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment } from "react";
+import React from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -16,30 +16,32 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
+                    {/* Backdrop with strong blur */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity"
+                        className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-md z-50"
                     />
 
-                    {/* Modal Content */}
+                    {/* Modal Content — glassmorphism */}
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden pointer-events-auto border border-white/10"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 dark:shadow-black/50 w-full max-w-lg overflow-hidden pointer-events-auto border border-white/60 dark:border-slate-700/60"
                         >
-                            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                                <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100/80 dark:border-slate-700/60 bg-gray-50/50 dark:bg-slate-900/30">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h3>
                                 <button
                                     onClick={onClose}
-                                    className="text-gray-400 hover:text-gray-500 transition-colors"
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/60 transition-all"
                                 >
-                                    <X className="w-5 h-5" />
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
                             <div className="p-6">{children}</div>

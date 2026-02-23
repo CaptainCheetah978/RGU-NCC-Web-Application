@@ -23,13 +23,13 @@ export default function DashboardPage() {
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-                    <p className="text-gray-500">Here&apos;s what&apos;s happening in your unit today.</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h2>
+                    <p className="text-gray-500 dark:text-slate-400">Here&apos;s what&apos;s happening in your unit today.</p>
                 </div>
                 <div className="flex items-center space-x-4">
-                    <img src="/ncc-logo.png" alt="NCC Logo" className="h-16 w-16 object-contain" />
-                    <img src="/rgu-logo.png" alt="RGU Logo" className="h-16 w-16 object-contain" />
-                    <div className="flex items-center border-l border-gray-300 pl-4 space-x-3">
+                    <img src="/ncc-logo.png" alt="NCC Logo" className="h-16 w-16 object-contain dark:drop-shadow-[0_0_8px_rgba(75,146,219,0.4)]" />
+                    <img src="/rgu-logo.png" alt="RGU Logo" className="h-16 w-16 object-contain dark:drop-shadow-[0_0_8px_rgba(240,85,35,0.4)]" />
+                    <div className="flex items-center border-l border-gray-300 dark:border-slate-700 pl-4 space-x-3">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-lg font-bold text-white shadow-lg overflow-hidden">
                             {displayUser.avatarUrl ? (
                                 <img src={displayUser.avatarUrl} alt={displayUser.name} className="w-full h-full object-cover" />
@@ -38,12 +38,13 @@ export default function DashboardPage() {
                             )}
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500">Welcome back,</p>
-                            <p className="text-lg font-bold text-gray-900">{displayUser.name}</p>
+                            <p className="text-sm text-gray-500 dark:text-slate-400">Welcome back,</p>
+                            <p className="text-lg font-bold text-gray-900 dark:text-white">{displayUser.name}</p>
                         </div>
                     </div>
                 </div>
             </div>
+
 
             <AnnouncementsBanner />
 

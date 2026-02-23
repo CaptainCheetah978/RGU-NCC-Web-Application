@@ -164,15 +164,56 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .dark body {
+    background: linear-gradient(135deg, #0f172a 0%, #0d1526 100%);
+  }
+
+  /* Custom scrollbar for dark mode */
+  .dark ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 3px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
 }
 
 @layer utilities {
+
+  /* Full glass panel — for sidebars, large panels */
   .glass {
-    @apply bg-white/70 dark:bg-slate-800/70 backdrop-blur-lg border border-white/20 dark:border-slate-700/50 shadow-lg;
+    @apply bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl border border-white/30 dark:border-slate-700/50 shadow-lg;
   }
 
+  /* Glass card — for content cards */
+  .glass-card {
+    @apply bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-white/50 dark:border-slate-700/60 shadow-sm dark:shadow-slate-900/40;
+  }
+
+  /* Glass modal — for floating modals and dropdowns */
+  .glass-modal {
+    @apply bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl border border-white/60 dark:border-slate-700/60 shadow-2xl;
+  }
+
+  /* Dark glass — primary color tinted */
   .glass-dark {
-    @apply bg-primary/90 backdrop-blur-lg border border-primary/20 shadow-lg text-white;
+    @apply bg-primary/90 backdrop-blur-xl border border-primary/20 shadow-lg text-white;
+  }
+
+  /* Subtle glass — for sections inside glass cards */
+  .glass-subtle {
+    @apply bg-white/40 dark:bg-slate-700/40 backdrop-blur-sm border border-white/20 dark:border-slate-600/30;
   }
 
   .text-gradient {
