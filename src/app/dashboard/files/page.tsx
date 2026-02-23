@@ -5,7 +5,7 @@ import { Role } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
-import { Upload, FileText, Image as ImageIcon, Video, Download, Trash2, RefreshCw } from "lucide-react";
+import { Upload, FileText, Image as ImageIcon, Video, Download, Trash2, RefreshCw, Lock } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase-client";
@@ -19,11 +19,12 @@ interface StoredFile {
     size: string;
     uploadedBy: string;
     date: string;
-    url: string;
+    signedUrl: string;
     path: string;
 }
 
 const BUCKET = "files";
+const SIGNED_URL_EXPIRY = 60 * 60; // 1 hour in seconds
 
 function getFileType(name: string): FileType {
     const ext = name.split(".").pop()?.toLowerCase() || "";
@@ -50,46 +51,60 @@ export default function FilesPage() {
 
     if (!user) return null;
 
-    const canUpload = user && [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
-    const canDelete = user && [Role.ANO, Role.SUO].includes(user.role);
+    const canUpload = [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
+    const canDelete = [Role.ANO, Role.SUO].includes(user.role);
 
     const fetchFiles = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const { data, error: listError } = await supabase.storage.from(BUCKET).list("", {
-                limit: 200,
-                sortBy: { column: "created_at", order: "desc" },
-            });
+            // 1. List files in the bucket
+            const { data: listed, error: listError } = await supabase.storage
+                .from(BUCKET)
+                .list("", { limit: 200, sortBy: { column: "created_at", order: "desc" } });
 
             if (listError) {
-                setError("Could not load files. Make sure the 'files' storage bucket exists in Supabase.");
+                setError("Could not load files. Make sure the 'files' storage bucket exists in Supabase (set to Private).");
                 setFiles([]);
                 return;
             }
 
-            const mapped: StoredFile[] = (data || [])
-                .filter(f => f.name !== ".emptyFolderPlaceholder")
-                .map(f => {
-                    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(f.name);
-                    // Parse metadata from filename: "uploadedBy__originalName"
-                    const parts = f.name.split("__");
-                    const displayName = parts.length > 1 ? parts.slice(1).join("__") : f.name;
-                    const uploader = parts.length > 1 ? parts[0] : "Unknown";
+            const validFiles = (listed || []).filter(f => f.name !== ".emptyFolderPlaceholder");
+            if (validFiles.length === 0) { setFiles([]); return; }
 
-                    return {
-                        id: f.id || f.name,
-                        name: displayName,
-                        type: getFileType(f.name),
-                        size: f.metadata?.size ? formatBytes(f.metadata.size) : "—",
-                        uploadedBy: uploader,
-                        date: f.created_at
-                            ? new Date(f.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
-                            : "—",
-                        url: urlData.publicUrl,
-                        path: f.name,
-                    };
-                });
+            // 2. Batch-create signed URLs (private access, expiring)
+            const paths = validFiles.map(f => f.name);
+            const { data: signedUrls, error: signError } = await supabase.storage
+                .from(BUCKET)
+                .createSignedUrls(paths, SIGNED_URL_EXPIRY);
+
+            if (signError) {
+                setError("Could not generate secure download links.");
+                setFiles([]);
+                return;
+            }
+
+            const urlMap = new Map((signedUrls || []).map(s => [s.path, s.signedUrl]));
+
+            const mapped: StoredFile[] = validFiles.map(f => {
+                // Filename format: "UploaderName__timestamp_originalfilename"
+                const parts = f.name.split("__");
+                const displayName = parts.length > 1 ? parts.slice(1).join("__").replace(/^\d+_/, "") : f.name;
+                const uploader = parts.length > 1 ? parts[0].replace(/_/g, " ") : "Unknown";
+
+                return {
+                    id: f.id || f.name,
+                    name: displayName,
+                    type: getFileType(f.name),
+                    size: f.metadata?.size ? formatBytes(f.metadata.size) : "—",
+                    uploadedBy: uploader,
+                    date: f.created_at
+                        ? new Date(f.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                        : "—",
+                    signedUrl: urlMap.get(f.name) || "",
+                    path: f.name,
+                };
+            });
 
             setFiles(mapped);
         } catch (e) {
@@ -99,9 +114,7 @@ export default function FilesPage() {
         }
     }, []);
 
-    useEffect(() => {
-        fetchFiles();
-    }, [fetchFiles]);
+    useEffect(() => { fetchFiles(); }, [fetchFiles]);
 
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -109,7 +122,6 @@ export default function FilesPage() {
         setIsUploading(true);
         setError(null);
 
-        // Prefix filename with uploader name for attribution (sanitise spaces)
         const safeName = user.name.replace(/\s+/g, "_");
         const timestamp = Date.now();
         const storagePath = `${safeName}__${timestamp}_${uploadFile.name}`;
@@ -130,13 +142,9 @@ export default function FilesPage() {
 
     const handleDelete = async (file: StoredFile) => {
         if (!confirm(`Delete "${file.name}"? This cannot be undone.`)) return;
-
         const { error: deleteError } = await supabase.storage.from(BUCKET).remove([file.path]);
-        if (deleteError) {
-            alert("Failed to delete: " + deleteError.message);
-        } else {
-            await fetchFiles();
-        }
+        if (deleteError) alert("Failed to delete: " + deleteError.message);
+        else await fetchFiles();
     };
 
     const getIcon = (type: FileType) => {
@@ -153,10 +161,15 @@ export default function FilesPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Documents &amp; Media</h2>
-                    <p className="text-gray-500 mt-1">Shared resources and gallery — files persist across sessions.</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <p className="text-gray-500">Shared resources — secured with expiring access links.</p>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                            <Lock className="w-3 h-3" /> Private
+                        </span>
+                    </div>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="ghost" size="icon" onClick={fetchFiles} title="Refresh">
+                    <Button variant="ghost" size="icon" onClick={fetchFiles} title="Refresh signed links">
                         <RefreshCw className="w-4 h-4" />
                     </Button>
                     {canUpload && (
@@ -203,12 +216,12 @@ export default function FilesPage() {
                             >
                                 <Card className="hover:shadow-lg transition-all duration-300 group cursor-pointer border border-gray-100">
                                     <div className="p-6 flex flex-col items-center text-center space-y-4">
-                                        <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            {file.type === "IMAGE" ? (
+                                        <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                                            {file.type === "IMAGE" && file.signedUrl ? (
                                                 <img
-                                                    src={file.url}
+                                                    src={file.signedUrl}
                                                     alt={file.name}
-                                                    className="w-full h-full object-cover rounded-2xl"
+                                                    className="w-full h-full object-cover"
                                                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                                                 />
                                             ) : getIcon(file.type)}
@@ -218,16 +231,15 @@ export default function FilesPage() {
                                                 {file.name}
                                             </h3>
                                             <p className="text-xs text-gray-400 mt-1">{file.size} · {file.date}</p>
-                                            <p className="text-[10px] text-gray-400">by {file.uploadedBy.replace(/_/g, " ")}</p>
+                                            <p className="text-[10px] text-gray-400">by {file.uploadedBy}</p>
                                         </div>
                                         <div className="flex items-center justify-center space-x-2 w-full pt-2 border-t border-gray-50">
                                             <a
-                                                href={file.url}
+                                                href={file.signedUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                download={file.name}
                                                 className="p-2 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
-                                                title="Download / Open"
+                                                title="Download / Open (link valid 1 hour)"
                                             >
                                                 <Download className="w-4 h-4" />
                                             </a>
@@ -249,11 +261,13 @@ export default function FilesPage() {
                 </AnimatePresence>
             )}
 
-            <Modal isOpen={isUploadModalOpen} onClose={() => { setIsUploadModalOpen(false); setUploadFile(null); setError(null); }} title="Upload Resource">
+            <Modal
+                isOpen={isUploadModalOpen}
+                onClose={() => { setIsUploadModalOpen(false); setUploadFile(null); setError(null); }}
+                title="Upload Resource"
+            >
                 <form onSubmit={handleUpload} className="space-y-6">
-                    <div
-                        className="border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative"
-                    >
+                    <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative">
                         <input
                             type="file"
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -276,9 +290,7 @@ export default function FilesPage() {
                         )}
                     </div>
 
-                    {error && (
-                        <p className="text-sm text-red-600 text-center">{error}</p>
-                    )}
+                    {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
                     <div className="flex justify-end space-x-3">
                         <Button type="button" variant="ghost" onClick={() => { setIsUploadModalOpen(false); setUploadFile(null); }}>Cancel</Button>

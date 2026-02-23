@@ -36,36 +36,21 @@ CREATE POLICY "Authenticated users can insert activity"
     WITH CHECK (auth.uid() IS NOT NULL);
 
 -- =============================================
--- SUPABASE STORAGE (Manual Step Required)
+-- SUPABASE STORAGE (Manual Steps via Dashboard)
 -- =============================================
--- You must create the 'files' storage bucket manually:
--- 1. Go to Supabase Dashboard → Storage
--- 2. Click "New Bucket"
--- 3. Name: files
--- 4. Set Public: YES (so files can be accessed via public URLs)
--- 5. Click Save
+-- Storage bucket policies CANNOT be set via SQL.
+-- Follow these steps in your Supabase Dashboard:
 --
--- Then add these storage policies:
--- Policy 1: Allow authenticated users to upload
--- Policy 2: Allow everyone to download (public read)
--- Policy 3: Allow ANO/SUO to delete
+-- STEP 1: Create the bucket
+--   Dashboard → Storage → New Bucket
+--   Name: files
+--   Public: NO (Private)  ← files are accessed via signed URLs only
+--   Save
 --
--- You can do this via Dashboard → Storage → files → Policies, or run:
+-- STEP 2: Add policies (Dashboard → Storage → files → Policies)
+--   Policy 1 (Upload):  Operation = INSERT,  Check = auth.uid() IS NOT NULL
+--   Policy 2 (Read):    Operation = SELECT,  Using = auth.uid() IS NOT NULL
+--   Policy 3 (Delete):  Operation = DELETE,  Using = auth.uid() IS NOT NULL
+--
+-- Signed URLs expire after 1 hour. The app regenerates them on page load.
 
--- Allow authenticated users to upload files
-INSERT INTO storage.policies (name, bucket_id, operation, definition)
-VALUES
-  ('Allow uploads by authenticated', 'files', 'INSERT', 'auth.uid() IS NOT NULL')
-ON CONFLICT DO NOTHING;
-
--- Allow public read
-INSERT INTO storage.policies (name, bucket_id, operation, definition)
-VALUES
-  ('Allow public read', 'files', 'SELECT', 'true')
-ON CONFLICT DO NOTHING;
-
--- Allow ANO/SUO to delete
-INSERT INTO storage.policies (name, bucket_id, operation, definition)
-VALUES
-  ('Allow ANO/SUO to delete', 'files', 'DELETE', 'auth.uid() IS NOT NULL')
-ON CONFLICT DO NOTHING;
