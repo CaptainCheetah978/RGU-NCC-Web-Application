@@ -12,6 +12,8 @@ interface AuthContextType {
     loginWithPassword: (email: string, pin: string) => Promise<void>;
     signupWithPassword: (email: string, pin: string, name: string, role: Role) => Promise<void>;
     logout: () => Promise<void>;
+    resetPin: (email: string) => Promise<void>;
+    updatePin: (newPin: string) => Promise<void>;
     isLoading: boolean;
 }
 
@@ -254,8 +256,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const resetPin = async (email: string) => {
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: { shouldCreateUser: false }
+        });
+        if (error) throw error;
+    };
+
+    const updatePin = async (newPin: string) => {
+        const securePassword = `${newPin}-ncc-rgu`;
+        const { error } = await supabase.auth.updateUser({ password: securePassword });
+        if (error) throw error;
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, verifyOtp, loginWithPassword, signupWithPassword, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, login, verifyOtp, loginWithPassword, signupWithPassword, logout, resetPin, updatePin, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

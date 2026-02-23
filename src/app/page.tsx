@@ -4,37 +4,36 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Shield, User, Lock, ChevronRight, Loader2 } from "lucide-react";
+import { Shield, User, Lock, ChevronRight, Loader2, Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Role } from "@/types";
 
+type LoginStep = "login" | "forgot-email" | "forgot-otp" | "forgot-newpin" | "forgot-done";
+
 export default function LoginPage() {
-  const { loginWithPassword, signupWithPassword, isLoading } = useAuth();
+  const { loginWithPassword, signupWithPassword, resetPin, updatePin, verifyOtp, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<Role>(Role.CADET);
-  const [formData, setFormData] = useState({
-    username: "",
-    pin: ""
-  });
+  const [formData, setFormData] = useState({ username: "", pin: "" });
   const [error, setError] = useState("");
   const [isRestoring, setIsRestoring] = useState(false);
+  const [step, setStep] = useState<LoginStep>("login");
+
+  // Forgot PIN state
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    // Generate pseudo-email for Supabase Auth
-    // Format: role_username_clean@nccrgu.internal
     const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
     const pseudoEmail = `${activeTab.toLowerCase()}_${cleanUsername}@nccrgu.internal`;
-    // PIN as password
 
     try {
       await loginWithPassword(pseudoEmail, formData.pin);
     } catch (err: any) {
-      console.log("Login failed, checking if first time...", err);
-
-      // Auto-signup logic for initial "No Accounts" state
-      // If specific known credentials or purely first-time user pattern
       if (activeTab === Role.ANO && formData.username.toUpperCase() === "ANO" && formData.pin === "0324") {
         setIsRestoring(true);
         try {
@@ -44,10 +43,7 @@ export default function LoginPage() {
           setIsRestoring(false);
         }
       } else if (err.message.includes("Invalid login credentials") || err.message.includes("Email not confirmed")) {
-        // For Cadets/SUOs, if they don't exist, we might want to auto-create them IF the PIN matches a "Secret Unit Code" 
-        // OR providing a fallback instruction.
-        // For now, let's treat "Demo Credentials" as auto-signup keys too?
-        if (formData.pin === "1234" || formData.pin === "2468") { // Demo PINs from README
+        if (formData.pin === "1234" || formData.pin === "2468") {
           setIsRestoring(true);
           try {
             await signupWithPassword(pseudoEmail, formData.pin, formData.username, activeTab);
@@ -64,24 +60,80 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgotEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setForgotLoading(true);
+    try {
+      await resetPin(forgotEmail);
+      setStep("forgot-otp");
+    } catch (err: any) {
+      setError(err.message || "Failed to send OTP. Check the email and try again.");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleForgotOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setForgotLoading(true);
+    try {
+      await verifyOtp(forgotEmail, forgotOtp);
+      setStep("forgot-newpin");
+    } catch (err: any) {
+      setError(err.message || "Invalid or expired OTP.");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleNewPinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (newPin !== confirmPin) {
+      setError("PINs do not match.");
+      return;
+    }
+    if (newPin.length < 4) {
+      setError("PIN must be at least 4 characters.");
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      await updatePin(newPin);
+      setStep("forgot-done");
+    } catch (err: any) {
+      setError(err.message || "Failed to update PIN.");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const resetForgotFlow = () => {
+    setStep("login");
+    setForgotEmail("");
+    setForgotOtp("");
+    setNewPin("");
+    setConfirmPin("");
+    setError("");
+  };
+
   const tabs = [
     { id: Role.ANO, label: "ANO", icon: Shield, color: "from-red-600 to-red-800" },
     { id: Role.SUO, label: "SUO", icon: User, color: "from-blue-600 to-blue-800" },
     { id: Role.CADET, label: "Cadet", icon: User, color: "from-green-600 to-green-800" }
   ];
-
   const activeColor = tabs.find(t => t.id === activeTab)?.color || "from-blue-600 to-blue-800";
 
   return (
     <main className="min-h-screen w-full flex items-center justify-center bg-[#0f172a] p-4 relative overflow-hidden">
-      {/* Background Effects */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-gradient-to-br ${activeColor} rounded-full blur-[150px] transition-all duration-1000`} />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-900/30 rounded-full blur-[150px]" />
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center items-center space-x-4 mb-6">
             <img src="/ncc-logo.png" alt="NCC" className="w-16 h-16 object-contain drop-shadow-2xl" />
@@ -92,89 +144,218 @@ export default function LoginPage() {
           <p className="text-gray-400 text-sm mt-1">Royal Global University Unit</p>
         </div>
 
-        {/* Login Card */}
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-          {/* Role Tabs */}
-          <div className="grid grid-cols-3 border-b border-white/5">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => { setActiveTab(tab.id); setError(""); setFormData({ username: "", pin: "" }); }}
-                className={`relative py-4 text-sm font-medium transition-all duration-300 ${activeTab === tab.id ? "text-white bg-white/5" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
-                  }`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? "text-white" : ""}`} />
-                  <span>{tab.label}</span>
+          <AnimatePresence mode="wait">
+            {step === "login" && (
+              <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {/* Role Tabs */}
+                <div className="grid grid-cols-3 border-b border-white/5">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => { setActiveTab(tab.id); setError(""); setFormData({ username: "", pin: "" }); }}
+                      className={`relative py-4 text-sm font-medium transition-all duration-300 ${activeTab === tab.id ? "text-white bg-white/5" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? "text-white" : ""}`} />
+                        <span>{tab.label}</span>
+                      </div>
+                      {activeTab === tab.id && (
+                        <motion.div layoutId="activeTab" className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${tab.color}`} />
+                      )}
+                    </button>
+                  ))}
                 </div>
-                {activeTab === tab.id && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${tab.color}`}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
 
-          <div className="p-8">
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
-                    {activeTab === Role.ANO ? "Officer ID" : activeTab === Role.CADET ? "Your Name or Regt No" : "Username"}
-                  </label>
-                  <div className="relative mt-1">
-                    <User className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
-                    <Input
-                      value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      placeholder={activeTab === Role.ANO ? "ANO" : "e.g. Rahul Singh"}
-                      className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary"
-                      required
-                    />
+                <div className="p-8">
+                  <form onSubmit={handleLogin} className="space-y-6">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                          {activeTab === Role.ANO ? "Officer ID" : activeTab === Role.CADET ? "Your Name or Regt No" : "Username"}
+                        </label>
+                        <div className="relative mt-1">
+                          <User className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                          <Input
+                            value={formData.username}
+                            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                            placeholder={activeTab === Role.ANO ? "ANO" : "e.g. Rahul Singh"}
+                            className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                          {activeTab === Role.ANO ? "Secure PIN" : "Access PIN"}
+                        </label>
+                        <div className="relative mt-1">
+                          <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                          <Input
+                            type="password"
+                            value={formData.pin}
+                            onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
+                            placeholder="••••"
+                            className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary tracking-widest"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {error && (
+                      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                        {error}
+                      </div>
+                    )}
+
+                    <Button
+                      type="submit"
+                      className={`w-full h-12 text-lg font-bold bg-gradient-to-r ${activeColor} border-0 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]`}
+                      disabled={isLoading || isRestoring}
+                    >
+                      {(isLoading || isRestoring) ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>Access Dashboard <ChevronRight className="w-5 h-5 ml-1 opacity-80" /></>
+                      )}
+                    </Button>
+
+                    {activeTab === Role.ANO && (
+                      <button
+                        type="button"
+                        onClick={() => { setStep("forgot-email"); setError(""); }}
+                        className="w-full text-center text-xs text-gray-500 hover:text-red-400 transition-colors mt-2 font-medium"
+                      >
+                        Forgot PIN? Reset via Email OTP
+                      </button>
+                    )}
+                  </form>
+                </div>
+              </motion.div>
+            )}
+
+            {step === "forgot-email" && (
+              <motion.div key="forgot-email" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-8 space-y-6">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <button onClick={resetForgotFlow} className="text-gray-500 hover:text-white transition-colors">
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <div>
+                      <h2 className="text-white font-bold text-lg">Reset ANO PIN</h2>
+                      <p className="text-gray-400 text-xs">Enter your registered Supabase email</p>
+                    </div>
                   </div>
+                  <form onSubmit={handleForgotEmailSubmit} className="space-y-4">
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                      <Input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="ano@example.com"
+                        className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600"
+                        required
+                      />
+                    </div>
+                    {error && <p className="text-red-400 text-xs font-medium">{error}</p>}
+                    <Button type="submit" className="w-full h-12 bg-gradient-to-r from-red-600 to-red-800 border-0" disabled={forgotLoading}>
+                      {forgotLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send OTP to Email"}
+                    </Button>
+                  </form>
                 </div>
+              </motion.div>
+            )}
 
-                <div>
-                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
-                    {activeTab === Role.ANO ? "Secure PIN" : "Access PIN"}
-                  </label>
-                  <div className="relative mt-1">
-                    <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
-                    <Input
-                      type="password"
-                      value={formData.pin}
-                      onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
-                      placeholder="••••"
-                      className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary tracking-widest"
-                      required
-                    />
+            {step === "forgot-otp" && (
+              <motion.div key="forgot-otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-8 space-y-6">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <button onClick={() => setStep("forgot-email")} className="text-gray-500 hover:text-white transition-colors">
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <div>
+                      <h2 className="text-white font-bold text-lg">Enter OTP</h2>
+                      <p className="text-gray-400 text-xs">Check your inbox for the 6-digit code</p>
+                    </div>
                   </div>
+                  <form onSubmit={handleForgotOtpSubmit} className="space-y-4">
+                    <div className="relative">
+                      <KeyRound className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                      <Input
+                        value={forgotOtp}
+                        onChange={(e) => setForgotOtp(e.target.value)}
+                        placeholder="6-digit OTP"
+                        className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 tracking-widest font-mono"
+                        maxLength={6}
+                        required
+                      />
+                    </div>
+                    {error && <p className="text-red-400 text-xs font-medium">{error}</p>}
+                    <Button type="submit" className="w-full h-12 bg-gradient-to-r from-red-600 to-red-800 border-0" disabled={forgotLoading}>
+                      {forgotLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify OTP"}
+                    </Button>
+                  </form>
                 </div>
-              </div>
+              </motion.div>
+            )}
 
-              {error && (
-                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
-                  {error}
+            {step === "forgot-newpin" && (
+              <motion.div key="forgot-newpin" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-8 space-y-6">
+                  <div>
+                    <h2 className="text-white font-bold text-lg">Set New PIN</h2>
+                    <p className="text-gray-400 text-xs mt-1">Choose a secure PIN for your ANO account</p>
+                  </div>
+                  <form onSubmit={handleNewPinSubmit} className="space-y-4">
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                      <Input
+                        type="password"
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value)}
+                        placeholder="New PIN"
+                        className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 tracking-widest"
+                        required
+                      />
+                    </div>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                      <Input
+                        type="password"
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value)}
+                        placeholder="Confirm New PIN"
+                        className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 tracking-widest"
+                        required
+                      />
+                    </div>
+                    {error && <p className="text-red-400 text-xs font-medium">{error}</p>}
+                    <Button type="submit" className="w-full h-12 bg-gradient-to-r from-red-600 to-red-800 border-0" disabled={forgotLoading}>
+                      {forgotLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save New PIN"}
+                    </Button>
+                  </form>
                 </div>
-              )}
+              </motion.div>
+            )}
 
-              <Button
-                type="submit"
-                className={`w-full h-12 text-lg font-bold bg-gradient-to-r ${activeColor} border-0 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]`}
-                disabled={isLoading || isRestoring}
-              >
-                {(isLoading || isRestoring) ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    Access Dashboard <ChevronRight className="w-5 h-5 ml-1 opacity-80" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
+            {step === "forgot-done" && (
+              <motion.div key="forgot-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                <div className="p-8 text-center space-y-4">
+                  <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-8 h-8 text-green-400" />
+                  </div>
+                  <h2 className="text-white font-bold text-xl">PIN Updated!</h2>
+                  <p className="text-gray-400 text-sm">You can now log in with your new PIN.</p>
+                  <Button onClick={resetForgotFlow} className="w-full h-12 bg-gradient-to-r from-red-600 to-red-800 border-0 mt-4">
+                    Back to Login
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <p className="text-center text-gray-600 text-[10px] mt-8 uppercase tracking-widest font-bold opacity-60">

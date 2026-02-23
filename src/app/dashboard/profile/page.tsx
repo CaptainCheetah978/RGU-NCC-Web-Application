@@ -7,7 +7,7 @@ import { Role, Wing, Gender, Cadet, User } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { Camera, Award, Calendar, Shield, Info, Download, Printer } from "lucide-react";
+import { Camera, Award, Calendar, Shield, Info, Download, Printer, Lock, CheckCircle2, Loader2 } from "lucide-react";
 import { useState, useRef } from "react";
 import { toPng } from "html-to-image";
 import { QRCodeSVG } from "qrcode.react";
@@ -15,13 +15,17 @@ import { AttendanceHistory } from "@/components/profile/attendance-history";
 import { CertificatesSection } from "@/components/profile/certificates-section";
 
 export default function ProfilePage() {
-    const { user } = useAuth();
+    const { user, updatePin } = useAuth();
     const { updateCadet, getStats, currentUserProfile } = useData();
     const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [uploadError, setUploadError] = useState("");
     const [isDownloading, setIsDownloading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const idCardRef = useRef<HTMLDivElement>(null);
+    const [changePinData, setChangePinData] = useState({ newPin: "", confirmPin: "" });
+    const [changePinLoading, setChangePinLoading] = useState(false);
+    const [changePinError, setChangePinError] = useState("");
+    const [changePinSuccess, setChangePinSuccess] = useState(false);
 
     // Get the most up-to-date user data (including extras like photos) directly from context
     // Falls back to auth user defaults if profile not fully loaded yet (though context handles loading)
@@ -100,6 +104,30 @@ export default function ProfilePage() {
             console.error("Failed to download ID card:", err);
         } finally {
             setIsDownloading(false);
+        }
+    };
+
+    const handleChangePinSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setChangePinError("");
+        setChangePinSuccess(false);
+        if (changePinData.newPin !== changePinData.confirmPin) {
+            setChangePinError("PINs do not match.");
+            return;
+        }
+        if (changePinData.newPin.length < 4) {
+            setChangePinError("PIN must be at least 4 characters.");
+            return;
+        }
+        setChangePinLoading(true);
+        try {
+            await updatePin(changePinData.newPin);
+            setChangePinSuccess(true);
+            setChangePinData({ newPin: "", confirmPin: "" });
+        } catch (err: any) {
+            setChangePinError(err?.message || "Failed to update PIN.");
+        } finally {
+            setChangePinLoading(false);
         }
     };
 
@@ -383,6 +411,59 @@ export default function ProfilePage() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Change PIN — ANO only */}
+                    {currentUser.role === Role.ANO && (
+                        <Card className="border-red-200 bg-red-50/30">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-base flex items-center space-x-2">
+                                    <Lock className="w-4 h-4 text-red-600" />
+                                    <span>Change Secure PIN</span>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 pt-0">
+                                {changePinSuccess ? (
+                                    <div className="flex items-center space-x-3 text-green-700 bg-green-50 border border-green-200 rounded-xl p-4">
+                                        <CheckCircle2 className="w-5 h-5 shrink-0" />
+                                        <p className="text-sm font-semibold">PIN updated successfully!</p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleChangePinSubmit} className="space-y-3">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">New PIN</label>
+                                                <input
+                                                    type="password"
+                                                    value={changePinData.newPin}
+                                                    onChange={(e) => setChangePinData({ ...changePinData, newPin: e.target.value })}
+                                                    placeholder="New PIN"
+                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 px-3 text-sm bg-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Confirm PIN</label>
+                                                <input
+                                                    type="password"
+                                                    value={changePinData.confirmPin}
+                                                    onChange={(e) => setChangePinData({ ...changePinData, confirmPin: e.target.value })}
+                                                    placeholder="Confirm PIN"
+                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 px-3 text-sm bg-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                        {changePinError && (
+                                            <p className="text-red-500 text-xs font-medium">{changePinError}</p>
+                                        )}
+                                        <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white" disabled={changePinLoading}>
+                                            {changePinLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update PIN"}
+                                        </Button>
+                                    </form>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Attendance History & Certificates */}
                     <AttendanceHistory cadetId={currentUser.id} />
