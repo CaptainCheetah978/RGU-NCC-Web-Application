@@ -28,35 +28,33 @@ const SIGNED_URL_EXPIRY = 60 * 60; // 1 hour in seconds
 
 function getFileType(name: string): FileType {
     const ext = name.split(".").pop()?.toLowerCase() || "";
-    if (ext === "pdf") return "PDF";
+    if (["pdf"].includes(ext)) return "PDF";
     if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)) return "IMAGE";
     if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return "VIDEO";
     return "OTHER";
 }
 
 function formatBytes(bytes: number) {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1048576).toFixed(1) + " MB";
 }
 
 export default function FilesPage() {
     const { user } = useAuth();
+
+    // ALL hooks must come before any conditional returns
     const [files, setFiles] = useState<StoredFile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploadFile, setUploadFile] = useState<File | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    if (!user) return null;
-
-    const canUpload = [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
-    const canDelete = [Role.ANO, Role.SUO].includes(user.role);
+    const [pageError, setPageError] = useState<string | null>(null);
+    const [modalError, setModalError] = useState<string | null>(null);
 
     const fetchFiles = useCallback(async () => {
         setIsLoading(true);
-        setError(null);
+        setPageError(null);
         try {
             // 1. List files in the bucket
             const { data: listed, error: listError } = await supabase.storage
@@ -64,7 +62,7 @@ export default function FilesPage() {
                 .list("", { limit: 200, sortBy: { column: "created_at", order: "desc" } });
 
             if (listError) {
-                setError("Could not load files. Make sure the 'files' storage bucket exists in Supabase (set to Private).");
+                setPageError("Could not load files. Make sure the 'files' storage bucket exists in Supabase (set to Private).");
                 setFiles([]);
                 return;
             }
@@ -79,7 +77,7 @@ export default function FilesPage() {
                 .createSignedUrls(paths, SIGNED_URL_EXPIRY);
 
             if (signError) {
-                setError("Could not generate secure download links.");
+                setPageError("Could not generate secure download links.");
                 setFiles([]);
                 return;
             }
@@ -87,7 +85,6 @@ export default function FilesPage() {
             const urlMap = new Map((signedUrls || []).map(s => [s.path, s.signedUrl]));
 
             const mapped: StoredFile[] = validFiles.map(f => {
-                // Filename format: "UploaderName__timestamp_originalfilename"
                 const parts = f.name.split("__");
                 const displayName = parts.length > 1 ? parts.slice(1).join("__").replace(/^\d+_/, "") : f.name;
                 const uploader = parts.length > 1 ? parts[0].replace(/_/g, " ") : "Unknown";
@@ -108,7 +105,7 @@ export default function FilesPage() {
 
             setFiles(mapped);
         } catch (e) {
-            setError("Unexpected error loading files.");
+            setPageError("Unexpected error loading files.");
         } finally {
             setIsLoading(false);
         }
@@ -116,28 +113,40 @@ export default function FilesPage() {
 
     useEffect(() => { fetchFiles(); }, [fetchFiles]);
 
+    // Safe early return AFTER all hooks
+    if (!user) return null;
+
+    const canUpload = [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
+    const canDelete = [Role.ANO, Role.SUO].includes(user.role);
+
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!uploadFile || !user) return;
         setIsUploading(true);
-        setError(null);
+        setModalError(null);
 
         const safeName = user.name.replace(/\s+/g, "_");
         const timestamp = Date.now();
         const storagePath = `${safeName}__${timestamp}_${uploadFile.name}`;
 
-        const { error: uploadError } = await supabase.storage
-            .from(BUCKET)
-            .upload(storagePath, uploadFile, { upsert: false });
+        try {
+            const { error: uploadError } = await supabase.storage
+                .from(BUCKET)
+                .upload(storagePath, uploadFile, { upsert: false });
 
-        if (uploadError) {
-            setError(`Upload failed: ${uploadError.message}`);
-        } else {
-            setIsUploadModalOpen(false);
-            setUploadFile(null);
-            await fetchFiles();
+            if (uploadError) {
+                setModalError(`Upload failed: ${uploadError.message}`);
+            } else {
+                setIsUploadModalOpen(false);
+                setUploadFile(null);
+                setModalError(null);
+                await fetchFiles();
+            }
+        } catch (err: any) {
+            setModalError(err?.message || "Upload failed unexpectedly.");
+        } finally {
+            setIsUploading(false);
         }
-        setIsUploading(false);
     };
 
     const handleDelete = async (file: StoredFile) => {
@@ -181,9 +190,9 @@ export default function FilesPage() {
                 </div>
             </div>
 
-            {error && (
+            {pageError && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                    ⚠️ {error}
+                    ⚠️ {pageError}
                 </div>
             )}
 
@@ -263,7 +272,7 @@ export default function FilesPage() {
 
             <Modal
                 isOpen={isUploadModalOpen}
-                onClose={() => { setIsUploadModalOpen(false); setUploadFile(null); setError(null); }}
+                onClose={() => { setIsUploadModalOpen(false); setUploadFile(null); setModalError(null); }}
                 title="Upload Resource"
             >
                 <form onSubmit={handleUpload} className="space-y-6">
@@ -271,7 +280,7 @@ export default function FilesPage() {
                         <input
                             type="file"
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                            onChange={(e) => { setUploadFile(e.target.files?.[0] || null); setModalError(null); }}
                             accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv"
                         />
                         <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4">
@@ -290,10 +299,14 @@ export default function FilesPage() {
                         )}
                     </div>
 
-                    {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+                    {modalError && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium">
+                            ⚠️ {modalError}
+                        </div>
+                    )}
 
                     <div className="flex justify-end space-x-3">
-                        <Button type="button" variant="ghost" onClick={() => { setIsUploadModalOpen(false); setUploadFile(null); }}>Cancel</Button>
+                        <Button type="button" variant="ghost" onClick={() => { setIsUploadModalOpen(false); setUploadFile(null); setModalError(null); }}>Cancel</Button>
                         <Button type="submit" disabled={!uploadFile || isUploading} isLoading={isUploading}>
                             Upload Now
                         </Button>
