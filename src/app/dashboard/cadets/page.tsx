@@ -575,7 +575,7 @@ export default function CadetsPage() {
                     <div className="space-y-6">
                         <div className="flex flex-col items-center justify-center text-center pb-6 border-b border-gray-100">
                             <div className="w-24 h-24 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl font-bold text-gray-400 overflow-hidden mb-3 border-4 border-white shadow-lg">
-                                {viewingCadet.avatarUrl ? <Image src={viewingCadet.avatarUrl} alt="" width={96} height={96} /> : viewingCadet.name.charAt(0)}
+                                {viewingCadet.avatarUrl ? <img src={viewingCadet.avatarUrl} alt={viewingCadet.name} className="w-full h-full object-cover" /> : viewingCadet.name.charAt(0)}
                             </div>
                             <h3 className="text-2xl font-bold text-gray-900">{viewingCadet.rank} {viewingCadet.name}</h3>
                             <p className="text-gray-500 font-mono bg-gray-100 px-3 py-1 rounded-full text-xs mt-2">{viewingCadet.regimentalNumber}</p>
