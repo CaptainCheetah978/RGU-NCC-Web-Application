@@ -300,12 +300,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             unit_name: updates.unitName,
             enrollment_year: updates.enrollmentYear,
             blood_group: updates.bloodGroup,
+            avatar_url: updates.avatarUrl,
             // access_pin is usually handled separately for security/audit, but allowing it here if needed
             access_pin: updates.access_pin
         }).eq('id', id);
         if (error) throw error;
         await refreshData();
     };
+
 
     const deleteCadet = async (id: string) => {
         const { error } = await supabase.from('profiles').delete().eq('id', id);

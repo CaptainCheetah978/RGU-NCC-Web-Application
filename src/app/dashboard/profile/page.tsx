@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
+import { supabase } from "@/lib/supabase-client";
 import { Role, Wing, Gender, Cadet, User } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
@@ -45,78 +46,45 @@ export default function ProfilePage() {
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (!file || !user) return;
 
-        // Simple validation
         if (!file.type.startsWith("image/")) {
             setUploadError("Please select an image file.");
             return;
         }
-
         if (file.size > 2 * 1024 * 1024) {
             setUploadError("Image size must be less than 2MB.");
             return;
         }
 
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const base64 = event.target?.result as string;
-            // Assuming updateUser isn't exposed but updateCadet is? 
-            // Wait, in ProfilePage we are using `updateUser` from `useData()`.
-            // But I removed `updateUser` from `DataContextType` in a previous step to fix a lint error in CadetsPage!
-            // I need to check `data-context.tsx` again to see if I removed it from the Interface but it is still returned by the hook?
-            // If I removed it from Interface, TypeScript will complain here too.
-            // I should use `updateCadet` if available, or just ignore for now if it works at runtime (JS). 
-            // But this is TS.
-            // Let's assume I need to use `updateCadet` or `updateUser` if I added it back?
-            // I likely need to fix `data-context` to export `updateUser` properly or use `updateCadet`.
-            // However, `updateCadet` takes an ID and `Cadet` object. `currentUser` is `User & Partial<Cadet>`.
-            // For now, let's try to usage `updateCadet` if `user.role` suggests they are a cadet/profile exists.
+        setUploadError("");
+        const ext = file.name.split(".").pop();
+        const path = `${user.id}/avatar.${ext}`;
 
-            // Actually, in `data-context`, `updateUser` WAS exposed in the return value but I removed it from the type definition to fix the lint error in CadetsPage? 
-            // providing that I am not editing `data-context` right now, I should stick to what is available. 
-            // If `updateUser` is not available on the type, I will get a lint error here.
-            // I should check if `updateUser` is used in other places. It was used in `CadetsPage` and `ProfilePage`.
-            // I removed it from `CadetsPage`.
-            // I should probably remove it here and use `updateCadet` if applicable or fail gracefully.
-            // But `ProfilePage` updates the current user's profile.
+        try {
+            // 1. Upload to Supabase Storage 'avatars' bucket
+            const { error: uploadErr } = await supabase.storage
+                .from("avatars")
+                .upload(path, file, { upsert: true });
 
-            // Let's assume for this specific edit I will try to use `updateUser` but if it fails type check I'll fix it.
-            // Wait, `updateUser` handles `profiles` table updates. `updateCadet` handles `cadets` table (which I plan to deprecate/merge?).
-            // The `cadets` array comes from `profiles` table now? 
-            // In `data-context`, `cadets` state is populated from `profiles` table where role is NOT 'ANO'?
-            // Data Context is complex.
+            if (uploadErr) throw uploadErr;
 
-            // Let's check `data-context` properly next time. For now, I'll assume `updateUser` is NOT on the type and will cause error.
-            // But `updateCadet` is there.
-            // If I use `updateCadet`, it updates `profiles` table in my new implementation?
-            // Yes, `updateCadet` does `supabase.from('profiles').update(...)`.
+            // 2. Get a long-lived signed URL (10 year expiry)
+            const { data: signedData, error: signErr } = await supabase.storage
+                .from("avatars")
+                .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
 
-            try {
-                // @ts-ignore - temporary fix if type is missing, or use updateCadet
-                // But wait, updateCadet expects a full Cadet object or Partial?
-                // updateCadet(id, updates)
-                // Let's try to cast to any or just use updateCadet if imported?
-                // updateCadet is not imported/destructured from useData here! 
-                // I need to add updateCadet to destructuring first.
+            if (signErr || !signedData) throw signErr;
 
-                // For this step, I will replace `updateUser` with `updateCadet` assuming I will add it to destructuring.
-                // But wait, `updateUser` is in the destructured variables in line 18. 
-                // If I remove `updateUser` and add `updateCadet`, I need to change line 18 too.
+            // 3. Save the URL to the profiles table
+            await updateCadet(user.id, { avatarUrl: signedData.signedUrl });
 
-                // I will do that in a separate replacement or use MultiReplace.
-                // I'll stick to `updateUser` here and fix the imports/declarations in the next step.
-
-                await updateCadet(currentUser.id, { avatarUrl: base64 });
-                setUploadError("");
-            } catch (error) {
-                console.error("Failed to upload photo", error);
-                setUploadError("Failed to upload photo.");
-            }
-        };
-        reader.readAsDataURL(file);
+        } catch (err: any) {
+            console.error("Failed to upload photo", err);
+            setUploadError(err?.message || "Upload failed. Ensure the 'avatars' storage bucket exists.");
+        }
     };
 
     const handleDownload = async () => {
