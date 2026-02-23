@@ -156,15 +156,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         try {
-            await supabase.auth.signOut();
+            await supabase.auth.signOut({ scope: 'global' });
         } catch (error) {
             console.error("Error signing out:", error);
         } finally {
             setUser(null);
-            // Use hard navigation to clear all React state and Next.js cache
             window.location.href = "/";
         }
     };
+
 
     const loginWithPassword = async (email: string, pin: string) => {
         setIsLoading(true);

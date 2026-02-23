@@ -19,6 +19,8 @@ export default function ProfilePage() {
     const { updateCadet, getStats, currentUserProfile } = useData();
     const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [uploadError, setUploadError] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const idCardRef = useRef<HTMLDivElement>(null);
@@ -59,35 +61,57 @@ export default function ProfilePage() {
             return;
         }
         if (file.size > 2 * 1024 * 1024) {
-            setUploadError("Image size must be less than 2MB.");
+            setUploadError("Image must be under 2MB.");
             return;
         }
 
         setUploadError("");
-        const ext = file.name.split(".").pop();
-        const path = `${user.id}/avatar.${ext}`;
+        setUploadSuccess(false);
+        setIsUploading(true);
 
         try {
-            // 1. Upload to Supabase Storage 'avatars' bucket
+            // Try Supabase Storage first
+            const ext = file.name.split(".").pop();
+            const path = `${user.id}/avatar.${ext}`;
+
             const { error: uploadErr } = await supabase.storage
                 .from("avatars")
                 .upload(path, file, { upsert: true });
 
-            if (uploadErr) throw uploadErr;
+            if (!uploadErr) {
+                // Storage upload worked — get signed URL
+                const { data: signedData } = await supabase.storage
+                    .from("avatars")
+                    .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
 
-            // 2. Get a long-lived signed URL (10 year expiry)
-            const { data: signedData, error: signErr } = await supabase.storage
-                .from("avatars")
-                .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+                if (signedData?.signedUrl) {
+                    await updateCadet(user.id, { avatarUrl: signedData.signedUrl });
+                    setUploadSuccess(true);
+                    return;
+                }
+            }
 
-            if (signErr || !signedData) throw signErr;
-
-            // 3. Save the URL to the profiles table
-            await updateCadet(user.id, { avatarUrl: signedData.signedUrl });
+            // Fallback: store as base64 directly (works without storage bucket)
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const base64 = ev.target?.result as string;
+                try {
+                    await updateCadet(user.id, { avatarUrl: base64 });
+                    setUploadSuccess(true);
+                } catch (err: any) {
+                    setUploadError(err?.message || "Save failed.");
+                } finally {
+                    setIsUploading(false);
+                }
+            };
+            reader.readAsDataURL(file);
+            return; // setIsUploading handled inside reader.onload
 
         } catch (err: any) {
-            console.error("Failed to upload photo", err);
-            setUploadError(err?.message || "Upload failed. Ensure the 'avatars' storage bucket exists.");
+            console.error("Upload error:", err);
+            setUploadError(err?.message || "Upload failed.");
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -210,11 +234,20 @@ export default function ProfilePage() {
                             </div>
                             <button
                                 onClick={handlePhotoUploadClick}
-                                className="absolute bottom-1 right-1 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg hover:bg-primary/90 transition-all border-4 border-white"
+                                disabled={isUploading}
+                                className="absolute bottom-1 right-1 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg hover:bg-primary/90 transition-all border-4 border-white disabled:opacity-60"
                             >
-                                <Camera className="w-5 h-5" />
+                                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-5 h-5" />}
                             </button>
                         </div>
+                        {uploadSuccess && (
+                            <p className="text-green-600 text-xs font-semibold flex items-center gap-1 -mt-3 mb-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Photo saved!
+                            </p>
+                        )}
+                        {uploadError && (
+                            <p className="text-red-500 text-xs font-semibold -mt-3 mb-1 max-w-[200px] text-center">{uploadError}</p>
+                        )}
 
                         <h2 className="text-2xl font-bold text-gray-900">{currentUser.name}</h2>
                         <span className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-xs font-bold uppercase tracking-wider mt-2 border border-red-100">
