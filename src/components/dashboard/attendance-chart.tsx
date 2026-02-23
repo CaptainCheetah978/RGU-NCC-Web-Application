@@ -17,7 +17,7 @@ export function AttendanceChart() {
                     <BarChart3 className="w-5 h-5 mr-2 text-primary" />
                     Attendance Analytics
                 </CardTitle>
-                <p className="text-xs text-gray-400 mt-1">Per-class attendance breakdown</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Per-class attendance breakdown</p>
             </CardHeader>
             <CardContent>
                 {data.length === 0 ? (
@@ -43,10 +43,10 @@ export function AttendanceChart() {
                                 return (
                                     <div key={i}>
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="text-xs font-semibold text-gray-700 truncate max-w-[60%]">{item.className}</span>
-                                            <span className="text-[10px] text-gray-400 font-bold">{total} records</span>
+                                            <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 truncate max-w-[60%]">{item.className}</span>
+                                            <span className="text-[10px] text-gray-400 dark:text-slate-500 font-bold">{total} records</span>
                                         </div>
-                                        <div className="h-6 rounded-lg bg-gray-100 overflow-hidden flex">
+                                        <div className="h-6 rounded-lg bg-gray-100 dark:bg-slate-700/60 overflow-hidden flex">
                                             {item.present > 0 && (
                                                 <div
                                                     className="h-full bg-green-500 transition-all duration-500 flex items-center justify-center"

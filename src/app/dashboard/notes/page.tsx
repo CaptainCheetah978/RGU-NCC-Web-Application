@@ -156,8 +156,8 @@ export default function NotesPage() {
         <div className="space-y-6 max-w-7xl mx-auto h-[calc(100vh-140px)] flex flex-col">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Private Notes</h2>
-                    <p className="text-gray-500 mt-1">Direct communication for NCC duties and requests.</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Private Notes</h2>
+                    <p className="text-gray-500 dark:text-slate-400 mt-1">Direct communication for NCC duties and requests.</p>
                 </div>
                 <Button onClick={() => setIsComposeModalOpen(true)} className="shadow-lg shadow-primary/25">
                     <Plus className="w-5 h-5 mr-2" />
@@ -167,8 +167,8 @@ export default function NotesPage() {
 
             <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0">
                 <Card className="w-full md:w-80 border-white/20 shadow-sm flex flex-col overflow-hidden bg-white/80 backdrop-blur-sm">
-                    <div className="p-4 border-b border-gray-100 space-y-4 shrink-0">
-                        <div className="flex p-1 bg-gray-100 rounded-xl">
+                    <div className="p-4 border-b border-gray-100 dark:border-slate-700/60 space-y-4 shrink-0">
+                        <div className="flex p-1 bg-gray-100 dark:bg-slate-800 rounded-xl">
                             {(["inbox", "sent"] as const).map((tab) => (
                                 <button
                                     key={tab}
@@ -176,8 +176,8 @@ export default function NotesPage() {
                                     className={cn(
                                         "flex-1 flex items-center justify-center space-x-2 py-2 rounded-lg text-sm font-bold transition-all",
                                         activeTab === tab
-                                            ? "bg-white text-primary shadow-sm"
-                                            : "text-gray-500 hover:text-gray-700"
+                                            ? "bg-white dark:bg-slate-700 text-primary dark:text-slate-100 shadow-sm"
+                                            : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
                                     )}
                                 >
                                     {tab === "inbox" ? <Inbox className="w-4 h-4" /> : <Send className="w-4 h-4" />}
@@ -196,7 +196,7 @@ export default function NotesPage() {
                                 placeholder={`Search ${activeTab}...`}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 border-none text-xs focus:ring-2 focus:ring-primary/10 transition-shadow outline-none"
+                                className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-slate-800/60 border-none dark:text-slate-200 text-xs focus:ring-2 focus:ring-primary/10 transition-shadow outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                             />
                         </div>
                     </div>
@@ -218,7 +218,7 @@ export default function NotesPage() {
                                         "w-full text-left p-3 rounded-xl transition-all border group relative",
                                         selectedNote?.id === note.id
                                             ? "bg-primary/5 border-primary/20"
-                                            : "bg-transparent border-transparent hover:bg-gray-50"
+                                            : "bg-transparent border-transparent hover:bg-gray-50 dark:hover:bg-slate-700/40"
                                     )}
                                 >
                                     {activeTab === "inbox" && !note.isRead && (
@@ -228,7 +228,7 @@ export default function NotesPage() {
                                     <div className="flex justify-between items-start mb-1">
                                         <span className={cn(
                                             "text-xs font-bold leading-tight line-clamp-1 flex-1",
-                                            activeTab === "inbox" && !note.isRead ? "text-gray-900" : "text-gray-600"
+                                            activeTab === "inbox" && !note.isRead ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-slate-400"
                                         )}>
                                             {activeTab === "inbox" ? note.senderName : note.recipientName}
                                         </span>
@@ -238,11 +238,11 @@ export default function NotesPage() {
                                     </div>
                                     <div className={cn(
                                         "text-sm font-bold mb-1 line-clamp-1",
-                                        activeTab === "inbox" && !note.isRead ? "text-primary" : "text-gray-700"
+                                        activeTab === "inbox" && !note.isRead ? "text-primary" : "text-gray-700 dark:text-slate-300"
                                     )}>
                                         {note.subject}
                                     </div>
-                                    <p className="text-xs text-gray-500 line-clamp-1">{note.content}</p>
+                                    <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-1">{note.content}</p>
 
                                     {note.forwardedToANO && (
                                         <div className="mt-2 flex items-center text-[10px] text-primary/60 font-bold uppercase tracking-wider">
@@ -266,17 +266,17 @@ export default function NotesPage() {
                                 exit={{ opacity: 0, scale: 1 }}
                                 className="flex-1 flex flex-col min-h-0"
                             >
-                                <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-white/50">
+                                <div className="p-6 border-b border-gray-100 dark:border-slate-700/60 flex justify-between items-start bg-white/50 dark:bg-slate-900/20">
                                     <div className="space-y-1">
                                         <div className="flex items-center space-x-2">
                                             <span className="text-xs font-bold text-primary px-2 py-0.5 bg-primary/5 rounded-full uppercase tracking-wider">
                                                 {activeTab === "inbox" ? "From" : "To"}
                                             </span>
-                                            <h3 className="text-xl font-bold text-gray-900">
+                                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                                                 {activeTab === "inbox" ? selectedNote.senderName : selectedNote.recipientName}
                                             </h3>
                                         </div>
-                                        <div className="flex items-center text-sm text-gray-500 space-x-4">
+                                        <div className="flex items-center text-sm text-gray-500 dark:text-slate-400 space-x-4">
                                             <span className="flex items-center"><Clock className="w-4 h-4 mr-1.5" /> {new Date(selectedNote.timestamp).toLocaleString()}</span>
                                         </div>
                                     </div>
@@ -314,18 +314,18 @@ export default function NotesPage() {
                                                     }
                                                 }
                                             }}
-                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                         >
                                             <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
                                 </div>
                                 <div className="p-8 space-y-6 flex-1 overflow-y-auto bg-white/30">
-                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                        <h4 className="text-xl font-bold text-gray-900 mb-4 border-b pb-4">
+                                    <div className="bg-white dark:bg-slate-800/60 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700/50">
+                                        <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-b dark:border-slate-700/60 pb-4">
                                             {selectedNote.subject}
                                         </h4>
-                                        <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                        <div className="text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
                                             {selectedNote.content}
                                         </div>
                                     </div>
@@ -342,12 +342,12 @@ export default function NotesPage() {
                                 </div>
                             </motion.div>
                         ) : (
-                            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 space-y-4 p-12 text-center">
-                                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
+                            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-slate-500 space-y-4 p-12 text-center">
+                                <div className="w-20 h-20 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center">
                                     <MessageSquare className="w-10 h-10 text-gray-200" />
                                 </div>
                                 <div>
-                                    <h4 className="text-lg font-bold text-gray-600">Select a message</h4>
+                                    <h4 className="text-lg font-bold text-gray-600 dark:text-slate-300">Select a message</h4>
                                     <p className="text-sm max-w-xs mx-auto">Click on a message from the list to view its contents and take action.</p>
                                 </div>
                             </div>
@@ -361,7 +361,7 @@ export default function NotesPage() {
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-primary/80 ml-1">Recipient</label>
                         <select
-                            className="flex w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            className="flex w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
                             value={formData.recipientId}
                             onChange={(e) => setFormData({ ...formData, recipientId: e.target.value })}
                             required
@@ -389,7 +389,7 @@ export default function NotesPage() {
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-primary/80 ml-1">Message</label>
                         <textarea
-                            className="flex min-h-[150px] w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                            className="flex min-h-[150px] w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-primary/20 outline-none resize-none"
                             placeholder="Write your note here..."
                             value={formData.content}
                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}

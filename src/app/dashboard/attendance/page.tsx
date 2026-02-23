@@ -86,11 +86,11 @@ function AttendanceContent() {
     if (!classes.length) {
         return (
             <div className="flex flex-col items-center justify-center p-12 h-[calc(100vh-140px)]">
-                <div className="bg-gray-50 p-6 rounded-full mb-4">
-                    <Shield className="w-12 h-12 text-gray-300" />
+                <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-full mb-4">
+                    <Shield className="w-12 h-12 text-gray-300 dark:text-slate-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">No Classes Scheduled</h3>
-                <p className="text-gray-500 mt-2 max-w-sm text-center">There are no classes scheduled to take attendance for. Please ask an administrator to schedule a class.</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No Classes Scheduled</h3>
+                <p className="text-gray-500 dark:text-slate-400 mt-2 max-w-sm text-center">There are no classes scheduled to take attendance for. Please ask an administrator to schedule a class.</p>
             </div>
         )
     }
@@ -99,15 +99,15 @@ function AttendanceContent() {
         <div className="space-y-6 max-w-7xl mx-auto h-[calc(100vh-140px)] flex flex-col">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Attendance Register</h2>
-                    <p className="text-gray-500 mt-1">Mark and track attendance for scheduled classes.</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Attendance Register</h2>
+                    <p className="text-gray-500 dark:text-slate-400 mt-1">Mark and track attendance for scheduled classes.</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <select
                         value={selectedClassId}
                         onChange={(e) => setSelectedClassId(e.target.value)}
-                        className="h-10 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none w-full sm:w-64"
+                        className="h-10 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none w-full sm:w-64"
                     >
                         {classes.map(c => (
                             <option key={c.id} value={c.id}>{c.title} • {c.date}</option>
@@ -126,7 +126,7 @@ function AttendanceContent() {
             </div>
 
             <Card className="bg-white/90 backdrop-blur-xl border-white/20 shadow-sm flex-1 flex flex-col overflow-hidden">
-                <div className="p-4 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gray-50/30">
+                <div className="p-4 border-b border-gray-100 dark:border-slate-700/60 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gray-50/30 dark:bg-slate-900/20">
                     <div className="flex flex-wrap items-center gap-3 text-sm w-full lg:w-auto">
                         <div className="flex items-center text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 shadow-sm">
                             <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
@@ -152,22 +152,22 @@ function AttendanceContent() {
                             placeholder="Search by name or regimental no..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 rounded-lg bg-white border border-gray-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow outline-none placeholder:text-gray-400"
+                            className="w-full pl-9 pr-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                         />
                     </div>
                 </div>
 
                 <CardContent className="p-0 flex-1 overflow-y-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
-                            <tr className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <thead className="bg-gray-50 dark:bg-slate-900/60 sticky top-0 z-10 shadow-sm">
+                            <tr className="text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                 <th className="px-6 py-4 w-[40%]">Cadet Name</th>
                                 <th className="px-6 py-4 w-[20%]">Regimental Given ID</th>
                                 <th className="px-6 py-4 w-[15%]">Rank</th>
                                 <th className="px-6 py-4 w-[25%] text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 bg-white">
+                        <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50 bg-transparent">
                             {filteredCadets.map((cadet) => {
                                 const status = getStatus(cadet.id);
                                 return (
@@ -175,7 +175,7 @@ function AttendanceContent() {
                                         key={cadet.id}
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="hover:bg-gray-50/80 transition-colors group"
+                                        className="hover:bg-gray-50/80 dark:hover:bg-slate-700/30 transition-colors group"
                                     >
                                         <td className="px-6 py-3">
                                             <div className="flex items-center">
@@ -183,12 +183,12 @@ function AttendanceContent() {
                                                     {cadet.name.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <div className="font-semibold text-gray-900">{cadet.name}</div>
+                                                    <div className="font-semibold text-gray-900 dark:text-white">{cadet.name}</div>
                                                     <div className="text-xs text-gray-400 md:hidden">{cadet.regimentalNumber}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-3 text-sm text-gray-500 font-mono tracking-wide hidden md:table-cell">
+                                        <td className="px-6 py-3 text-sm text-gray-500 dark:text-slate-400 font-mono tracking-wide hidden md:table-cell">
                                             {cadet.regimentalNumber || "-"}
                                         </td>
                                         <td className="px-6 py-3 text-sm">
@@ -210,7 +210,7 @@ function AttendanceContent() {
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "PRESENT"
                                                             ? "bg-green-500 text-white shadow-md shadow-green-500/20 scale-105"
-                                                            : "bg-gray-50 text-gray-400 hover:bg-green-50 hover:text-green-600"
+                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-400 hover:bg-green-50 hover:text-green-600"
                                                     )}
                                                     title="Mark Present"
                                                 >
@@ -223,7 +223,7 @@ function AttendanceContent() {
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "ABSENT"
                                                             ? "bg-red-500 text-white shadow-md shadow-red-500/20 scale-105"
-                                                            : "bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-400 hover:bg-red-50 hover:text-red-600"
                                                     )}
                                                     title="Mark Absent"
                                                 >
@@ -236,7 +236,7 @@ function AttendanceContent() {
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "LATE"
                                                             ? "bg-yellow-500 text-white shadow-md shadow-yellow-500/20 scale-105"
-                                                            : "bg-gray-50 text-gray-400 hover:bg-yellow-50 hover:text-yellow-600"
+                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-400 hover:bg-yellow-50 hover:text-yellow-600"
                                                     )}
                                                     title="Mark Late"
                                                 >

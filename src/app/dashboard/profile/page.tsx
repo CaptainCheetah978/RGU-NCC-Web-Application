@@ -216,7 +216,7 @@ export default function ProfilePage() {
             `}</style>
 
             <div className="no-print">
-                <h1 className="text-3xl font-extrabold text-black tracking-tight">My Profile</h1>
+                <h1 className="text-3xl font-extrabold text-black dark:text-white tracking-tight">My Profile</h1>
                 <p className="text-gray-500 mt-1">Manage your official NCC records and digital identity.</p>
             </div>
 
@@ -249,21 +249,21 @@ export default function ProfilePage() {
                             <p className="text-red-500 text-xs font-semibold -mt-3 mb-1 max-w-[200px] text-center">{uploadError}</p>
                         )}
 
-                        <h2 className="text-2xl font-bold text-gray-900">{currentUser.name}</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{currentUser.name}</h2>
                         <span className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-xs font-bold uppercase tracking-wider mt-2 border border-red-100">
                             {currentUser.role}
                         </span>
 
                         <div className="mt-8 w-full space-y-4">
-                            <div className="flex items-center justify-between text-sm p-3 bg-gray-50 rounded-xl">
-                                <div className="flex items-center text-gray-500">
+                            <div className="flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
+                                <div className="flex items-center text-gray-500 dark:text-slate-400">
                                     <Award className="w-4 h-4 mr-2" />
                                     <span>Regt. Number</span>
                                 </div>
-                                <span className="font-mono font-bold text-gray-900">{currentUser.regimentalNumber || "N/A"}</span>
+                                <span className="font-mono font-bold text-gray-900 dark:text-white">{currentUser.regimentalNumber || "N/A"}</span>
                             </div>
-                            <div className="flex items-center justify-between text-sm p-3 bg-gray-50 rounded-xl">
-                                <div className="flex items-center text-gray-500">
+                            <div className="flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
+                                <div className="flex items-center text-gray-500 dark:text-slate-400">
                                     <Calendar className="w-4 h-4 mr-2" />
                                     <span>Attendance</span>
                                 </div>
@@ -278,7 +278,7 @@ export default function ProfilePage() {
                 {/* Digital ID Card Display */}
                 <div className="lg:col-span-2 space-y-8">
                     <Card className="border-gray-200 overflow-hidden shadow-2xl">
-                        <CardHeader className="bg-gray-50 border-b border-gray-200 flex flex-row items-center justify-between no-print">
+                        <CardHeader className="bg-gray-50 dark:bg-slate-900/30 border-b border-gray-200 dark:border-slate-700/60 flex flex-row items-center justify-between no-print">
                             <CardTitle className="text-lg flex items-center">
                                 <Shield className="w-5 h-5 mr-2 text-primary" />
                                 Digital NCC ID Card
@@ -298,7 +298,7 @@ export default function ProfilePage() {
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-10 flex justify-center bg-gray-100/50">
+                        <CardContent className="p-10 flex justify-center bg-gray-100/50 dark:bg-slate-900/30">
                             {/* The Official ID Card Component */}
                             <div className="print-container">
                                 <div ref={idCardRef} className="w-full max-w-[500px] aspect-[1.6/1] bg-white rounded-xl shadow-2xl border border-gray-200 relative overflow-hidden flex flex-col p-px">
@@ -415,11 +415,11 @@ export default function ProfilePage() {
                                         <Info className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-gray-900">ID Verification</h4>
-                                        <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Digital authenticity</p>
+                                        <h4 className="font-bold text-gray-900 dark:text-white">ID Verification</h4>
+                                        <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase font-bold tracking-widest">Digital authenticity</p>
                                     </div>
                                 </div>
-                                <p className="text-sm text-gray-600 leading-relaxed">
+                                <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
                                     This digital ID card is automatically generated using your registered NCC profile data. It can be used for local unit identification.
                                 </p>
                             </CardContent>
@@ -431,11 +431,11 @@ export default function ProfilePage() {
                                         <Camera className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-gray-900">Photo Requirements</h4>
-                                        <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Official Standards</p>
+                                        <h4 className="font-bold text-gray-900 dark:text-white">Photo Requirements</h4>
+                                        <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase font-bold tracking-widest">Official Standards</p>
                                     </div>
                                 </div>
-                                <ul className="text-[11px] text-gray-600 space-y-2 list-disc pl-4 font-medium">
+                                <ul className="text-[11px] text-gray-600 dark:text-slate-300 space-y-2 list-disc pl-4 font-medium">
                                     <li>Must be in NCC Khakhi Uniform</li>
                                     <li>No headgear/beret allowed</li>
                                     <li>Plain white background preferred</li>
@@ -447,7 +447,7 @@ export default function ProfilePage() {
 
                     {/* Change PIN — ANO only */}
                     {currentUser.role === Role.ANO && (
-                        <Card className="border-red-200 bg-red-50/30">
+                        <Card className="border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base flex items-center space-x-2">
                                     <Lock className="w-4 h-4 text-red-600" />
@@ -464,24 +464,24 @@ export default function ProfilePage() {
                                     <form onSubmit={handleChangePinSubmit} className="space-y-3">
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">New PIN</label>
+                                                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">New PIN</label>
                                                 <input
                                                     type="password"
                                                     value={changePinData.newPin}
                                                     onChange={(e) => setChangePinData({ ...changePinData, newPin: e.target.value })}
                                                     placeholder="New PIN"
-                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 px-3 text-sm bg-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 dark:border-slate-700 px-3 text-sm bg-white dark:bg-slate-800 dark:text-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400"
                                                     required
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Confirm PIN</label>
+                                                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Confirm PIN</label>
                                                 <input
                                                     type="password"
                                                     value={changePinData.confirmPin}
                                                     onChange={(e) => setChangePinData({ ...changePinData, confirmPin: e.target.value })}
                                                     placeholder="Confirm PIN"
-                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 px-3 text-sm bg-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 dark:border-slate-700 px-3 text-sm bg-white dark:bg-slate-800 dark:text-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400"
                                                     required
                                                 />
                                             </div>
@@ -520,19 +520,19 @@ export default function ProfilePage() {
                 title="Photo Upload Disclaimer"
             >
                 <div className="space-y-4">
-                    <div className="flex items-start p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <div className="flex items-start p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-800/50">
                         <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white mr-4 shrink-0 shadow-lg shadow-amber-500/30">
                             <Info className="w-5 h-5" />
                         </div>
                         <div>
-                            <h4 className="font-bold text-amber-900">Important Requirement</h4>
-                            <p className="text-sm text-amber-800/80 mt-1 leading-relaxed">
+                            <h4 className="font-bold text-amber-900 dark:text-amber-300">Important Requirement</h4>
+                            <p className="text-sm text-amber-800/80 dark:text-amber-300/70 mt-1 leading-relaxed">
                                 Please ensure the photo you are about to upload is strictly in **NCC khakhi uniform** and **without any headgear** (beret/cap).
                             </p>
                         </div>
                     </div>
 
-                    <p className="text-sm text-gray-500 italic px-2">
+                    <p className="text-sm text-gray-500 dark:text-slate-400 italic px-2">
                         Uploading an improper photo may lead to the rejection of your digital ID validity by the ANO.
                     </p>
 

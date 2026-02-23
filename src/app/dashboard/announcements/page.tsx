@@ -87,8 +87,8 @@ export default function AnnouncementsPage() {
         <div className="space-y-6 max-w-4xl mx-auto">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Announcements</h2>
-                    <p className="text-gray-500 mt-1">Important notices and updates for all cadets.</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Announcements</h2>
+                    <p className="text-gray-500 dark:text-slate-400 mt-1">Important notices and updates for all cadets.</p>
                 </div>
                 {canPost && (
                     <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-primary/25">
@@ -115,7 +115,7 @@ export default function AnnouncementsPage() {
                             transition={{ delay: i * 0.04 }}
                         >
                             <Card className={`transition-all hover:shadow-md ${ann.priority === "urgent"
-                                ? "border-red-200 bg-red-50/50 shadow-sm shadow-red-100"
+                                ? "border-red-200 dark:border-red-800/50 bg-red-50/50 dark:bg-red-900/20 shadow-sm shadow-red-100"
                                 : "border-gray-100"
                                 }`}>
                                 <CardContent className="p-6">
@@ -132,17 +132,17 @@ export default function AnnouncementsPage() {
                                             )}
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-gray-900 text-lg">{ann.title}</h3>
+                                                    <h3 className="font-bold text-gray-900 dark:text-white text-lg">{ann.title}</h3>
                                                     {ann.priority === "urgent" && (
                                                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-100 text-red-600 border border-red-200">
                                                             URGENT
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p className="text-gray-600 mt-2 text-sm leading-relaxed whitespace-pre-line">
+                                                <p className="text-gray-600 dark:text-slate-300 mt-2 text-sm leading-relaxed whitespace-pre-line">
                                                     {ann.content}
                                                 </p>
-                                                <div className="flex items-center space-x-4 mt-3 text-xs text-gray-400">
+                                                <div className="flex items-center space-x-4 mt-3 text-xs text-gray-400 dark:text-slate-500">
                                                     <span className="font-bold">By {ann.authorName}</span>
                                                     <span className="flex items-center">
                                                         <Clock className="w-3 h-3 mr-1" />
@@ -154,7 +154,7 @@ export default function AnnouncementsPage() {
                                         {canPost && (
                                             <button
                                                 onClick={() => handleDelete(ann)}
-                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                                                className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -181,7 +181,7 @@ export default function AnnouncementsPage() {
                         <label className="text-sm font-medium text-primary/80 ml-1">Content</label>
                         <textarea
                             placeholder="Announcement details..."
-                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                             rows={4}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
@@ -194,7 +194,7 @@ export default function AnnouncementsPage() {
                                 type="button"
                                 className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-bold transition-all ${priority === "normal"
                                     ? "border-primary bg-primary/10 text-primary"
-                                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                                    : "border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-gray-300"
                                     }`}
                                 onClick={() => setPriority("normal")}
                             >
@@ -203,8 +203,8 @@ export default function AnnouncementsPage() {
                             <button
                                 type="button"
                                 className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-bold transition-all ${priority === "urgent"
-                                    ? "border-red-500 bg-red-50 text-red-600"
-                                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                                    ? "border-red-500 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                                    : "border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-gray-300"
                                     }`}
                                 onClick={() => setPriority("urgent")}
                             >

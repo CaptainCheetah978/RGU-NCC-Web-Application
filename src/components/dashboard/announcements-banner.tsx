@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 export function AnnouncementsBanner() {
     const { announcements } = useData();
 
-    // Show latest 3 announcements, urgent first
     const sorted = [...announcements]
         .sort((a, b) => {
             if (a.priority === "urgent" && b.priority !== "urgent") return -1;
@@ -26,13 +25,13 @@ export function AnnouncementsBanner() {
             className="space-y-3"
         >
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center">
                     <Megaphone className="w-4 h-4 mr-2 text-secondary" />
                     Announcements
                 </h3>
                 <Link
                     href="/dashboard/announcements"
-                    className="text-xs font-bold text-primary hover:underline flex items-center"
+                    className="text-xs font-bold text-primary dark:text-blue-400 hover:underline flex items-center"
                 >
                     View All <ArrowRight className="w-3 h-3 ml-1" />
                 </Link>
@@ -45,8 +44,8 @@ export function AnnouncementsBanner() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.05 }}
                         className={`p-4 rounded-xl border transition-all ${ann.priority === "urgent"
-                                ? "bg-red-50 border-red-200 shadow-sm shadow-red-100"
-                                : "bg-white border-gray-100 shadow-sm"
+                            ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50 shadow-sm"
+                            : "bg-white/80 dark:bg-slate-800/80 border-gray-100 dark:border-slate-700/60 shadow-sm backdrop-blur-sm"
                             }`}
                     >
                         <div className="flex items-start space-x-2">
@@ -54,18 +53,20 @@ export function AnnouncementsBanner() {
                                 <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                             )}
                             <div className="min-w-0">
-                                <h4 className={`text-sm font-bold truncate ${ann.priority === "urgent" ? "text-red-800" : "text-gray-900"
+                                <h4 className={`text-sm font-bold truncate ${ann.priority === "urgent"
+                                    ? "text-red-800 dark:text-red-300"
+                                    : "text-gray-900 dark:text-white"
                                     }`}>
                                     {ann.title}
                                 </h4>
-                                <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed">
+                                <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
                                     {ann.content}
                                 </p>
                                 <div className="flex items-center justify-between mt-2">
-                                    <span className="text-[10px] text-gray-400 font-medium">
+                                    <span className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">
                                         {ann.authorName}
                                     </span>
-                                    <span className="text-[10px] text-gray-400">
+                                    <span className="text-[10px] text-gray-400 dark:text-slate-500">
                                         {new Date(ann.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                                     </span>
                                 </div>
