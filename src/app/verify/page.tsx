@@ -15,6 +15,7 @@ interface VerifiedPerson {
     unitName?: string;
     bloodGroup?: string;
     enrollmentYear?: string;
+    avatarUrl?: string;
 }
 
 function VerifyContent() {
@@ -74,8 +75,12 @@ function VerifyContent() {
 
                         <div className="p-6 space-y-4">
                             <div className="flex items-center space-x-4">
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#002147] to-blue-900 flex items-center justify-center text-2xl font-bold text-white shrink-0">
-                                    {person.name?.charAt(0)}
+                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#002147] to-blue-900 flex items-center justify-center text-2xl font-bold text-white shrink-0 overflow-hidden">
+                                    {person.avatarUrl ? (
+                                        <Image src={person.avatarUrl} alt={person.name} width={64} height={64} className="w-full h-full object-cover" />
+                                    ) : (
+                                        person.name?.charAt(0)
+                                    )}
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900">{person.name}</h3>
