@@ -381,8 +381,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteNote = async (id: string) => {
-        const { error } = await supabase.from('notes').delete().eq('id', id);
-        if (error) throw error;
+        const { deleteNoteAction } = await import("@/app/actions/note-actions");
+        const result = await deleteNoteAction(id);
+        if (!result.success) throw new Error(result.error || "Failed to delete note");
         await refreshNotes();
     };
 
