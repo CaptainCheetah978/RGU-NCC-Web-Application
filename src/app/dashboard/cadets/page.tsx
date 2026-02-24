@@ -11,8 +11,31 @@ import { Search, UserPlus, Trash2, Key, Edit2, Eye, LayoutGrid, List as ListIcon
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CertificatesSection } from "@/components/profile/certificates-section";
-import { createCadetAccount, updateCadetPin } from "@/app/actions/cadet-actions";
+import { createCadetAccount, updateCadetPin, getCadetPin } from "@/app/actions/cadet-actions";
 import Image from "next/image";
+
+// Lazy PIN loader — fetches PIN on demand via server action, never from cached client data
+function PinDisplay({ cadetId }: { cadetId: string }) {
+    const [pin, setPin] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getCadetPin(cadetId).then(p => { setPin(p); setLoading(false); });
+    }, [cadetId]);
+
+    if (loading) return <p className="text-xs text-gray-400 animate-pulse">Loading PIN...</p>;
+    if (!pin) return null;
+
+    return (
+        <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800/50 flex items-center justify-between">
+            <div>
+                <span className="block text-xs font-bold text-amber-700 dark:text-amber-400 uppercase">Login PIN</span>
+                <span className="text-xs text-amber-600 dark:text-amber-400/70">Share this with the cadet securely.</span>
+            </div>
+            <span className="font-mono text-xl font-bold text-amber-900 dark:text-amber-300 tracking-widest">{pin}</span>
+        </div>
+    );
+}
 
 export default function CadetsPage() {
     const { cadets, updateCadet, deleteCadet, logActivity, refreshData } = useData();
@@ -94,10 +117,12 @@ export default function CadetsPage() {
         setIsEditModalOpen(true);
     };
 
-    const handlePinEdit = (cadet: Cadet) => {
+    const handlePinEdit = async (cadet: Cadet) => {
         setEditingCadet(cadet);
-        setNewPin(cadet.access_pin || "");
         setIsPinModalOpen(true);
+        // Fetch current PIN on demand via server action
+        const pin = await getCadetPin(cadet.id);
+        setNewPin(pin || "");
     };
 
     const handleView = (cadet: Cadet) => {
@@ -107,6 +132,13 @@ export default function CadetsPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // --- Form Validation ---
+        if (!formData.name.trim()) { alert("Name is required."); return; }
+        if (formData.name.trim().length < 2) { alert("Name must be at least 2 characters."); return; }
+        if (!formData.pin || formData.pin.length < 4) { alert("PIN must be at least 4 digits."); return; }
+        if (!/^\d+$/.test(formData.pin)) { alert("PIN must contain only digits."); return; }
+
         setIsLoading(true);
 
         const result = await createCadetAccount(formData);
@@ -143,6 +175,8 @@ export default function CadetsPage() {
     const handlePinUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingCadet) return;
+        if (!newPin || newPin.length < 4) { alert("PIN must be at least 4 digits."); return; }
+        if (!/^\d+$/.test(newPin)) { alert("PIN must contain only digits."); return; }
         setIsLoading(true);
 
         const result = await updateCadetPin(editingCadet.id, newPin);
@@ -605,14 +639,8 @@ export default function CadetsPage() {
                             <CertificatesSection userId={viewingCadet.id} isReadOnly={!isANO} />
                         </div>
 
-                        {canEdit && viewingCadet.access_pin && (
-                            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800/50 flex items-center justify-between">
-                                <div>
-                                    <span className="block text-xs font-bold text-amber-700 dark:text-amber-400 uppercase">Login PIN</span>
-                                    <span className="text-xs text-amber-600 dark:text-amber-400/70">Share this with the cadet securely.</span>
-                                </div>
-                                <span className="font-mono text-xl font-bold text-amber-900 dark:text-amber-300 tracking-widest">{viewingCadet.access_pin}</span>
-                            </div>
+                        {canEdit && (
+                            <PinDisplay cadetId={viewingCadet.id} />
                         )}
                     </div>
                 )}

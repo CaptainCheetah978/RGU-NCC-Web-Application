@@ -122,3 +122,18 @@ export async function updateCadetPin(cadetId: string, newPin: string) {
         return { success: false, error: message };
     }
 }
+
+export async function getCadetPin(cadetId: string): Promise<string | null> {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from("profiles")
+            .select("access_pin")
+            .eq("id", cadetId)
+            .single();
+
+        if (error || !data) return null;
+        return data.access_pin || null;
+    } catch {
+        return null;
+    }
+}

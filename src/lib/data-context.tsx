@@ -57,7 +57,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 // Column selections — fetch only what we need instead of select('*')
-const PROFILE_COLUMNS = 'id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, access_pin';
+const PROFILE_COLUMNS = 'id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number';
 const CLASS_COLUMNS = 'id, title, date, time, instructor_id, description';
 const ATTENDANCE_COLUMNS = 'id, class_id, cadet_id, status, created_at';
 const NOTE_COLUMNS = 'id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name';
@@ -113,7 +113,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 gender: p.gender,
                 unitName: p.unit_name,
                 unitNumber: p.unit_number,
-                access_pin: p.access_pin
             }));
 
             setAllProfiles(mappedProfiles as (User & Partial<Cadet>)[]);

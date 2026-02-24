@@ -1,58 +1,51 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Shield, CheckCircle2, XCircle, User, Award, Calendar } from "lucide-react";
 import Image from "next/image";
+import { verifyCadetById } from "@/app/actions/verify-actions";
+
+interface VerifiedPerson {
+    name: string;
+    role: string;
+    regimentalNumber?: string;
+    wing?: string;
+    unitNumber?: string;
+    unitName?: string;
+    bloodGroup?: string;
+    enrollmentYear?: string;
+}
 
 function VerifyContent() {
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
+    const [person, setPerson] = useState<VerifiedPerson | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [checked, setChecked] = useState(false);
 
-    // Look up the user/cadet from localStorage (for now)
-    // TODO: Connect to Supabase for real verification
-    let person: Record<string, string | undefined> | null = null;
-
-    if (id && typeof window !== "undefined") {
-        let merged: Record<string, string | number | undefined> | null = null;
-
-        // 1. (Mock data removed)
-
-        // 2. Override with localStorage cadets (has the latest edits)
-        try {
-            const storedCadets = localStorage.getItem("ncc_cadets");
-            if (storedCadets) {
-                const parsed = JSON.parse(storedCadets) as Record<string, string | number | undefined>[];
-                const cadet = parsed.find((c) => c.id === id);
-                if (cadet) {
-                    merged = { ...(merged || {}), ...cadet };
-                }
-            }
-        } catch { /* ignore */ }
-
-        // 3. Override with extra user data (profile-level edits like avatar, blood group changes)
-        try {
-            const storedExtra = localStorage.getItem("ncc_extra_user_data");
-            if (storedExtra) {
-                const extras = JSON.parse(storedExtra) as Record<string, Record<string, string | number | undefined>>;
-                if (extras[id]) {
-                    merged = { ...(merged || {}), ...extras[id] };
-                }
-            }
-        } catch { /* ignore */ }
-
-        if (merged) {
-            person = {
-                name: merged.name as string | undefined,
-                role: merged.role as string | undefined,
-                regimentalNumber: merged.regimentalNumber as string | undefined,
-                wing: merged.wing as string | undefined,
-                unitNumber: merged.unitNumber as string | undefined,
-                unitName: merged.unitName as string | undefined,
-                bloodGroup: merged.bloodGroup as string | undefined,
-                enrollmentYear: merged.enrollmentYear?.toString(),
-            };
+    useEffect(() => {
+        if (!id) {
+            setLoading(false);
+            setChecked(true);
+            return;
         }
+
+        verifyCadetById(id).then((result) => {
+            if (result.found && result.person) {
+                setPerson(result.person);
+            }
+            setLoading(false);
+            setChecked(true);
+        });
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+                <p className="text-slate-400 animate-pulse">Verifying identity...</p>
+            </div>
+        );
     }
 
     return (
@@ -68,7 +61,7 @@ function VerifyContent() {
                     <p className="text-slate-400 text-xs mt-1">The Assam Royal Global University • National Cadet Corps</p>
                 </div>
 
-                {person ? (
+                {checked && person ? (
                     /* Verified Card */
                     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
                         <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center space-x-3">
@@ -138,7 +131,7 @@ function VerifyContent() {
 
                         <div className="bg-gray-50 px-6 py-3 text-center">
                             <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
-                                Verified at {new Date().toLocaleString("en-IN")} • NCC RGU Digital System
+                                Verified at {new Date().toLocaleString("en-IN")} via NCC RGU Digital System
                             </p>
                         </div>
                     </div>

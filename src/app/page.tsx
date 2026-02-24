@@ -3,7 +3,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Shield, User, Lock, ChevronRight, Loader2, Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Role } from "@/types";
@@ -18,6 +18,13 @@ export default function LoginPage() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [step, setStep] = useState<LoginStep>("login");
 
+  // --- Rate limiting ---
+  const MAX_ATTEMPTS = 5;
+  const LOCKOUT_SECONDS = 60;
+  const failCountRef = useRef(0);
+  const lockoutUntilRef = useRef<number>(0);
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
+
   // Forgot PIN state
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotOtp, setForgotOtp] = useState("");
@@ -28,11 +35,24 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Check lockout
+    const now = Date.now();
+    if (lockoutUntilRef.current > now) {
+      const remaining = Math.ceil((lockoutUntilRef.current - now) / 1000);
+      setLockoutRemaining(remaining);
+      setError(`Too many failed attempts. Try again in ${remaining} seconds.`);
+      return;
+    }
+
     const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
     const pseudoEmail = `${activeTab.toLowerCase()}_${cleanUsername}@nccrgu.internal`;
 
     try {
       await loginWithPassword(pseudoEmail, formData.pin);
+      // Success — reset counter
+      failCountRef.current = 0;
+      setLockoutRemaining(0);
     } catch (err: unknown) {
       if (activeTab === Role.ANO && formData.username.toUpperCase() === "ANO" && formData.pin === "0324") {
         setIsRestoring(true);
@@ -58,6 +78,24 @@ export default function LoginPage() {
         }
       } else {
         setError(err instanceof Error ? err.message : "Login failed.");
+        // Increment failed attempts
+        failCountRef.current += 1;
+        if (failCountRef.current >= MAX_ATTEMPTS) {
+          lockoutUntilRef.current = Date.now() + LOCKOUT_SECONDS * 1000;
+          setLockoutRemaining(LOCKOUT_SECONDS);
+          setError(`Too many failed attempts. Locked for ${LOCKOUT_SECONDS} seconds.`);
+          // Start countdown
+          const timer = setInterval(() => {
+            const rem = Math.ceil((lockoutUntilRef.current - Date.now()) / 1000);
+            if (rem <= 0) {
+              setLockoutRemaining(0);
+              failCountRef.current = 0;
+              clearInterval(timer);
+            } else {
+              setLockoutRemaining(rem);
+            }
+          }, 1000);
+        }
       }
     }
   };
