@@ -288,9 +288,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteClass = async (id: string) => {
+        // Delete attendance records for this class first (cascade)
+        await supabase.from('attendance').delete().eq('class_id', id);
         const { error } = await supabase.from('classes').delete().eq('id', id);
         if (error) throw error;
         await refreshClasses();
+        await refreshAttendance();
     };
 
     const addCadet = async (cadet: Cadet) => {
@@ -491,8 +494,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const getStats = (userId?: string): DashboardStats => {
         const totalCadets = cadets.length;
-        const totalAttendanceRecords = attendance.length;
-        const presentCount = attendance.filter(a => a.status === "PRESENT").length;
+        // Only count attendance records for classes that still exist
+        const classIds = new Set(classes.map(c => c.id));
+        const validAttendance = attendance.filter(a => classIds.has(a.classId));
+        const totalAttendanceRecords = validAttendance.length;
+        const presentCount = validAttendance.filter(a => a.status === "PRESENT").length;
         const attendanceRate = totalAttendanceRecords > 0
             ? `${Math.round((presentCount / totalAttendanceRecords) * 100)}%`
             : "0%";
