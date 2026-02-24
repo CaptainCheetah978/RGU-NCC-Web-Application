@@ -21,6 +21,7 @@
 ## Contents
 - [Project Meta](#project-meta)
 - [Features and Modules](#features-and-modules)
+- [Visual Overview](#visual-overview)
 - [Role-Based Access Control](#role-based-access-control)
 - [Technical Architecture](#technical-architecture)
 - [Project Structure](#project-structure)
@@ -80,6 +81,27 @@ A central hub providing visual analytics and real-time updates:
 ### Communication System
 - **Private Notes**: A secure, rank-based internal messaging system (e.g., Cadet to ANO, SUO to Cadet).
 - **Real-time Status**: Visible "Unread" badges in the sidebar to ensure critical communication is never missed.
+
+---
+
+## Visual Overview
+
+> [!NOTE]
+> Screenshots below are samples of the premium interface. Save your screenshots to `public/screenshots/` to display them here.
+
+````carousel
+![Login Interface](public/screenshots/login.png)
+<!-- slide -->
+![Command Dashboard](public/screenshots/dashboard.png)
+<!-- slide -->
+![Cadet Registry](public/screenshots/registry.png)
+<!-- slide -->
+![Digital ID Card](public/screenshots/id-card.png)
+<!-- slide -->
+![Attendance System](public/screenshots/attendance.png)
+<!-- slide -->
+![Private Messaging](public/screenshots/messages.png)
+````
 
 ---
 
