@@ -155,11 +155,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         try {
-            await supabase.auth.signOut({ scope: 'global' });
+            await supabase.auth.signOut({ scope: 'local' });
         } catch (error) {
             console.error("Error signing out:", error);
         } finally {
             setUser(null);
+            // Clear any lingering Supabase tokens from localStorage
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('sb-')) localStorage.removeItem(key);
+            });
             window.location.href = "/";
         }
     };
