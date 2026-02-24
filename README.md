@@ -86,22 +86,26 @@ A central hub providing visual analytics and real-time updates:
 
 ## Visual Overview
 
-> [!NOTE]
-> Screenshots below are samples of the premium interface. Save your screenshots to `public/screenshots/` to display them here.
+> [!TIP]
+> **Capture Instructions**: Set your browser to 1440x900 for consistent shots. Save images as `.png` or `.gif` in `public/screenshots/` using the names below.
 
-````carousel
-![Login Interface](public/screenshots/login.png)
-<!-- slide -->
-![Command Dashboard](public/screenshots/dashboard.png)
-<!-- slide -->
-![Cadet Registry](public/screenshots/registry.png)
-<!-- slide -->
-![Digital ID Card](public/screenshots/id-card.png)
-<!-- slide -->
-![Attendance System](public/screenshots/attendance.png)
-<!-- slide -->
-![Private Messaging](public/screenshots/messages.png)
-````
+| Login Interface | Command Dashboard |
+| :---: | :---: |
+| ![Login](public/screenshots/login.png) | ![Dashboard](public/screenshots/dashboard.png) |
+
+| Cadet Registry | Digital ID Card |
+| :---: | :---: |
+| ![Registry](public/screenshots/registry.png) | ![ID Card](public/screenshots/id-card.png) |
+
+| Attendance System | Private Messaging |
+| :---: | :---: |
+| ![Attendance](public/screenshots/attendance.png) | ![Messages](public/screenshots/messages.png) |
+
+### Additional Gallery
+*Add your own GIFs or extra screenshots here!*
+
+- **Example Interaction**: `![Feature Demo](public/screenshots/demo.gif)`
+- **Mobile View**: `![Mobile UI](public/screenshots/mobile.png)`
 
 ---
 
