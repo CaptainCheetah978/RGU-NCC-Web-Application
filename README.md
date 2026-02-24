@@ -6,6 +6,13 @@
 
 # NCC RGU — Cadet Management System
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Vercel-Deployed-success?style=for-the-badge&logo=vercel" alt="Vercel Deployed" />
+  <img src="https://img.shields.io/badge/Next.js%2015-Black?style=for-the-badge&logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Supabase-Database-3FC68D?style=for-the-badge&logo=supabase" alt="Supabase" />
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License" />
+</p>
+
 > **"Unity and Discipline"**  
 > A premium, role-based Cadet Management System featuring real-time dashboards, QR-identity verification, and secure administrative tools. Engineered with Next.js 15 and Supabase for speed and scale.
 
@@ -19,6 +26,7 @@
 - [Project Structure](#project-structure)
 - [Deployment Guide](#deployment-guide)
 - [Multi-Unit Deployment](#multi-unit-deployment)
+- [Future Roadmap](#future-roadmap)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
 
@@ -199,6 +207,16 @@ This application is designed to be **unit-agnostic**. To deploy this for a diffe
 3. Update the branding constants in the `.env` file.
 4. Replace the logo files in the `/public` directory (`ncc-logo.png` and `rgu-logo.png`).
 5. Push your changes and re-deploy to Vercel.
+
+---
+
+## Future Roadmap
+
+This system is continuously evolving. Planned enhancements include:
+- **PWA Support**: Enabling "Install to Home Screen" for better mobile accessibility and offline capabilities.
+- **Multilingual Support**: Integration of regional languages (Assamese, Hindi, etc.) for better inclusivity across the Directorate.
+- **Automated Quality Gates**: CI/CD pipelines via GitHub Actions to ensure build stability and code quality.
+- **Camp Module**: Dedicated logic for managing high-volume enrollment and training records during annual training camps.
 
 ---
 
