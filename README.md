@@ -1,170 +1,175 @@
 <p align="center">
-  <img src="public/ncc-logo.png" alt="NCC Logo" width="100" />
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="public/rgu-logo.png" alt="RGU Logo" width="100" />
+  <img src="public/ncc-logo.png" alt="NCC Logo" width="120" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="public/rgu-logo.png" alt="RGU Logo" width="120" />
 </p>
 
-<h1 align="center">NCC RGU — Cadet Management System</h1>
+# 🛡️ NCC RGU — Cadet Management System
 
-<p align="center">
-  A comprehensive, role-based web application for the <strong>National Cadet Corps (NCC)</strong> unit at <strong>Royal Global University (RGU)</strong>.<br/>
-  Built on a <strong>Supabase</strong> backend for real-time data, secure authentication, and private cloud storage.
-</p>
+> **"Unity and Discipline"**  
+> The official digital administrative suite for the National Cadet Corps unit at Royal Global University.
 
-<p align="center">
-  <a href="#features">Features</a>
-  &nbsp;·&nbsp;
-  <a href="#role-based-access">Roles</a>
-  &nbsp;·&nbsp;
-  <a href="#tech-stack">Tech Stack</a>
-  &nbsp;·&nbsp;
-  <a href="#getting-started">Getting Started</a>
-  &nbsp;·&nbsp;
-  <a href="#deployment">Deployment</a>
-</p>
+This application is a comprehensive, role-based management system designed to transition NCC unit administration from paper-based records to a secure, real-time digital environment. It empowers officers with data-driven insights and provides cadets with a modern interface for tracking their training progress.
 
 ---
 
-## Features
-
-| Module | Description |
-|--------|-------------|
-| **Dashboard** | Real-time statistics covering total cadets, attendance percentage, and active classes. Includes a live recent activity feed, upcoming class list, and announcement banner. |
-| **Role-Based Auth** | PIN-based login with strict role separation enforced via Supabase Row Level Security policies and Next.js Server Actions. No client-side trust. |
-| **Attendance** | Mark attendance per session (Present, Absent, Late, Excused). Visual attendance chart with per-cadet breakdowns and monthly history. |
-| **Class Management** | Schedule and manage training sessions. Assign instructors, set venues, and track completion status. Officers and senior cadets can create classes. |
-| **Cadet Registry** | Centralised database of all cadets. Supports search by name or regimental number, rank filtering, and both grid and list view modes. Wing-based auto-unit assignment on enrolment. |
-| **Certificates** | Digital certificate locker per cadet. Upload, view, and download NCC A, B, and C certificates as well as other training documents. ANO has full administrative control. |
-| **Private Notes** | Secure internal messaging between cadets and officers. Unread count badge on the sidebar. Messages are private and not visible across roles. |
-| **Announcements** | Broadcast unit-wide announcements with urgency flagging. Officers can create, edit, and delete announcements. All roles can view. |
-| **Activity Log** | Full audit trail of officer actions including enrolments, deletions, attendance marks, and profile updates. Visible to ANO only. |
-| **My Profile** | Each cadet has a profile page showing personal details, ID card, blood group, enrolment year, and PIN management. |
-| **Digital ID Card** | Auto-generated NCC identity card with cadet photo, rank, regimental number, unit, and a scannable QR code. Printable directly from the browser. |
-| **Files and Media** | Shared file repository for the unit. Upload and download training materials, forms, and media. Accessible to all roles. |
-| **Dark Mode** | Full dark mode across every page and component, toggled from the sidebar. Glassmorphism effects on key UI surfaces. |
+## 📅 Project Meta
+- **Developed In:** 2026
+- **Current Version:** 1.0.0
+- **Lead Developer:** [SUO Aditya Singh](https://github.com/CaptainCheetah978) (30 Assam Bn NCC)
+- **Primary Stakeholder:** NCC Unit, Royal Global University (NER Directorate)
+- **License:** MIT
 
 ---
 
-## Role-Based Access
+## ✨ Features & Modules
 
-The application enforces strict data isolation through **Supabase Row Level Security (RLS)**. Every database query is scoped to the authenticated user's role.
+### 1. 📊 Command Dashboard
+A central hub providing visual analytics and real-time updates:
+- **Unit Statistics**: Total enrollment, gender ratio, and monthly attendance growth.
+- **Recent Activity Feed**: Audit trail of administrative actions (sign-ups, deletions, attendance marks).
+- **Upcoming Schedule**: Quick view of scheduled classes and training sessions.
+- **Announcement Banner**: Dynamic broadcast system for unit-wide notifications.
 
-| Role | Access Level | Key Permissions |
-|------|-------------|-----------------|
-| **ANO** | Super Admin | Full access to all modules. Can enrol and delete cadets, reset PINs, manage all attendance records, view the activity log, and oversee certificates for every cadet. |
-| **SUO** | Unit Admin | Can create and manage classes, mark attendance, post announcements, and view cadet profiles. Cannot delete cadets or access the activity log. |
-| **UO / SGT / CPL** | Junior Officer | Can mark attendance for their sessions and view the cadet registry. No destructive permissions. |
-| **LCPL / Cadet** | Standard User | Personal dashboard, own profile and ID card, attendance history, certificate locker, private notes, files, and announcements. Cannot access administrative modules. |
+### 2. 🪪 Cadet Registry & Digital ID
+- **Searchable Database**: Filter by Regimental Number, Name, Rank, or Enrollment Year.
+- **Digital ID Generation**: Automatic creation of NCC Identity Cards with unique QR codes for instant verification.
+- **Profile Management**: Cadets can update their blood group and contact info, and manage their authentication PIN.
+
+### 3. ✅ Attendance & Training
+- **Session Tracking**: Create classes with specific instructors, venues, and subjects.
+- **Marking System**: Rapid attendance entry (Present, Absent, Late, Excused).
+- **History Logs**: Visual calendars showing individual attendance streaks and monthly summaries.
+
+### 4. 📂 Certificate Locker & Media
+- **Secure File Storage**: Dedicated section for uploading NCC A, B, and C certificates.
+- **Media Repository**: Unit-wide access to training manuals, drill videos, and ceremonial documents.
+- **Signed URLs**: All files are served via Supabase Storage with temporary secure links to prevent unauthorized access.
+
+### 5. 💬 Communication System
+- **Private Notes**: Hierarchical messaging allowing cadets to send notes to officers and vice versa.
+- **Notifications**: Unread message badges in the sidebar and real-time alerts.
 
 ---
 
-## Tech Stack
+## 🔐 Role-Based Access Control (RBAC)
 
-| Layer | Technology |
-|-------|------------|
-| Framework | Next.js 14 (App Router, Server Actions) |
-| Language | TypeScript |
-| Styling | Tailwind CSS with custom dark mode variants |
-| Backend | Supabase (PostgreSQL, Row Level Security, Storage) |
-| Authentication | Custom PIN-based auth backed by Supabase Auth |
-| Animations | Framer Motion |
-| Icons | Lucide React |
-| Deployment | Vercel |
+The system operates on a state-of-the-art security model using **Supabase Row Level Security (RLS)**. No user can see data they aren't authorized to access.
+
+| Role | Responsibility | Data Permission |
+| :--- | :--- | :--- |
+| **ANO** | Associate NCC Officer | **SuperAdmin**: Full control over all cadets, data, and logs. |
+| **SUO** | Senior Under Officer | **Admin**: Schedule classes, mark attendance, manage registry. |
+| **UO/SGT** | Junior Officers | **Moderator**: Mark attendance and view unit-wide registry. |
+| **Cadet** | Standard User | **User**: Personal records, ID card, and private notes only. |
 
 ---
 
-## Getting Started
+## 🛠️ Technical Architecture
 
-### Prerequisites
+### **The Stack**
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router, Server Components)
+- **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
+- **Database**: [PostgreSQL](https://www.postgresql.org/) (hosted on Supabase)
+- **Auth**: Custom PIN-based Authentication with Server-Side verification.
+- **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/) with Custom Glassmorphism Theme.
+- **Animations**: [Framer Motion](https://www.framer.com/motion/) for fluid UI transitions.
 
-- Node.js 18 or later
-- A Supabase project (free tier is sufficient)
+### **Database Schema Highlights**
+- **profiles**: Extended user information (Regt No, Wing, Unit info).
+- **attendance**: Relational table linking cadets to specific classes.
+- **notes**: Hierarchical message storage with read-status tracking.
+- **classes**: Storage for training schedules and instructor assignments.
 
-### Installation
+---
 
-1. **Clone the repository**
+## 📥 Deployment Guide
+
+### **1. Git Fork vs. Git Clone**
+
+Understanding the difference is critical for maintaining this project:
+
+*   **🔱 Git Fork**: Happens on GitHub. Think of it as "copy-pasting" the project into your own account. Use this if you want to customize the app for your own unit.
+*   **📥 Git Clone**: Happens on your local machine. Use this to download the files from GitHub to your computer so you can actually run or edit the code.
+
+#### **How to Fork**
+1. Navigate to the [Official Repository](https://github.com/CaptainCheetah978/RGU-NCC-Web-Application).
+2. Look at the top-right corner of the page and click the **Fork** button.
+3. Select your GitHub account as the destination.
+4. GitHub will create a copy of the entire project in your account within seconds.
+
+#### **How to Clone**
+1. Go to your version (the fork) or the original repository on GitHub.
+2. Click the green **Code** button.
+3. Copy the URL (it ends in `.git`).
+4. Open your terminal or Command Prompt.
+5. Type `git clone ` and then paste the URL:
    ```bash
-   git clone https://github.com/CaptainCheetah978/RGU-NCC-Web-Application.git
-   cd RGU-NCC-Web-Application
+   git clone https://github.com/YourUsername/RGU-NCC-Web-Application.git
    ```
+6. Press Enter. The project folder will now be on your computer.
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### **2. Installation**
 
-3. **Environment setup**
+1.  **Enter the Directory**:
+    ```bash
+    cd RGU-NCC-Web-Application
+    ```
 
-   Create a `.env.local` file in the root of the project:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-   ```
+2.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
 
-   > **Important:** `SUPABASE_SERVICE_ROLE_KEY` is a secret key used only in Server Actions for privileged operations such as creating cadet accounts and updating PINs. Never expose this key to the client or commit it to version control.
+3.  **Environment Setup**:
+    Create a `.env.local` file with the following keys:
+    ```env
+    # Supabase connection
+    NEXT_PUBLIC_SUPABASE_URL=your_project_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-4. **Database setup**
+    # Branding (Multi-Unit Support)
+    NEXT_PUBLIC_UNIT_NAME="NCC RGU"
+    NEXT_PUBLIC_INSTITUTION_NAME="Royal Global University"
+    ```
 
-   Apply the Row Level Security policies to your Supabase project by running the SQL in `supabase-policies.sql` via the Supabase SQL Editor. This step is required for the access control system to function correctly.
+4.  **Database Migration**:
+    Run the SQL code found in `supabase-policies.sql` using the Supabase SQL Editor. This initializes the tables and sets up the security policies.
 
-5. **Storage setup**
+### **3. Running Locally**
 
-   Create a private storage bucket named `cadet-files` in your Supabase project. The application uses signed URLs to serve files securely without exposing bucket contents publicly.
-
-6. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-   The application will be available at [http://localhost:3000](http://localhost:3000).
-
----
-
-## Deployment
-
-### Vercel (Recommended)
-
-1. Push the repository to GitHub.
-2. Import the project into [Vercel](https://vercel.com).
-3. Add the following environment variables in the Vercel project settings:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-4. Deploy. Vercel will automatically build and deploy on every push to `main`.
-
----
-
-## Project Structure
-
+```bash
+npm run dev
 ```
-src/
-  app/
-    dashboard/
-      attendance/       Attendance tracking page
-      cadets/           Cadet registry with enrol, edit, view, and delete
-      classes/          Class scheduling and management
-      announcements/    Unit-wide announcements
-      notes/            Private internal messaging
-      activity/         Activity audit log (ANO only)
-      files/            Shared file repository
-      profile/          Cadet profile and digital ID card
-  components/
-    dashboard/          Dashboard-specific widgets (stats, charts, banners)
-    profile/            Certificate section component
-    sidebar.tsx         Navigation sidebar with role-filtered links
-    topbar.tsx          Top navigation bar with user info
-    ui/                 Shared UI primitives (Button, Card, Input, Modal)
-  lib/
-    auth-context.tsx    Authentication state and login logic
-    data-context.tsx    Global data fetching and caching
-    theme-context.tsx   Dark/light mode toggle
-    supabase.ts         Supabase client initialisation
-  app/actions/          Server Actions for privileged database operations
-  types/                Shared TypeScript types (Cadet, Role, Wing, etc.)
-```
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+---
+
+## 🚀 Multi-Unit Deployment
+This application is designed to be **unit-agnostic**. To deploy this for a different NCC unit:
+1. **Fork** the repository (follow the steps above).
+2. **Clone** your fork to your machine.
+3. Update the branding constants in the `.env` file.
+4. Replace the logo files in the `/public` directory (`ncc-logo.png` and `rgu-logo.png`).
+5. Push your changes and re-deploy to Vercel.
+
+---
+
+## ⚖️ License
+This project is licensed under the **MIT License**. This means you are free to use, modify, and distribute the software, provided that the original copyright notice and permission notice are included in all copies or substantial portions of the software. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📜 Acknowledgments
+- **Institution**: Royal Global University
+- **Unit**: 30 Assam Bn NCC, Guwahati Group
+- **Directorate**: North-East Region (NER) Directorate
+- **Vision**: To bring "Unity and Discipline" into the digital age.
 
 ---
 
 <p align="center">
-  Built for the <strong>National Cadet Corps, Royal Global University</strong>
+  <b>© 2026 SUO Aditya Singh • 30 Assam Bn NCC • Guwahati Gp • NER Dte</b><br/>
+  <i>Built with pride for the National Cadet Corps</i>
 </p>
