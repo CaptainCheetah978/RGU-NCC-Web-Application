@@ -36,29 +36,33 @@ interface DataContextType {
     getStats: (userId?: string) => DashboardStats;
     messageableUsers: (Cadet | User)[];
     markAllAsRead: (userId: string) => Promise<void>;
-    // Attendance insights
     getPersonalAttendance: (cadetId: string) => PersonalAttendanceEntry[];
     getAttendanceByClass: () => { className: string; present: number; absent: number; late: number; excused: number }[];
-    // Certificates
     certificates: Certificate[];
     addCertificate: (cert: Certificate) => Promise<void>;
-    deleteCertificate: (certId: string) => Promise<void>;
+    deleteCertificate: (id: string) => Promise<void>;
     getCertificates: (userId: string) => Certificate[];
-    // Announcements
     announcements: Announcement[];
     addAnnouncement: (announcement: Announcement) => Promise<void>;
     deleteAnnouncement: (id: string) => Promise<void>;
-    // Activity Log
     activityLog: ActivityLogEntry[];
-    // logActivity is now likely handled by database triggers or server-side, but keeping for compatibility if needed or manual logging
     logActivity: (action: string, userId: string, userName: string, targetName?: string) => void;
     getRecentActivities: (limit: number) => ActivityLogEntry[];
     isLoading: boolean;
     refreshData: () => Promise<void>;
-    currentUserProfile: (User & Partial<Cadet>) | null; // New field
+    currentUserProfile: (User & Partial<Cadet>) | null;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
+
+// Column selections — fetch only what we need instead of select('*')
+const PROFILE_COLUMNS = 'id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, access_pin';
+const CLASS_COLUMNS = 'id, title, date, time, instructor_id, description';
+const ATTENDANCE_COLUMNS = 'id, class_id, cadet_id, status, created_at';
+const NOTE_COLUMNS = 'id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name';
+const ANNOUNCEMENT_COLUMNS = 'id, title, content, author_id, priority, created_at';
+const CERTIFICATE_COLUMNS = 'id, user_id, name, type, file_data, upload_date';
+const ACTIVITY_COLUMNS = 'id, action, performed_by, performed_by_name, target_name, created_at';
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
@@ -73,201 +77,218 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
     const [currentUserProfile, setCurrentUserProfile] = useState<(User & Partial<Cadet>) | null>(null);
 
+    // --- Per-table refresh functions ---
+    // These fetch only the specific table that changed, instead of all 7 every time.
+
+    const refreshClasses = useCallback(async () => {
+        const { data } = await supabase.from('classes').select(CLASS_COLUMNS);
+        if (data) {
+            setClasses(data.map(c => ({
+                id: c.id,
+                title: c.title,
+                date: c.date,
+                time: c.time,
+                instructorId: c.instructor_id,
+                description: c.description,
+                attendees: []
+            })));
+        }
+    }, []);
+
+    const refreshProfiles = useCallback(async () => {
+        const { data: profilesData } = await supabase.from('profiles').select(PROFILE_COLUMNS);
+        if (profilesData) {
+            const mappedProfiles = profilesData.map(p => ({
+                id: p.id,
+                name: p.full_name || 'Unknown',
+                role: (p.role as Role) || Role.CADET,
+                regimentalNumber: p.regimental_number,
+                wing: p.wing,
+                rank: p.rank,
+                avatarUrl: p.avatar_url,
+                enrollmentYear: p.enrollment_year,
+                bloodGroup: p.blood_group,
+                gender: p.gender,
+                unitName: p.unit_name,
+                unitNumber: p.unit_number,
+                access_pin: p.access_pin
+            }));
+
+            setAllProfiles(mappedProfiles as (User & Partial<Cadet>)[]);
+            setCadets(mappedProfiles.filter(u => u.role !== Role.ANO) as Cadet[]);
+
+            if (user) {
+                const myProfile = mappedProfiles.find(p => p.id === user.id);
+                if (myProfile) {
+                    setCurrentUserProfile(myProfile as (User & Partial<Cadet>));
+                }
+            }
+        }
+    }, [user]);
+
+    const refreshAttendance = useCallback(async () => {
+        const { data } = await supabase.from('attendance').select(ATTENDANCE_COLUMNS);
+        if (data) {
+            setAttendance(data.map(a => ({
+                id: a.id,
+                classId: a.class_id,
+                cadetId: a.cadet_id,
+                status: a.status,
+                timestamp: a.created_at
+            })));
+        }
+    }, []);
+
+    const refreshNotes = useCallback(async () => {
+        const { data: notesData } = await supabase.from('notes').select(NOTE_COLUMNS);
+        // We need profile names for sender/recipient lookup
+        const { data: profilesData } = await supabase.from('profiles').select('id, full_name');
+        const profileMap = new Map<string, string>();
+        if (profilesData) {
+            profilesData.forEach(p => profileMap.set(p.id, p.full_name || 'Unknown'));
+        }
+        if (notesData) {
+            setNotes(notesData.map(n => ({
+                id: n.id,
+                senderId: n.sender_id,
+                senderName: profileMap.get(n.sender_id) || "Unknown",
+                recipientId: n.recipient_id,
+                recipientName: profileMap.get(n.recipient_id) || "Unknown",
+                content: n.content,
+                isRead: n.is_read,
+                timestamp: n.created_at,
+                subject: n.subject || "Note",
+                forwardedToANO: n.forwarded_to_ano || false,
+                originalSenderId: n.original_sender_id,
+                originalSenderName: n.original_sender_name
+            })));
+        }
+    }, []);
+
+    const refreshAnnouncements = useCallback(async () => {
+        const { data: announcementsData } = await supabase.from('announcements').select(ANNOUNCEMENT_COLUMNS);
+        const { data: profilesData } = await supabase.from('profiles').select('id, full_name');
+        const profileMap = new Map<string, string>();
+        if (profilesData) {
+            profilesData.forEach(p => profileMap.set(p.id, p.full_name || 'Unknown'));
+        }
+        if (announcementsData) {
+            setAnnouncements(announcementsData.map(a => ({
+                id: a.id,
+                title: a.title,
+                content: a.content,
+                authorId: a.author_id,
+                authorName: profileMap.get(a.author_id) || "Unknown",
+                priority: a.priority?.toLowerCase() === 'urgent' ? 'urgent' : 'normal',
+                createdAt: a.created_at
+            })) as Announcement[]);
+        }
+    }, []);
+
+    const refreshCertificates = useCallback(async () => {
+        const { data } = await supabase.from('certificates').select(CERTIFICATE_COLUMNS);
+        if (data) {
+            setCertificates(data.map(c => ({
+                id: c.id,
+                userId: c.user_id,
+                name: c.name,
+                type: c.type,
+                fileData: c.file_data,
+                uploadDate: c.upload_date
+            })) as Certificate[]);
+        }
+    }, []);
+
+    const refreshActivity = useCallback(async () => {
+        const { data } = await supabase
+            .from('activity_log')
+            .select(ACTIVITY_COLUMNS)
+            .order('created_at', { ascending: false })
+            .limit(100);
+        if (data) {
+            setActivityLog(data.map(a => ({
+                id: a.id,
+                action: a.action,
+                performedBy: a.performed_by,
+                performedByName: a.performed_by_name,
+                targetName: a.target_name,
+                timestamp: a.created_at
+            })));
+        }
+    }, []);
+
+    // Full refresh — used only on initial load
     const refreshData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [
-                { data: classesData },
-                { data: profilesData },
-                { data: attendanceData },
-                { data: notesData },
-                { data: announcementsData },
-                { data: certificatesData },
-                { data: activityData }
-            ] = await Promise.all([
-                supabase.from('classes').select('*'),
-                supabase.from('profiles').select('*'),
-                supabase.from('attendance').select('*'),
-                supabase.from('notes').select('*'),
-                supabase.from('announcements').select('*'),
-                supabase.from('certificates').select('*'),
-                supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(100)
+            await Promise.all([
+                refreshClasses(),
+                refreshProfiles(),
+                refreshAttendance(),
+                refreshNotes(),
+                refreshAnnouncements(),
+                refreshCertificates(),
+                refreshActivity()
             ]);
-
-            if (classesData) {
-                const mappedClasses = classesData.map(c => ({
-                    id: c.id,
-                    title: c.title,
-                    date: c.date,
-                    time: c.time,
-                    instructorId: c.instructor_id,
-                    description: c.description,
-                    attendees: []
-                }));
-                setClasses(mappedClasses);
-            }
-
-            // Create a lookup map for profiles
-            const profileMap = new Map<string, { name: string; role: Role }>();
-            if (profilesData) {
-                profilesData.forEach(p => {
-                    profileMap.set(p.id, {
-                        name: p.full_name || 'Unknown',
-                        role: (p.role as Role) || Role.CADET
-                    });
-                });
-
-                const mappedProfiles = profilesData.map(p => ({
-                    id: p.id,
-                    name: p.full_name || 'Unknown',
-                    role: (p.role as Role) || Role.CADET,
-                    regimentalNumber: p.regimental_number,
-                    wing: p.wing,
-                    rank: p.rank,
-                    avatarUrl: p.avatar_url,
-                    enrollmentYear: p.enrollment_year,
-                    bloodGroup: p.blood_group,
-                    gender: p.gender,
-                    unitName: p.unit_name,
-                    unitNumber: p.unit_number,
-                    access_pin: p.access_pin
-                }));
-
-                setAllProfiles(mappedProfiles as (User & Partial<Cadet>)[]);
-
-                // Filter out ANOs for the "Cadets" list
-                const mappedCadets = mappedProfiles.filter(u => u.role !== Role.ANO) as Cadet[];
-                setCadets(mappedCadets);
-
-                // Set Current User Profile separately (so ANOs can see themselves)
-                if (user) {
-                    const myProfile = mappedProfiles.find(p => p.id === user.id);
-                    if (myProfile) {
-                        setCurrentUserProfile(myProfile as (User & Partial<Cadet>));
-                    }
-                }
-            }
-
-            if (attendanceData) {
-                const mappedAttendance = attendanceData.map(a => ({
-                    id: a.id,
-                    classId: a.class_id,
-                    cadetId: a.cadet_id,
-                    status: a.status,
-                    timestamp: a.created_at
-                }));
-                setAttendance(mappedAttendance);
-            }
-
-            if (notesData) {
-                const mappedNotes = notesData.map(n => {
-                    const sender = profileMap.get(n.sender_id);
-                    const recipient = profileMap.get(n.recipient_id);
-                    return {
-                        id: n.id,
-                        senderId: n.sender_id,
-                        senderName: sender ? sender.name : "Unknown",
-                        recipientId: n.recipient_id,
-                        recipientName: recipient ? recipient.name : "Unknown",
-                        content: n.content,
-                        isRead: n.is_read,
-                        timestamp: n.created_at,
-                        subject: n.subject || "Note",
-                        forwardedToANO: n.forwarded_to_ano || false,
-                        originalSenderId: n.original_sender_id,
-                        originalSenderName: n.original_sender_name
-                    };
-                });
-                setNotes(mappedNotes);
-            }
-
-            if (activityData) {
-                const mappedActivity = activityData.map(a => ({
-                    id: a.id,
-                    action: a.action,
-                    performedBy: a.performed_by,
-                    performedByName: a.performed_by_name,
-                    targetName: a.target_name,
-                    timestamp: a.created_at
-                }));
-                setActivityLog(mappedActivity);
-            }
-
-            if (announcementsData) {
-                const mappedAnnouncements = announcementsData.map(a => {
-                    const author = profileMap.get(a.author_id);
-                    return {
-                        id: a.id,
-                        title: a.title,
-                        content: a.content,
-                        authorId: a.author_id,
-                        authorName: author ? author.name : "Unknown",
-                        priority: a.priority?.toLowerCase() === 'urgent' ? 'urgent' : 'normal',
-                        createdAt: a.created_at
-                    };
-                });
-                setAnnouncements(mappedAnnouncements as Announcement[]);
-            }
-
-            if (certificatesData) {
-                const mappedCertificates = certificatesData.map(c => ({
-                    id: c.id,
-                    userId: c.user_id,
-                    name: c.name,
-                    type: c.type,
-                    fileData: c.file_data,
-                    uploadDate: c.upload_date
-                }));
-                setCertificates(mappedCertificates as Certificate[]);
-            }
-
         } catch (error) {
             console.error("Error loading data:", error);
         } finally {
             setIsLoading(false);
         }
-    }, [user]);
+    }, [refreshClasses, refreshProfiles, refreshAttendance, refreshNotes, refreshAnnouncements, refreshCertificates, refreshActivity]);
 
-    // Initial load
+    // Initial load + targeted Realtime subscriptions
     useEffect(() => {
         refreshData();
 
-        // Set up Realtime subscriptions
-        const channels = supabase.channel('custom-all-channel')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public' },
-                () => {
-                    // Simple strategy: Just refresh everything on any change
-                    // In a bigger app, we would handle specific events
-                    refreshData();
-                }
-            )
+        // Targeted subscriptions: each table change only refreshes its own data
+        const channel = supabase.channel('targeted-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'classes' }, () => {
+                refreshClasses();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+                refreshProfiles();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, () => {
+                refreshAttendance();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => {
+                refreshNotes();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+                refreshAnnouncements();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'certificates' }, () => {
+                refreshCertificates();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'activity_log' }, () => {
+                refreshActivity();
+            })
             .subscribe();
 
         return () => {
-            supabase.removeChannel(channels);
+            supabase.removeChannel(channel);
         };
-    }, [refreshData]);
+    }, [refreshData, refreshClasses, refreshProfiles, refreshAttendance, refreshNotes, refreshAnnouncements, refreshCertificates, refreshActivity]);
 
-    // --- Actions ---
+    // --- Actions (each calls only the relevant per-table refresh) ---
 
     const addClass = async (cls: ClassSession) => {
         const { error } = await supabase.from('classes').insert({
             title: cls.title,
             date: cls.date,
             time: cls.time,
-            instructor_id: cls.instructorId, // user.id
+            instructor_id: cls.instructorId,
             description: cls.description
         });
         if (error) throw error;
-        await refreshData();
+        await refreshClasses();
     };
 
     const deleteClass = async (id: string) => {
         const { error } = await supabase.from('classes').delete().eq('id', id);
         if (error) throw error;
-        await refreshData();
+        await refreshClasses();
     };
 
     const addCadet = async (cadet: Cadet) => {
@@ -286,7 +307,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             access_pin: cadet.access_pin
         });
         if (error) throw error;
-        await refreshData();
+        await refreshProfiles();
     };
 
     const updateCadet = async (id: string, updates: Partial<Cadet>) => {
@@ -301,30 +322,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             enrollment_year: updates.enrollmentYear,
             blood_group: updates.bloodGroup,
             avatar_url: updates.avatarUrl,
-            // access_pin is usually handled separately for security/audit, but allowing it here if needed
             access_pin: updates.access_pin
         }).eq('id', id);
         if (error) throw error;
-        await refreshData();
+        await refreshProfiles();
     };
-
 
     const deleteCadet = async (id: string) => {
         const { error } = await supabase.from('profiles').delete().eq('id', id);
         if (error) throw error;
-        await refreshData();
+        await refreshProfiles();
     };
 
     const markAttendance = async (record: AttendanceRecord) => {
-        // Upsert to handle toggle
-        // First check if exists
         const { data: existing, error: fetchError } = await supabase.from('attendance')
             .select('id')
             .eq('class_id', record.classId)
             .eq('cadet_id', record.cadetId)
             .single();
 
-        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError; // PGRST116 is "no rows found"
+        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
 
         if (existing) {
             const { error } = await supabase.from('attendance')
@@ -340,7 +357,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             });
             if (error) throw error;
         }
-        await refreshData();
+        await refreshAttendance();
     };
 
     const sendNote = async (note: Note) => {
@@ -352,27 +369,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             is_read: false
         });
         if (error) throw error;
-        await refreshData();
+        await refreshNotes();
     };
 
     const markNoteAsRead = async (id: string) => {
         const { error } = await supabase.from('notes').update({ is_read: true }).eq('id', id);
         if (error) throw error;
-        await refreshData();
+        await refreshNotes();
     };
 
     const deleteNote = async (id: string) => {
         const { error } = await supabase.from('notes').delete().eq('id', id);
         if (error) throw error;
-        await refreshData();
+        await refreshNotes();
     };
 
     const forwardNoteToANO = async (noteId: string, anoId: string, anoName: string) => {
-        // Find the original note
         const originalNote = notes.find(n => n.id === noteId);
         if (!originalNote) throw new Error("Note not found");
 
-        // Insert a new note to ANO with forward context
         const { error: insertError } = await supabase.from('notes').insert({
             sender_id: user?.id,
             recipient_id: anoId,
@@ -385,19 +400,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         });
         if (insertError) throw insertError;
 
-        // Mark the original note as forwarded
         const { error: updateError } = await supabase.from('notes')
             .update({ forwarded_to_ano: true })
             .eq('id', noteId);
         if (updateError) throw updateError;
 
-        await refreshData();
+        await refreshNotes();
     };
 
     const markAllAsRead = async (userId: string) => {
         const { error } = await supabase.from('notes').update({ is_read: true }).eq('recipient_id', userId);
         if (error) throw error;
-        await refreshData();
+        await refreshNotes();
     };
 
     const addAnnouncement = async (announcement: Announcement) => {
@@ -408,16 +422,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             priority: announcement.priority.toUpperCase()
         });
         if (error) throw error;
-        await refreshData();
+        await refreshAnnouncements();
     };
 
     const deleteAnnouncement = async (id: string) => {
         const { error } = await supabase.from('announcements').delete().eq('id', id);
         if (error) throw error;
-        await refreshData();
+        await refreshAnnouncements();
     };
 
-    // Stubs for certificates (table not made yet)
     const addCertificate = async (cert: Certificate) => {
         const { error } = await supabase.from('certificates').insert({
             user_id: cert.userId,
@@ -427,11 +440,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             upload_date: cert.uploadDate
         });
         if (error) throw error;
+        await refreshCertificates();
     };
 
     const deleteCertificate = async (id: string) => {
         const { error } = await supabase.from('certificates').delete().eq('id', id);
         if (error) throw error;
+        await refreshCertificates();
     };
 
     const getCertificates = (userId: string) => {
@@ -441,7 +456,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     // --- Getters & Helpers ---
 
     const messageableUsers = useMemo(() => {
-        // Include ALL profiles (cadets + ANOs + SUOs) so anyone can receive notes
         return allProfiles as (Cadet | User)[];
     }, [allProfiles]);
 
@@ -472,7 +486,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }).slice(-8);
     }, [attendance, classes]);
 
-
     const getStats = (userId?: string): DashboardStats => {
         const totalCadets = cadets.length;
         const totalAttendanceRecords = attendance.length;
@@ -487,7 +500,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         return { totalCadets, attendanceRate, activeClasses, unreadNotes };
     };
 
-    // Log activity to database
     const logActivity = (action: string, userId: string, userName: string, targetName?: string) => {
         supabase.from('activity_log').insert({
             action,
@@ -496,7 +508,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             target_name: targetName || null
         }).then(({ error }) => {
             if (error) console.error("Failed to log activity:", error);
-            else refreshData();
+            // No manual refresh needed — Realtime subscription handles it
         });
     };
 
@@ -519,7 +531,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             announcements, addAnnouncement, deleteAnnouncement,
             activityLog, logActivity, getRecentActivities,
             isLoading, refreshData,
-            currentUserProfile // Added to provider
+            currentUserProfile
         }}>
             {children}
         </DataContext.Provider>

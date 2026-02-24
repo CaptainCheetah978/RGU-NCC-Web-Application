@@ -250,7 +250,7 @@ export default function CadetsPage() {
                                     key={cadet.id}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.05 }}
+                                    transition={{ delay: Math.min(i * 0.05, 0.5) }}
                                 >
                                     <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all duration-300 group">
                                         <div className="p-6">
@@ -575,7 +575,7 @@ export default function CadetsPage() {
                     <div className="space-y-6">
                         <div className="flex flex-col items-center justify-center text-center pb-6 border-b border-gray-100 dark:border-slate-700/60">
                             <div className="w-24 h-24 rounded-2xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-3xl font-bold text-gray-400 dark:text-slate-500 overflow-hidden mb-3 border-4 border-white dark:border-slate-600 shadow-lg">
-                                {viewingCadet.avatarUrl ? <img src={viewingCadet.avatarUrl} alt={viewingCadet.name} className="w-full h-full object-cover" /> : viewingCadet.name.charAt(0)}
+                                {viewingCadet.avatarUrl ? <Image src={viewingCadet.avatarUrl} alt={viewingCadet.name} width={96} height={96} className="w-full h-full object-cover" /> : viewingCadet.name.charAt(0)}
                             </div>
                             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{viewingCadet.rank} {viewingCadet.name}</h3>
                             <p className="text-gray-500 dark:text-slate-400 font-mono bg-gray-100 dark:bg-slate-700 px-3 py-1 rounded-full text-xs mt-2">{viewingCadet.regimentalNumber}</p>
