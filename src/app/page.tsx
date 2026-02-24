@@ -11,11 +11,12 @@ import { Role } from "@/types";
 type LoginStep = "login" | "forgot-email" | "forgot-otp" | "forgot-newpin" | "forgot-done";
 
 export default function LoginPage() {
-  const { loginWithPassword, signupWithPassword, resetPin, updatePin, verifyOtp, isLoading } = useAuth();
+  const { loginWithPassword, signupWithPassword, resetPin, updatePin, verifyOtp } = useAuth();
   const [activeTab, setActiveTab] = useState<Role>(Role.CADET);
   const [formData, setFormData] = useState({ username: "", pin: "" });
   const [error, setError] = useState("");
   const [isRestoring, setIsRestoring] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState<LoginStep>("login");
 
   // --- Rate limiting ---
@@ -35,6 +36,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSubmitting(true);
 
     // Check lockout
     const now = Date.now();
@@ -42,6 +44,7 @@ export default function LoginPage() {
       const remaining = Math.ceil((lockoutUntilRef.current - now) / 1000);
       setLockoutRemaining(remaining);
       setError(`Too many failed attempts. Try again in ${remaining} seconds.`);
+      setSubmitting(false);
       return;
     }
 
@@ -53,6 +56,7 @@ export default function LoginPage() {
       // Success — reset counter
       failCountRef.current = 0;
       setLockoutRemaining(0);
+      setSubmitting(false);
     } catch (err: unknown) {
       if (activeTab === Role.ANO && formData.username.toUpperCase() === "ANO" && formData.pin === "0324") {
         setIsRestoring(true);
@@ -97,6 +101,7 @@ export default function LoginPage() {
           }, 1000);
         }
       }
+      setSubmitting(false);
     }
   };
 
@@ -253,9 +258,9 @@ export default function LoginPage() {
                     <Button
                       type="submit"
                       className={`w-full h-12 text-lg font-bold bg-gradient-to-r ${activeColor} border-0 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]`}
-                      disabled={isLoading || isRestoring}
+                      disabled={submitting || isRestoring || lockoutRemaining > 0}
                     >
-                      {(isLoading || isRestoring) ? (
+                      {(submitting || isRestoring) ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
                         <>Access Dashboard <ChevronRight className="w-5 h-5 ml-1 opacity-80" /></>
