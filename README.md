@@ -93,19 +93,32 @@ A central hub providing visual analytics and real-time updates:
 | :---: | :---: |
 | ![Login](public/screenshots/login.png) | ![Dashboard](public/screenshots/dashboard.png) |
 
-| Cadet Registry | Digital ID Card |
+| Cadet Registry | Attendance System |
 | :---: | :---: |
-| ![Registry](public/screenshots/registry.png) | ![ID Card](public/screenshots/id-card.png) |
+| ![Registry](public/screenshots/registry.png) | ![Attendance](public/screenshots/attendance.png) |
 
-| Attendance System | Private Messaging |
+| User Profile | Digital ID Card |
 | :---: | :---: |
-| ![Attendance](public/screenshots/attendance.png) | ![Messages](public/screenshots/messages.png) |
+| ![Profile](public/screenshots/profile.png) | ![ID Card](public/screenshots/id-card.png) |
+
+| Private Messaging |
+| :---: |
+| ![Messages](public/screenshots/messages.png) |
 
 ### Additional Gallery
-*Add your own GIFs or extra screenshots here!*
+*Add your own GIFs, videos, or extra screenshots here!*
 
 - **Example Interaction**: `![Feature Demo](public/screenshots/demo.gif)`
 - **Mobile View**: `![Mobile UI](public/screenshots/mobile.png)`
+
+> [!TIP]
+> **Modern GIF (MP4)**: For higher quality and smaller file sizes, you can use the MP4 files from your Snipping Tool as autoplaying GIFs. Use the code below:
+> 
+> ```html
+> <p align="center">
+>   <video src="public/screenshots/your-video.mp4" autoplay loop muted playsinline width="100%" style="border-radius: 8px;"></video>
+> </p>
+> ```
 
 ---
 
