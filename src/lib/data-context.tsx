@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useMemo, useCall
 import { ClassSession, Cadet, AttendanceRecord, Note, Role, User, Certificate, Announcement, ActivityLogEntry } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast-context";
 
 interface DashboardStats {
     totalCadets: number;
@@ -66,6 +67,7 @@ const ACTIVITY_COLUMNS = 'id, action, performed_by, performed_by_name, target_na
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(true);
     const [classes, setClasses] = useState<ClassSession[]>([]);
     const [cadets, setCadets] = useState<Cadet[]>([]);
@@ -232,6 +234,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             ]);
         } catch (error) {
             console.error("Error loading data:", error);
+            showToast("Failed to load data. Check your connection and try again.");
         } finally {
             setIsLoading(false);
         }

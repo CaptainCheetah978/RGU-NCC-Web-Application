@@ -4,32 +4,35 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { Role, Wing, Gender } from "@/types";
 import { revalidatePath } from "next/cache";
 
-export async function createCadetAccount(formData: any) {
-    try {
-        console.log("Server Action: Creating Cadet Account...", formData.name);
+interface CreateCadetFormData {
+    name: string;
+    regimentalNumber: string;
+    rank: Role;
+    wing: Wing;
+    gender: Gender;
+    unitNumber: string;
+    unitName: string;
+    enrollmentYear: number;
+    bloodGroup: string;
+    pin: string;
+}
 
+export async function createCadetAccount(formData: CreateCadetFormData) {
+    try {
         const {
             name,
             regimentalNumber,
-            rank, // Role
+            rank,
             wing,
             gender,
             unitNumber,
             unitName,
             enrollmentYear,
             bloodGroup,
-            pin, // The PIN chosen by ANO/SUO
+            pin,
         } = formData;
 
-        // generated email logic (same as client-side logic to keep consistency)
-        // role_username_clean@nccrgu.internal
         const cleanUsername = name.replace(/\s+/g, '').toLowerCase();
-        // Since role is variable, let's stick to a format. Actually, standard format:
-        // rank_name_regno@nccrgu.internal might be too long.
-        // Let's use the format from page.tsx: role_username_clean@nccrgu.internal
-        // BUT, user might change role. Ideally we use something unique like Regimental Number.
-        // However, existing logic uses Role + Name.
-        // Let's stick to the existing logic:
         const pseudoEmail = `${rank.toLowerCase()}_${cleanUsername}@nccrgu.internal`;
 
         // Secure Password (PIN + Salt)
@@ -48,7 +51,6 @@ export async function createCadetAccount(formData: any) {
 
         if (authError) {
             console.error("Auth User Creation Failed:", authError);
-            // Check if user already exists
             if (authError.message.includes("already registered")) {
                 return { success: false, error: "User with this name/role already exists." };
             }
@@ -71,13 +73,12 @@ export async function createCadetAccount(formData: any) {
                 unit_name: unitName,
                 enrollment_year: enrollmentYear,
                 blood_group: bloodGroup,
-                access_pin: pin, // Store Visible PIN
+                access_pin: pin,
                 updated_at: new Date().toISOString(),
             });
 
         if (profileError) {
             console.error("Profile Creation Failed:", profileError);
-            // Attempt to cleanup auth user?
             await supabaseAdmin.auth.admin.deleteUser(userId);
             throw profileError;
         }
@@ -85,16 +86,15 @@ export async function createCadetAccount(formData: any) {
         revalidatePath('/dashboard/cadets');
         return { success: true, userId };
 
-    } catch (error: any) {
-        console.error("Server Action Error:", error);
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        console.error("Server Action Error:", message);
+        return { success: false, error: message };
     }
 }
 
 export async function updateCadetPin(cadetId: string, newPin: string) {
     try {
-        console.log("Server Action: Updating PIN for", cadetId);
-
         const password = `${newPin}-ncc-rgu`;
 
         // 1. Update Auth Password
@@ -116,8 +116,9 @@ export async function updateCadetPin(cadetId: string, newPin: string) {
         revalidatePath('/dashboard/cadets');
         return { success: true };
 
-    } catch (error: any) {
-        console.error("Update PIN Error:", error);
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        console.error("Update PIN Error:", message);
+        return { success: false, error: message };
     }
 }

@@ -142,8 +142,8 @@ export default function FilesPage() {
                 setModalError(null);
                 await fetchFiles();
             }
-        } catch (err: any) {
-            setModalError(err?.message || "Upload failed unexpectedly.");
+        } catch (err: unknown) {
+            setModalError(err instanceof Error ? err.message : "Upload failed unexpectedly.");
         } finally {
             setIsUploading(false);
         }

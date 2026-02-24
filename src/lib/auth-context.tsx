@@ -56,14 +56,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             let { data, error } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, access_pin, email')
                 .eq('id', userId)
                 .single();
 
             if (error && error.code === 'PGRST116') {
-                // Profile not found, but user is authenticated. 
+                // Profile not found, but user is authenticated.
                 // Attempt to create a default profile (self-healing)
-                console.log("Profile missing, attempting to create default profile...");
 
                 // Fetch the user email/metadata from auth to help populate
                 const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -186,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // 2. If that failed, try with the RAW PIN (Legacy accounts created before fix)
             if (error) {
-                console.log("Secure login failed, trying legacy PIN...", error.message);
+                // Secure login failed — try with the RAW PIN (Legacy accounts created before fix)
 
                 const { data: legacyData, error: legacyError } = await supabase.auth.signInWithPassword({
                     email,
@@ -194,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 });
 
                 if (legacyData.user) {
-                    console.log("Legacy login success! Upgrading security...");
+                    // Legacy login succeeded — upgrade to secure password format
                     // Automatically upgrade their password to the secure format
                     await supabase.auth.updateUser({ password: securePassword });
 

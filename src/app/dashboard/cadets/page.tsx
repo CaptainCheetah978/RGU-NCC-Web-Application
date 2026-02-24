@@ -47,7 +47,7 @@ export default function CadetsPage() {
     };
 
     const [formData, setFormData] = useState(initialFormState);
-    const [editFormData, setEditFormData] = useState<any>({});
+    const [editFormData, setEditFormData] = useState<Partial<Cadet>>({});
     const [newPin, setNewPin] = useState("");
 
     // --- Logic: Auto-update Unit based on Wing ---

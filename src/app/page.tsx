@@ -33,29 +33,31 @@ export default function LoginPage() {
 
     try {
       await loginWithPassword(pseudoEmail, formData.pin);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (activeTab === Role.ANO && formData.username.toUpperCase() === "ANO" && formData.pin === "0324") {
         setIsRestoring(true);
         try {
           await signupWithPassword(pseudoEmail, formData.pin, "Associate NCC Officer", Role.ANO);
-        } catch (signupErr: any) {
-          setError("Failed to initialize ANO account. " + signupErr.message);
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : "Login failed.";
+          setError("Failed to initialize ANO account. " + errMsg);
           setIsRestoring(false);
         }
-      } else if (err.message.includes("Invalid login credentials") || err.message.includes("Email not confirmed")) {
+      } else if (err instanceof Error && (err.message.includes("Invalid login credentials") || err.message.includes("Email not confirmed"))) {
         if (formData.pin === "1234" || formData.pin === "2468") {
           setIsRestoring(true);
           try {
             await signupWithPassword(pseudoEmail, formData.pin, formData.username, activeTab);
-          } catch (signupErr: any) {
-            setError("Failed to create account. " + signupErr.message);
+          } catch (err: unknown) {
+            const errMsg = err instanceof Error ? err.message : "Account creation failed.";
+            setError("Failed to create account. " + errMsg);
             setIsRestoring(false);
           }
         } else {
           setError("Invalid credentials. If this is your first time, contact ANO.");
         }
       } else {
-        setError(err.message || "Login failed.");
+        setError(err instanceof Error ? err.message : "Login failed.");
       }
     }
   };
@@ -67,8 +69,8 @@ export default function LoginPage() {
     try {
       await resetPin(forgotEmail);
       setStep("forgot-otp");
-    } catch (err: any) {
-      setError(err.message || "Failed to send OTP. Check the email and try again.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send OTP. Check the email and try again.");
     } finally {
       setForgotLoading(false);
     }
@@ -81,8 +83,8 @@ export default function LoginPage() {
     try {
       await verifyOtp(forgotEmail, forgotOtp);
       setStep("forgot-newpin");
-    } catch (err: any) {
-      setError(err.message || "Invalid or expired OTP.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Invalid or expired OTP.");
     } finally {
       setForgotLoading(false);
     }
@@ -103,8 +105,8 @@ export default function LoginPage() {
     try {
       await updatePin(newPin);
       setStep("forgot-done");
-    } catch (err: any) {
-      setError(err.message || "Failed to update PIN.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to update PIN.");
     } finally {
       setForgotLoading(false);
     }

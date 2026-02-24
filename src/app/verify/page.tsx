@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Shield, CheckCircle2, XCircle, User, Award, Calendar } from "lucide-react";
+import Image from "next/image";
 
 function VerifyContent() {
     const searchParams = useSearchParams();
@@ -13,8 +14,7 @@ function VerifyContent() {
     let person: Record<string, string | undefined> | null = null;
 
     if (id && typeof window !== "undefined") {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let merged: any = null;
+        let merged: Record<string, string | number | undefined> | null = null;
 
         // 1. (Mock data removed)
 
@@ -22,8 +22,8 @@ function VerifyContent() {
         try {
             const storedCadets = localStorage.getItem("ncc_cadets");
             if (storedCadets) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const cadet = JSON.parse(storedCadets).find((c: any) => c.id === id);
+                const parsed = JSON.parse(storedCadets) as Record<string, string | number | undefined>[];
+                const cadet = parsed.find((c) => c.id === id);
                 if (cadet) {
                     merged = { ...(merged || {}), ...cadet };
                 }
@@ -34,7 +34,7 @@ function VerifyContent() {
         try {
             const storedExtra = localStorage.getItem("ncc_extra_user_data");
             if (storedExtra) {
-                const extras = JSON.parse(storedExtra);
+                const extras = JSON.parse(storedExtra) as Record<string, Record<string, string | number | undefined>>;
                 if (extras[id]) {
                     merged = { ...(merged || {}), ...extras[id] };
                 }
@@ -43,13 +43,13 @@ function VerifyContent() {
 
         if (merged) {
             person = {
-                name: merged.name,
-                role: merged.role,
-                regimentalNumber: merged.regimentalNumber,
-                wing: merged.wing,
-                unitNumber: merged.unitNumber,
-                unitName: merged.unitName,
-                bloodGroup: merged.bloodGroup,
+                name: merged.name as string | undefined,
+                role: merged.role as string | undefined,
+                regimentalNumber: merged.regimentalNumber as string | undefined,
+                wing: merged.wing as string | undefined,
+                unitNumber: merged.unitNumber as string | undefined,
+                unitName: merged.unitName as string | undefined,
+                bloodGroup: merged.bloodGroup as string | undefined,
                 enrollmentYear: merged.enrollmentYear?.toString(),
             };
         }
@@ -61,8 +61,8 @@ function VerifyContent() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center space-x-3 mb-3">
-                        <img src="/ncc-logo.png" alt="NCC" className="w-10 h-10 object-contain" />
-                        <img src="/rgu-logo.png" alt="RGU" className="w-10 h-10 object-contain" />
+                        <Image src="/ncc-logo.png" alt="NCC" width={40} height={40} className="w-10 h-10 object-contain" />
+                        <Image src="/rgu-logo.png" alt="RGU" width={40} height={40} className="w-10 h-10 object-contain" />
                     </div>
                     <h1 className="text-white text-xl font-bold tracking-tight">NCC RGU — ID Verification</h1>
                     <p className="text-slate-400 text-xs mt-1">The Assam Royal Global University • National Cadet Corps</p>

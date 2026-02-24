@@ -98,8 +98,8 @@ export default function ProfilePage() {
                 try {
                     await updateCadet(user.id, { avatarUrl: base64 });
                     setUploadSuccess(true);
-                } catch (err: any) {
-                    setUploadError(err?.message || "Save failed.");
+                } catch (err: unknown) {
+                    setUploadError(err instanceof Error ? err.message : "Save failed.");
                 } finally {
                     setIsUploading(false);
                 }
@@ -107,9 +107,9 @@ export default function ProfilePage() {
             reader.readAsDataURL(file);
             return; // setIsUploading handled inside reader.onload
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Upload error:", err);
-            setUploadError(err?.message || "Upload failed.");
+            setUploadError(err instanceof Error ? err.message : "Upload failed.");
         } finally {
             setIsUploading(false);
         }
@@ -148,8 +148,8 @@ export default function ProfilePage() {
             await updatePin(changePinData.newPin);
             setChangePinSuccess(true);
             setChangePinData({ newPin: "", confirmPin: "" });
-        } catch (err: any) {
-            setChangePinError(err?.message || "Failed to update PIN.");
+        } catch (err: unknown) {
+            setChangePinError(err instanceof Error ? err.message : "Failed to update PIN.");
         } finally {
             setChangePinLoading(false);
         }
