@@ -334,9 +334,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteCadet = async (id: string) => {
+        // Cascade: delete all related data first
+        await supabase.from('attendance').delete().eq('cadet_id', id);
+        await supabase.from('notes').delete().eq('sender_id', id);
+        await supabase.from('notes').delete().eq('recipient_id', id);
+        await supabase.from('certificates').delete().eq('user_id', id);
         const { error } = await supabase.from('profiles').delete().eq('id', id);
         if (error) throw error;
         await refreshProfiles();
+        await refreshAttendance();
+        await refreshNotes();
+        await refreshCertificates();
     };
 
     const markAttendance = async (record: AttendanceRecord) => {
