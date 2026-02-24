@@ -16,6 +16,7 @@
 - [Features and Modules](#features-and-modules)
 - [Role-Based Access Control](#role-based-access-control)
 - [Technical Architecture](#technical-architecture)
+- [Project Structure](#project-structure)
 - [Deployment Guide](#deployment-guide)
 - [Multi-Unit Deployment](#multi-unit-deployment)
 - [License](#license)
@@ -101,6 +102,36 @@ The system operates on a state-of-the-art security model using **Supabase Row Le
 - **attendance**: Relational table linking cadets to specific classes.
 - **notes**: Hierarchical message storage with read-status tracking.
 - **classes**: Storage for training schedules and instructor assignments.
+
+---
+
+## Project Structure
+
+```text
+├── 📂 public/              # Static assets (logos, icons, etc.)
+│   ├── 🖼️ ncc-logo.png      # Official NCC emblem
+│   └── 🖼️ rgu-logo.png      # Royal Global University emblem
+├── 📂 src/
+│   ├── 📂 app/             # Next.js App Router (pages and server actions)
+│   │   ├── 📂 actions/      # 🔐 Server actions for secure database mutations
+│   │   ├── 📂 dashboard/    # 📊 Protected dashboard routes for all roles
+│   │   ├── 📂 verify/       # 🪪 Public identity verification via QR scan
+│   │   ├── 📄 layout.tsx    # Root layout with fonts, metadata, and providers
+│   │   └── 📄 page.tsx      # 🔑 Secure login and authentication gateway
+│   ├── 📂 components/      # Reusable UI components
+│   │   ├── 📂 ui/           # Atomic shadcn/ui-inspired primitives
+│   │   ├── 📄 sidebar.tsx   # Dynamic rank-based navigation menu
+│   │   └── 📄 topbar.tsx    # User profile and notification header
+│   ├── 📂 lib/              # Core business logic and shared state
+│   │   ├── 📄 auth-context.tsx # 🛡️ Holistic authentication state management
+│   │   ├── 📄 data-context.tsx # 💾 Centralized data fetching and CRUD logic
+│   │   └── 📄 supabase-admin.ts# ⚡ High-privilege database operations
+│   └── 📂 types/            # 📍 Global TypeScript definitions and enums
+├── 📄 .env.local           # Private environment variables (Supabase keys)
+├── 📄 next.config.ts       # Next.js framework configuration
+├── 📄 supabase-policies.sql# 🔒 Essential RLS security policy definitions
+└── 📄 tsconfig.json        # TypeScript compiler configuration
+```
 
 ---
 
