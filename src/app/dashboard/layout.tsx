@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function DashboardLayout({
     children,
@@ -13,6 +13,7 @@ export default function DashboardLayout({
 }) {
     const { user, isLoading } = useAuth();
     const router = useRouter();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         if (!isLoading && !user) {
@@ -24,10 +25,10 @@ export default function DashboardLayout({
 
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-slate-950 overflow-hidden">
-            <Sidebar />
-            <div className="flex-1 flex flex-col ml-64 bg-gray-100 dark:bg-slate-900">
-                <Topbar />
-                <main className="flex-1 overflow-y-auto p-8 relative">
+            <Sidebar isOpen={isMobileMenuOpen} setIsOpen={setIsMobileMenuOpen} />
+            <div className="flex-1 flex flex-col md:ml-64 bg-gray-100 dark:bg-slate-900 w-full transition-all duration-300">
+                <Topbar onMenuClick={() => setIsMobileMenuOpen(true)} />
+                <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
                     {/* Subtle dot-grid background pattern */}
                     <div
                         className="absolute inset-0 pointer-events-none opacity-[0.025] dark:opacity-[0.04]"

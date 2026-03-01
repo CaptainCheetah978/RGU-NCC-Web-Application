@@ -10,7 +10,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export function Topbar() {
+interface TopbarProps {
+    onMenuClick: () => void;
+}
+
+export function Topbar({ onMenuClick }: TopbarProps) {
     const { user } = useAuth();
     const { messageableUsers, notes, markNoteAsRead, markAllAsRead } = useData();
     const [showNotifications, setShowNotifications] = useState(false);
@@ -48,14 +52,26 @@ export function Topbar() {
     };
 
     return (
-        <header className="h-16 border-b border-gray-200/80 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-8 sticky top-0 z-50 w-full shadow-sm dark:shadow-slate-900/30">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-                Welcome back,{" "}
-                {(displayUser.role === Role.ANO || displayUser.role === Role.SUO)
-                    ? displayUser.role
-                    : `${displayUser.role === Role.CADET ? "Cadet" : displayUser.role} ${displayUser.name.split(" ")[0]}`
-                }
-            </h1>
+        <header className="h-16 border-b border-gray-200/80 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 w-full shadow-sm dark:shadow-slate-900/30">
+            <div className="flex items-center space-x-4">
+                <button
+                    onClick={onMenuClick}
+                    className="md:hidden p-2 -ml-2 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none"
+                    aria-label="Toggle menu"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
+                </button>
+                <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-tight hidden sm:block">
+                    Welcome back,{" "}
+                    {(displayUser.role === Role.ANO || displayUser.role === Role.SUO)
+                        ? displayUser.role
+                        : `${displayUser.role === Role.CADET ? "Cadet" : displayUser.role} ${displayUser.name.split(" ")[0]}`
+                    }
+                </h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight sm:hidden">
+                    Dashboard
+                </h1>
+            </div>
 
             <div className="flex items-center space-x-4">
                 <div className="relative" ref={dropdownRef}>
