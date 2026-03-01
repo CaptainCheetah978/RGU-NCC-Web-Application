@@ -133,7 +133,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                         "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
                                         isActive
                                             ? "text-white bg-primary shadow-lg shadow-primary/25"
-                                            : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
+                                            : "text-gray-800 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
                                     )}
                                 >
                                     {isActive && (
@@ -143,7 +143,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                         />
                                     )}
-                                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white")} />
+                                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white")} />
                                     <span className="font-medium flex-1">{link.name}</span>
                                     {link.href === "/dashboard/notes" && unreadNotes > 0 && (
                                         <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
@@ -159,7 +159,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 <div className="p-4 border-t border-white/10 dark:border-slate-700/50 space-y-2">
                     <button
                         onClick={toggleTheme}
-                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white w-full transition-colors"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-800 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white w-full transition-colors"
                     >
                         {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         <span className="font-medium">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
