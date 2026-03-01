@@ -1,0 +1,23 @@
+{
+    "name": "NCC RGU Cadet Management",
+    "short_name": "NCC RGU",
+    "description": "Cadet Management System for NCC RGU Unit",
+    "start_url": "/dashboard",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#0f172a",
+    "icons": [
+        {
+            "src": "/ncc-logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/ncc-logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

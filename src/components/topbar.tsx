@@ -184,12 +184,12 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                     </AnimatePresence>
                 </div>
 
-                <div className="flex items-center space-x-3 pl-4 border-l border-gray-200 dark:border-slate-700">
-                    <div className="text-right hidden md:block">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{displayUser.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-slate-400">{displayUser.regimentalNumber}</p>
+                <div className="flex items-center space-x-3 pl-3 md:pl-4 border-l border-gray-200 dark:border-slate-700 flex-shrink-0">
+                    <div className="text-right hidden md:block max-w-[120px] lg:max-w-[200px]">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{displayUser.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{displayUser.regimentalNumber}</p>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white font-bold shadow-lg shadow-black/20 overflow-hidden ring-2 ring-white/20 dark:ring-slate-700/50">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white font-bold shadow-lg shadow-black/20 overflow-hidden ring-2 ring-white/20 dark:ring-slate-700/50 flex-shrink-0">
                         {displayUser.avatarUrl ? (
                             <img src={displayUser.avatarUrl} alt={displayUser.name} className="w-full h-full object-cover" />
                         ) : (
