@@ -56,8 +56,8 @@ export function InfoCard({ title, value, icon: Icon, trend, color, delay = 0 }: 
 
             <div className="relative flex justify-between items-start">
                 <div>
-                    <p className="text-gray-500 dark:text-slate-400 text-sm font-medium">{title}</p>
-                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight">{value}</h3>
+                    <p className="text-gray-700 dark:text-slate-400 text-sm font-bold">{title}</p>
+                    <h3 className="text-3xl font-black text-black dark:text-white mt-1 tracking-tight">{value}</h3>
                 </div>
                 <div className={`p-3 rounded-xl ${styles.iconBg} ${styles.iconColor} group-hover:scale-110 transition-transform duration-300`}>
                     <Icon className="w-6 h-6" />

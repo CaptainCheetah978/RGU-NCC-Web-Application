@@ -14,8 +14,8 @@ export function UpcomingClasses() {
                     <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700/50 flex items-center justify-center mb-4">
                         <Calendar className="w-8 h-8 text-gray-400 dark:text-slate-500" />
                     </div>
-                    <p className="text-gray-500 dark:text-slate-400 font-medium">No Upcoming Classes</p>
-                    <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">Classes will appear here once scheduled</p>
+                    <p className="text-gray-700 dark:text-slate-400 font-medium">No Upcoming Classes</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-500 mt-1">Classes will appear here once scheduled</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -29,7 +29,7 @@ export function UpcomingClasses() {
                                 </div>
                                 <div className="ml-4 flex-1">
                                     <h4 className="font-bold text-gray-900 dark:text-white">{cls.title}</h4>
-                                    <p className="text-sm text-gray-500 dark:text-slate-400">{cls.time}</p>
+                                    <p className="text-sm text-gray-600 dark:text-slate-400">{cls.time}</p>
                                 </div>
                                 <button className="px-4 py-2 text-sm font-medium text-primary bg-primary/5 dark:bg-primary/10 rounded-lg hover:bg-primary hover:text-white transition-all">
                                     View

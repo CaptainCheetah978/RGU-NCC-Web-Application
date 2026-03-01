@@ -1,19 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
+};
+
 export const metadata: Metadata = {
   title: "NCC Royal Global University",
   description: "Official Cadet Management System for NCC RGU Unit",
+  manifest: "/manifest.json",
   icons: {
     icon: "/ncc-logo.png",
+    apple: "/ncc-logo.png",
   },
 };
 
 import { Providers } from "@/components/providers";
-
+import { PWARegistration } from "@/components/pwa-registration";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -24,8 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans bg-background text-primary`}>
+      <body className={`${inter.variable} font-sans bg-background text-primary overflow-x-hidden`}>
         <Providers>{children}</Providers>
+        <PWARegistration />
         <Analytics />
         <SpeedInsights />
       </body>

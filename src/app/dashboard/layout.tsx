@@ -24,21 +24,21 @@ export default function DashboardLayout({
     if (!user) return null;
 
     return (
-        <div className="flex h-screen bg-gray-100 dark:bg-slate-950 overflow-hidden">
+        <div className="flex h-screen bg-gray-50 dark:bg-slate-950 overflow-hidden text-gray-900 dark:text-white">
             <Sidebar isOpen={isMobileMenuOpen} setIsOpen={setIsMobileMenuOpen} />
-            <div className="flex-1 flex flex-col md:ml-64 bg-gray-100 dark:bg-slate-900 w-full transition-all duration-300">
+            <div className="flex-1 flex flex-col md:ml-64 bg-white dark:bg-slate-900 transition-all duration-300 relative max-w-full">
                 <Topbar onMenuClick={() => setIsMobileMenuOpen(true)} />
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 relative">
                     {/* Subtle dot-grid background pattern */}
                     <div
-                        className="absolute inset-0 pointer-events-none opacity-[0.025] dark:opacity-[0.04]"
+                        className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.04]"
                         style={{
                             backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
                             backgroundSize: "28px 28px",
                         }}
                     />
                     {/* Dark mode ambient glow top-right */}
-                    <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
+                    <div className="hidden md:block absolute top-0 right-0 w-[500px] h-[300px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
                     <div className="relative z-10">
                         {children}
                     </div>
