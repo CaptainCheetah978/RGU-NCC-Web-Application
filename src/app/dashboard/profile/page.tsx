@@ -217,7 +217,7 @@ export default function ProfilePage() {
 
             <div className="no-print">
                 <h1 className="text-3xl font-extrabold text-black dark:text-white tracking-tight">My Profile</h1>
-                <p className="text-gray-800 mt-1">Manage your official NCC records and digital identity.</p>
+                <p className="text-gray-500 mt-1">Manage your official NCC records and digital identity.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -256,14 +256,14 @@ export default function ProfilePage() {
 
                         <div className="mt-8 w-full space-y-4">
                             <div className="flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
-                                <div className="flex items-center text-gray-800 dark:text-slate-400">
+                                <div className="flex items-center text-gray-500 dark:text-slate-400">
                                     <Award className="w-4 h-4 mr-2" />
                                     <span>Regt. Number</span>
                                 </div>
                                 <span className="font-mono font-bold text-gray-900 dark:text-white">{currentUser.regimentalNumber || "N/A"}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
-                                <div className="flex items-center text-gray-800 dark:text-slate-400">
+                                <div className="flex items-center text-gray-500 dark:text-slate-400">
                                     <Calendar className="w-4 h-4 mr-2" />
                                     <span>Attendance</span>
                                 </div>
@@ -328,7 +328,7 @@ export default function ProfilePage() {
                                             ) : (
                                                 <div className="text-center p-2">
                                                     <Camera className="w-8 h-8 text-gray-300 mx-auto mb-1" />
-                                                    <p className="text-[8px] text-gray-700 font-bold uppercase">No Photo</p>
+                                                    <p className="text-[8px] text-gray-400 font-bold uppercase">No Photo</p>
                                                 </div>
                                             )}
                                         </div>
@@ -337,33 +337,33 @@ export default function ProfilePage() {
                                         <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-6">
                                             {/* Name Row */}
                                             <div className="relative pt-2.5 col-span-2">
-                                                <p className="text-[8px] font-extrabold text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Full Name</p>
+                                                <p className="text-[8px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Full Name</p>
                                                 <p className="text-[14px] font-bold text-gray-900 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.name}</p>
                                             </div>
 
                                             {/* Rank & Regt No Row */}
                                             <div className="relative pt-2.5">
-                                                <p className="text-[7px] font-extrabold text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.role || "N/A"}</p>
                                             </div>
                                             <div className="relative pt-2.5">
-                                                <p className="text-[7px] font-extrabold text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.regimentalNumber || "N/A"}</p>
                                             </div>
 
                                             {/* Wing & Blood Group Row */}
                                             <div className="relative pt-2.5">
-                                                <p className="text-[7px] font-extrabold text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.wing || "N/A"}</p>
                                             </div>
                                             <div className="relative pt-2.5">
-                                                <p className="text-[7px] font-extrabold text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
                                                 <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.bloodGroup || "N/A"}</p>
                                             </div>
 
                                             {/* Unit Name Row */}
                                             <div className="relative pt-2.5 col-span-2">
-                                                <p className="text-[7px] font-extrabold text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Unit Name</p>
+                                                <p className="text-[7px] font-extrabold text-gray-400 uppercase tracking-widest absolute top-0 left-0 leading-none">Unit Name</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-tight uppercase w-max max-w-full">
                                                     {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
                                                 </p>
@@ -378,7 +378,7 @@ export default function ProfilePage() {
                                                 level="M"
                                                 className="rounded"
                                             />
-                                            <p className="text-[5px] text-gray-700 font-bold mt-0.5 uppercase tracking-wider">Scan to verify</p>
+                                            <p className="text-[5px] text-gray-400 font-bold mt-0.5 uppercase tracking-wider">Scan to verify</p>
                                         </div>
                                     </div>
 
@@ -388,14 +388,14 @@ export default function ProfilePage() {
                                             {/* Spacer to match ANO side's s/d- height for perfect line alignment */}
                                             <div className="h-[10.5px] mb-0.5" />
                                             <div className="w-20 border-b border-gray-300 mb-1" />
-                                            <p className="text-[7px] font-bold text-gray-700 uppercase tracking-tighter">Sign of Cadet</p>
+                                            <p className="text-[7px] font-bold text-gray-400 uppercase tracking-tighter">Sign of Cadet</p>
                                         </div>
                                         <div className="text-center">
                                             <div className="flex flex-col items-center">
-                                                <p className="text-[10px] italic font-serif text-gray-800 mb-0.5 leading-none">s/d-</p>
+                                                <p className="text-[10px] italic font-serif text-gray-500 mb-0.5 leading-none">s/d-</p>
                                                 <div className="w-28 border-b border-gray-300 mb-1" />
                                                 <p className="text-[8px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
-                                                <p className="text-[6px] font-bold text-gray-700 uppercase mt-0.5 tracking-wider">Digital Signature</p>
+                                                <p className="text-[6px] font-bold text-gray-400 uppercase mt-0.5 tracking-wider">Digital Signature</p>
                                             </div>
                                         </div>
                                     </div>
@@ -416,10 +416,10 @@ export default function ProfilePage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900 dark:text-white">ID Verification</h4>
-                                        <p className="text-[10px] text-gray-700 dark:text-slate-500 uppercase font-bold tracking-widest">Digital authenticity</p>
+                                        <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase font-bold tracking-widest">Digital authenticity</p>
                                     </div>
                                 </div>
-                                <p className="text-sm text-gray-900 dark:text-slate-300 leading-relaxed">
+                                <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
                                     This digital ID card is automatically generated using your registered NCC profile data. It can be used for local unit identification.
                                 </p>
                             </CardContent>
@@ -432,10 +432,10 @@ export default function ProfilePage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900 dark:text-white">Photo Requirements</h4>
-                                        <p className="text-[10px] text-gray-700 dark:text-slate-500 uppercase font-bold tracking-widest">Official Standards</p>
+                                        <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase font-bold tracking-widest">Official Standards</p>
                                     </div>
                                 </div>
-                                <ul className="text-[11px] text-gray-900 dark:text-slate-300 space-y-2 list-disc pl-4 font-medium">
+                                <ul className="text-[11px] text-gray-600 dark:text-slate-300 space-y-2 list-disc pl-4 font-medium">
                                     <li>Must be in NCC Khakhi Uniform</li>
                                     <li>No headgear/beret allowed</li>
                                     <li>Plain white background preferred</li>
@@ -464,7 +464,7 @@ export default function ProfilePage() {
                                     <form onSubmit={handleChangePinSubmit} className="space-y-3">
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="text-xs font-semibold text-gray-800 dark:text-slate-400 uppercase tracking-wider">New PIN</label>
+                                                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">New PIN</label>
                                                 <input
                                                     type="password"
                                                     value={changePinData.newPin}
@@ -475,7 +475,7 @@ export default function ProfilePage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs font-semibold text-gray-800 dark:text-slate-400 uppercase tracking-wider">Confirm PIN</label>
+                                                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Confirm PIN</label>
                                                 <input
                                                     type="password"
                                                     value={changePinData.confirmPin}
@@ -532,7 +532,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <p className="text-sm text-gray-800 dark:text-slate-400 italic px-2">
+                    <p className="text-sm text-gray-500 dark:text-slate-400 italic px-2">
                         Uploading an improper photo may lead to the rejection of your digital ID validity by the ANO.
                     </p>
 
