@@ -48,7 +48,7 @@ A role-based Cadet Management System built with Next.js 15 and Supabase. Feature
 ![Cadet Profile](public/screenshots/profile.png)
 
 ### 6. Digital Identity (QR)
-> Automated PDF extraction and client-side QR generation for fast parade-ground verification.
+> High-resolution image generation and client-side QR generation for fast parade-ground verification.
 ![Digital ID Card](public/screenshots/id-card.png)
 
 ### 7. Secure Communications

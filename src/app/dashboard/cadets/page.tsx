@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { CertificatesSection } from "@/components/profile/certificates-section";
 import { createCadetAccount, updateCadetPin, getCadetPin } from "@/app/actions/cadet-actions";
 import { useToast } from "@/lib/toast-context";
+import { getAccessToken } from "@/lib/get-access-token";
 import Image from "next/image";
 
 // Lazy PIN loader — fetches PIN on demand via server action, never from cached client data
@@ -21,7 +22,10 @@ function PinDisplay({ cadetId }: { cadetId: string }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getCadetPin(cadetId).then(p => { setPin(p); setLoading(false); });
+        getAccessToken().then(token => {
+            if (token) getCadetPin(cadetId, token).then(p => { setPin(p); setLoading(false); });
+            else setLoading(false);
+        });
     }, [cadetId]);
 
     if (loading) return <p className="text-xs text-gray-400 animate-pulse">Loading PIN...</p>;
@@ -123,7 +127,8 @@ export default function CadetsPage() {
         setEditingCadet(cadet);
         setIsPinModalOpen(true);
         // Fetch current PIN on demand via server action
-        const pin = await getCadetPin(cadet.id);
+        const token = await getAccessToken();
+        const pin = await getCadetPin(cadet.id, token || "");
         setNewPin(pin || "");
     };
 
@@ -146,7 +151,8 @@ export default function CadetsPage() {
         }
 
         setIsLoading(true);
-        const result = await createCadetAccount(formData);
+        const token = await getAccessToken();
+        const result = await createCadetAccount(formData, token || "");
 
         if (result.success) {
             await refreshData();
@@ -184,7 +190,8 @@ export default function CadetsPage() {
         if (!/^\d+$/.test(newPin)) { showToast("PIN must contain only digits."); return; }
         setIsLoading(true);
 
-        const result = await updateCadetPin(editingCadet.id, newPin);
+        const token = await getAccessToken();
+        const result = await updateCadetPin(editingCadet.id, newPin, token || "");
         if (result.success) {
             await refreshData();
             setIsPinModalOpen(false);

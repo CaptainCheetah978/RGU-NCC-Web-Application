@@ -393,7 +393,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const deleteNote = async (id: string) => {
         const { deleteNoteAction } = await import("@/app/actions/note-actions");
-        const result = await deleteNoteAction(id);
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await deleteNoteAction(id, token || "");
         if (!result.success) throw new Error(result.error || "Failed to delete note");
         await refreshNotes();
     };

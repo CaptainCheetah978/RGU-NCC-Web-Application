@@ -22,9 +22,9 @@ interface CreateCadetFormData {
     pin: string;
 }
 
-export async function createCadetAccount(formData: CreateCadetFormData) {
+export async function createCadetAccount(formData: CreateCadetFormData, accessToken: string) {
     // ── 1. Auth: verify caller is logged in and has permission ─────────────────
-    const session = await getCallerSession();
+    const session = await getCallerSession(accessToken);
     if (!session) {
         return { success: false, error: "Unauthorized: you must be logged in." };
     }
@@ -109,9 +109,9 @@ export async function createCadetAccount(formData: CreateCadetFormData) {
     }
 }
 
-export async function updateCadetPin(cadetId: string, newPin: string) {
+export async function updateCadetPin(cadetId: string, newPin: string, accessToken: string) {
     // ── 1. Auth ─────────────────────────────────────────────────────────────────
-    const session = await getCallerSession();
+    const session = await getCallerSession(accessToken);
     if (!session) {
         return { success: false, error: "Unauthorized: you must be logged in." };
     }
@@ -150,9 +150,9 @@ export async function updateCadetPin(cadetId: string, newPin: string) {
     }
 }
 
-export async function getCadetPin(cadetId: string): Promise<string | null> {
+export async function getCadetPin(cadetId: string, accessToken: string): Promise<string | null> {
     // Only ANO/SUO can view PINs
-    const session = await getCallerSession();
+    const session = await getCallerSession(accessToken);
     if (!session || !CADET_MANAGE_ROLES.includes(session.role)) return null;
 
     // Validate the ID is a valid UUID before querying

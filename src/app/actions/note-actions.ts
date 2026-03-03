@@ -4,9 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
 import { NoteIdSchema } from "@/lib/schemas";
 
-export async function deleteNoteAction(noteId: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteNoteAction(noteId: string, accessToken: string): Promise<{ success: boolean; error?: string }> {
     // ── Auth: caller must be logged in ──────────────────────────────────────────
-    const session = await getCallerSession();
+    const session = await getCallerSession(accessToken);
     if (!session) {
         return { success: false, error: "Unauthorized: you must be logged in." };
     }
