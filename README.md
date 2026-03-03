@@ -25,7 +25,37 @@ A role-based Cadet Management System built with Next.js 15 and Supabase. Feature
 - **UI & Animations**: [Framer Motion](https://www.framer.com/motion/) for transitions, Shadcn UI base components
 - **PWA**: Service Worker with cache-first (stale-while-revalidate) for offline/low-connectivity
 
-## Core Modules & Features
+## Application Walkthrough & Features
+
+### 1. Secure Login & Authentication
+> Custom PIN-based server-side authentication with strict role-based access control.
+![Login Screen](public/screenshots/login.png)
+
+### 2. Comprehensive Dashboard
+> Real-time statistics aggregation and asynchronous activity logging across the unit.
+![Dashboard Overview](public/screenshots/dashboard.png)
+
+### 3. Attendance Management
+> Batch status updates and relational database joins connecting cadets to training classes.
+![Attendance Tracking](public/screenshots/attendance.png)
+
+### 4. Cadet Registry
+> Full text search, client-side filtering, and automated profile state hydration.
+![Cadet Registry](public/screenshots/registry.png)
+
+### 5. Personal Profiles
+> Detailed views of cadet progression, ranks, and uploaded certificates.
+![Cadet Profile](public/screenshots/profile.png)
+
+### 6. Digital Identity (QR)
+> Automated PDF extraction and client-side QR generation for fast parade-ground verification.
+![Digital ID Card](public/screenshots/id-card.png)
+
+### 7. Secure Communications
+> Hierarchical note passing with read-receipt real-time listeners between Cadets and Officers.
+![Messaging Interface](public/screenshots/messages.png)
+
+## Core Modules Overview
 
 | Module | Technical Features | Access Level |
 | :--- | :--- | :--- |
