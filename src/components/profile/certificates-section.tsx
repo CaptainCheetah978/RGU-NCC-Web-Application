@@ -100,7 +100,7 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                 </CardHeader>
                 <CardContent>
                     {certs.length === 0 ? (
-                        <div className="py-8 text-center text-gray-500">
+                        <div className="py-8 text-center text-gray-700">
                             <Award className="w-10 h-10 mx-auto mb-2 opacity-30" />
                             <p className="text-sm font-medium">No certificates uploaded yet.</p>
                         </div>
@@ -122,7 +122,7 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-gray-800 truncate">{cert.name}</p>
+                                        <p className="text-sm font-bold text-gray-900 truncate">{cert.name}</p>
                                         <span className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold border ${CERT_COLORS[cert.type]}`}>
                                             {cert.type === "A" || cert.type === "B" || cert.type === "C" ? `${cert.type} Cert` : cert.type}
                                         </span>
@@ -223,7 +223,7 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                             <span className={`px-3 py-1 rounded-lg text-xs font-bold border ${CERT_COLORS[viewingCert.type]}`}>
                                 {viewingCert.type === "A" || viewingCert.type === "B" || viewingCert.type === "C" ? `${viewingCert.type} Certificate` : viewingCert.type}
                             </span>
-                            <span className="text-gray-400 text-xs">
+                            <span className="text-gray-600 text-xs font-medium">
                                 Uploaded {new Date(viewingCert.uploadDate).toLocaleDateString("en-IN")}
                             </span>
                         </div>

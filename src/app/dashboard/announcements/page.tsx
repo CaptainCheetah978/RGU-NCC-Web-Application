@@ -91,7 +91,7 @@ export default function AnnouncementsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Announcements</h2>
-                    <p className="text-gray-600 dark:text-slate-400 mt-1">Important notices and updates for all cadets.</p>
+                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Important notices and updates for all cadets.</p>
                 </div>
                 {canPost && (
                     <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-primary/25">
@@ -104,8 +104,8 @@ export default function AnnouncementsPage() {
             {sortedAnnouncements.length === 0 ? (
                 <Card className="border-gray-100">
                     <CardContent className="py-16 text-center">
-                        <Megaphone className="w-16 h-16 mx-auto text-gray-200 mb-4" />
-                        <p className="text-gray-400 font-medium">No announcements posted yet.</p>
+                        <Megaphone className="w-16 h-16 mx-auto text-gray-300 dark:text-slate-700 mb-4" />
+                        <p className="text-gray-700 dark:text-slate-400 font-bold">No announcements posted yet.</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -137,17 +137,17 @@ export default function AnnouncementsPage() {
                                                 <div className="flex items-center gap-2">
                                                     <h3 className="font-bold text-gray-900 dark:text-white text-lg">{ann.title}</h3>
                                                     {ann.priority === "urgent" && (
-                                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50">
+                                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-800/50">
                                                             URGENT
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p className="text-gray-600 dark:text-slate-300 mt-2 text-sm leading-relaxed whitespace-pre-line">
+                                                <p className="text-gray-800 dark:text-slate-300 mt-2 text-sm leading-relaxed whitespace-pre-line font-medium">
                                                     {ann.content}
                                                 </p>
-                                                <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500 dark:text-slate-400">
-                                                    <span className="font-bold">By {ann.authorName}</span>
-                                                    <span className="flex items-center text-gray-400 dark:text-slate-500">
+                                                <div className="flex items-center space-x-4 mt-3 text-xs text-gray-700 dark:text-slate-400">
+                                                    <span className="font-black uppercase tracking-tight">By {ann.authorName}</span>
+                                                    <span className="flex items-center text-gray-600 dark:text-slate-500 font-bold italic">
                                                         <Clock className="w-3 h-3 mr-1" />
                                                         {timeAgo(ann.createdAt)}
                                                     </span>
@@ -157,7 +157,7 @@ export default function AnnouncementsPage() {
                                         {canPost && (
                                             <button
                                                 onClick={() => handleDelete(ann)}
-                                                className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0"
+                                                className="p-2 text-gray-700 dark:text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0 font-bold"
                                                 aria-label={`Delete announcement ${ann.title}`}
                                             >
                                                 <Trash2 className="w-4 h-4" />
@@ -186,7 +186,7 @@ export default function AnnouncementsPage() {
                         <textarea
                             id="ann-content"
                             placeholder="Announcement details..."
-                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none placeholder:text-gray-600 dark:placeholder:text-slate-500 font-medium"
                             rows={4}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
@@ -197,9 +197,9 @@ export default function AnnouncementsPage() {
                         <div className="flex space-x-3">
                             <button
                                 type="button"
-                                className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-bold transition-all ${priority === "normal"
-                                    ? "border-primary bg-primary/10 text-primary"
-                                    : "border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-gray-300"
+                                className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-black transition-all ${priority === "normal"
+                                    ? "border-primary bg-primary/10 text-primary shadow-sm"
+                                    : "border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-400 hover:border-gray-300 font-bold"
                                     }`}
                                 onClick={() => setPriority("normal")}
                             >
@@ -207,9 +207,9 @@ export default function AnnouncementsPage() {
                             </button>
                             <button
                                 type="button"
-                                className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-bold transition-all ${priority === "urgent"
-                                    ? "border-red-500 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                                    : "border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-gray-300"
+                                className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-black transition-all ${priority === "urgent"
+                                    ? "border-red-500 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 shadow-sm"
+                                    : "border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-400 hover:border-gray-300 font-bold"
                                     }`}
                                 onClick={() => setPriority("urgent")}
                             >

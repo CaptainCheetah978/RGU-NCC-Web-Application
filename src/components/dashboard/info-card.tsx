@@ -70,7 +70,7 @@ export function InfoCard({ title, value, icon: Icon, trend, color, delay = 0 }: 
                         <ArrowUpRight className="w-4 h-4 mr-1" />
                         {trend}
                     </span>
-                    <span className="text-gray-400 dark:text-slate-500 ml-2">vs last month</span>
+                    <span className="text-gray-600 dark:text-slate-500 ml-2 font-medium">vs last month</span>
                 </div>
             )}
         </motion.div>

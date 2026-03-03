@@ -77,7 +77,7 @@ export default function ActivityLogPage() {
         <div className="space-y-6 max-w-4xl mx-auto">
             <div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Activity Log</h2>
-                <p className="text-gray-600 dark:text-slate-400 mt-1">Track all actions performed across the system.</p>
+                <p className="text-gray-800 dark:text-slate-400 mt-1 font-bold italic">Track all actions performed across the system.</p>
             </div>
 
             {/* Filter */}
@@ -88,9 +88,9 @@ export default function ActivityLogPage() {
                         key={action}
                         onClick={() => setFilterAction(action)}
                         aria-label={`Filter by ${action}`}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterAction === action
+                        className={`px-3 py-1.5 rounded-lg text-xs font-black whitespace-nowrap transition-colors ${filterAction === action
                             ? "bg-primary text-white shadow-md shadow-primary/20"
-                            : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700"
+                            : "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700 font-bold"
                             }`}
                     >
                         {action}
@@ -101,9 +101,9 @@ export default function ActivityLogPage() {
             {filteredLog.length === 0 ? (
                 <Card className="border-gray-100">
                     <CardContent className="py-16 text-center">
-                        <History className="w-16 h-16 mx-auto text-gray-200 mb-4" />
-                        <p className="text-gray-500 dark:text-slate-400 font-medium">No activity recorded yet.</p>
-                        <p className="text-gray-500 dark:text-slate-500 text-xs mt-1">Actions like enrolling cadets, marking attendance, and posting announcements will appear here.</p>
+                        <History className="w-16 h-16 mx-auto text-gray-300 dark:text-slate-700 mb-4" />
+                        <p className="text-gray-800 dark:text-slate-400 font-bold">No activity recorded yet.</p>
+                        <p className="text-gray-700 dark:text-slate-500 text-xs mt-1 font-bold italic">Actions like enrolling cadets, marking attendance, and posting announcements will appear here.</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -133,14 +133,14 @@ export default function ActivityLogPage() {
 
                                             <div className="ml-4 flex-1">
                                                 <div className="flex items-center justify-between">
-                                                    <p className="text-sm text-gray-800 dark:text-slate-200">
+                                                    <p className="text-sm text-gray-900 dark:text-slate-200">
                                                         <span className="font-bold">{entry.performedByName}</span>
-                                                        {" "}{entry.action.toLowerCase()}
+                                                        {" "}<span className="font-medium">{entry.action.toLowerCase()}</span>
                                                         {entry.targetName && (
-                                                            <span className="font-semibold text-primary"> &quot;{entry.targetName}&quot;</span>
+                                                            <span className="font-bold text-primary underline decoration-primary/10"> &quot;{entry.targetName}&quot;</span>
                                                         )}
                                                     </p>
-                                                    <span className="text-[10px] text-gray-500 dark:text-slate-500 font-medium whitespace-nowrap ml-4">
+                                                    <span className="text-[10px] text-gray-800 dark:text-slate-500 font-black whitespace-nowrap ml-4 italic">
                                                         {timeAgo(entry.timestamp)}
                                                     </span>
                                                 </div>

@@ -220,7 +220,7 @@ export default function CadetsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Cadet Registry</h2>
-                    <p className="text-gray-600 dark:text-slate-400 mt-1">Manage personnel records, promotions, and assignments.</p>
+                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Manage personnel records, promotions, and assignments.</p>
                 </div>
                 <div className="flex gap-3">
                     <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
@@ -255,7 +255,7 @@ export default function CadetsPage() {
                     <input
                         type="text"
                         placeholder="Search by name, regimental number, or rank..."
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100 placeholder:text-gray-600 dark:placeholder:text-slate-500 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -285,7 +285,7 @@ export default function CadetsPage() {
                         <UserPlus className="w-10 h-10 text-gray-400 dark:text-slate-500" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">No cadets found</h3>
-                    <p className="text-gray-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
+                    <p className="text-gray-700 dark:text-slate-400 mt-2 max-w-md mx-auto font-medium">
                         No results match your search or filter. Try adjusting terms or enroll a new cadet to get started.
                     </p>
                 </div>
@@ -320,7 +320,7 @@ export default function CadetsPage() {
                                                         <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-blue-400 transition-colors text-lg">
                                                             {cadet.rank} {cadet.name}
                                                         </h3>
-                                                        <p className="text-sm text-gray-500 dark:text-slate-400 font-mono">
+                                                        <p className="text-sm text-gray-700 dark:text-slate-400 font-bold decoration-primary/20 underline underline-offset-4">
                                                             {cadet.regimentalNumber || "N/A"}
                                                         </p>
                                                     </div>
@@ -328,13 +328,13 @@ export default function CadetsPage() {
                                             </div>
 
                                             <div className="space-y-2 mb-4">
-                                                <div className="flex items-center text-sm text-gray-600 dark:text-slate-300">
-                                                    <span className="w-24 text-gray-400 dark:text-slate-500 text-xs uppercase font-bold tracking-wider">Unit</span>
-                                                    <span className="font-medium truncate">{cadet.unitNumber} {cadet.unitName}</span>
+                                                <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
+                                                    <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Unit</span>
+                                                    <span className="font-bold truncate">{cadet.unitNumber} {cadet.unitName}</span>
                                                 </div>
-                                                <div className="flex items-center text-sm text-gray-600 dark:text-slate-300">
-                                                    <span className="w-24 text-gray-400 dark:text-slate-500 text-xs uppercase font-bold tracking-wider">Batches</span>
-                                                    <span className="font-medium bg-gray-100 dark:bg-slate-700 px-2 py-0.5 rounded text-xs text-gray-700 dark:text-slate-300">{cadet.enrollmentYear}</span>
+                                                <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
+                                                    <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Batches</span>
+                                                    <span className="font-bold bg-primary/5 dark:bg-slate-700 px-2 py-0.5 rounded text-xs text-primary dark:text-slate-300">{cadet.enrollmentYear}</span>
                                                 </div>
                                             </div>
 
@@ -369,11 +369,11 @@ export default function CadetsPage() {
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50/50 dark:bg-slate-900/30">
                                     <tr>
-                                        <th className="p-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Cadet</th>
-                                        <th className="p-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Rank &amp; Regt. #</th>
-                                        <th className="p-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Unit</th>
-                                        <th className="p-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Year</th>
-                                        <th className="p-4 text-right text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Actions</th>
+                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Cadet</th>
+                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Rank &amp; Regt. #</th>
+                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Unit</th>
+                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Year</th>
+                                        <th className="p-4 text-right text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60">
@@ -389,12 +389,12 @@ export default function CadetsPage() {
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium text-gray-900 dark:text-slate-200">{cadet.rank}</span>
-                                                    <span className="text-xs text-gray-500 dark:text-slate-400 font-mono">{cadet.regimentalNumber}</span>
+                                                    <span className="font-bold text-gray-900 dark:text-slate-200">{cadet.rank}</span>
+                                                    <span className="text-xs text-gray-700 dark:text-slate-400 font-bold underline decoration-primary/10">{cadet.regimentalNumber}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 text-sm text-gray-600 dark:text-slate-300">{cadet.unitNumber} {cadet.unitName}</td>
-                                            <td className="p-4 text-sm text-gray-600 dark:text-slate-300">{cadet.enrollmentYear}</td>
+                                            <td className="p-4 text-sm text-gray-800 dark:text-slate-300 font-medium">{cadet.unitNumber} {cadet.unitName}</td>
+                                            <td className="p-4 text-sm text-gray-800 dark:text-slate-300 font-bold">{cadet.enrollmentYear}</td>
                                             <td className="p-4 text-right">
                                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button onClick={() => handleView(cadet)} className="p-2 text-gray-400 hover:text-primary transition-colors" aria-label={`View ${cadet.name}`}>
@@ -542,20 +542,23 @@ export default function CadetsPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <Input
                             label="Full Name"
+                            id="edit-name"
                             value={editFormData.name || ""}
                             onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                         />
                         <Input
-                            label="Regimental #"
+                            label="Regimental Number"
+                            id="edit-regimental"
                             value={editFormData.regimentalNumber || ""}
                             onChange={(e) => setEditFormData({ ...editFormData, regimentalNumber: e.target.value })}
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Rank</label>
+                            <label htmlFor="edit-rank" className="text-sm font-medium text-gray-700 dark:text-slate-300">Rank</label>
                             <select
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                                id="edit-rank"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
                                 value={editFormData.role || Role.CADET}
                                 onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value as Role })}
                             >
@@ -566,6 +569,7 @@ export default function CadetsPage() {
                         </div>
                         <Input
                             label="Blood Group"
+                            id="edit-blood-group"
                             value={editFormData.bloodGroup || ""}
                             onChange={(e) => setEditFormData({ ...editFormData, bloodGroup: e.target.value })}
                         />
@@ -633,20 +637,20 @@ export default function CadetsPage() {
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                                <span className="block text-xs text-gray-400 dark:text-slate-500 uppercase font-bold">Unit</span>
-                                <span className="font-medium text-gray-900 dark:text-slate-200">{viewingCadet.unitNumber} {viewingCadet.unitName}</span>
+                                <span className="block text-xs text-gray-700 dark:text-slate-400 uppercase font-black">Unit</span>
+                                <span className="font-bold text-gray-900 dark:text-slate-200">{viewingCadet.unitNumber} {viewingCadet.unitName}</span>
                             </div>
                             <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                                <span className="block text-xs text-gray-400 dark:text-slate-500 uppercase font-bold">Wing</span>
-                                <span className="font-medium text-gray-900 dark:text-slate-200">{viewingCadet.wing}</span>
+                                <span className="block text-xs text-gray-700 dark:text-slate-400 uppercase font-black">Wing</span>
+                                <span className="font-bold text-gray-900 dark:text-slate-200">{viewingCadet.wing}</span>
                             </div>
                             <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                                <span className="block text-xs text-gray-400 dark:text-slate-500 uppercase font-bold">Enrolled</span>
-                                <span className="font-medium text-gray-900 dark:text-slate-200">{viewingCadet.enrollmentYear}</span>
+                                <span className="block text-xs text-gray-700 dark:text-slate-400 uppercase font-black">Enrolled</span>
+                                <span className="font-bold text-gray-900 dark:text-slate-200">{viewingCadet.enrollmentYear}</span>
                             </div>
                             <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                                <span className="block text-xs text-gray-400 dark:text-slate-500 uppercase font-bold">Blood Group</span>
-                                <span className="font-medium text-gray-900 dark:text-slate-200">{viewingCadet.bloodGroup}</span>
+                                <span className="block text-xs text-gray-700 dark:text-slate-400 uppercase font-black">Blood Group</span>
+                                <span className="font-bold text-gray-900 dark:text-slate-200">{viewingCadet.bloodGroup}</span>
                             </div>
                         </div>
 

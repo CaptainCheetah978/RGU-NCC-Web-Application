@@ -89,10 +89,10 @@ function AttendanceContent() {
         return (
             <div className="flex flex-col items-center justify-center p-12 h-[calc(100vh-140px)]">
                 <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-full mb-4">
-                    <Shield className="w-12 h-12 text-gray-300 dark:text-slate-600" />
+                    <Shield className="w-12 h-12 text-gray-400 dark:text-slate-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No Classes Scheduled</h3>
-                <p className="text-gray-500 dark:text-slate-400 mt-2 max-w-sm text-center">There are no classes scheduled to take attendance for. Please ask an administrator to schedule a class.</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">No Classes Scheduled</h3>
+                <p className="text-gray-700 dark:text-slate-400 mt-2 max-w-sm text-center font-medium">There are no classes scheduled to take attendance for. Please ask an administrator to schedule a class.</p>
             </div>
         )
     }
@@ -102,7 +102,7 @@ function AttendanceContent() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Attendance Register</h2>
-                    <p className="text-gray-600 dark:text-slate-400 mt-1">Mark and track attendance for scheduled classes.</p>
+                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Mark and track attendance for scheduled classes.</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -135,15 +135,15 @@ function AttendanceContent() {
                             <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                             <span className="font-medium">Present: {stats.present}</span>
                         </div>
-                        <div className="flex items-center text-red-700 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 shadow-sm">
-                            <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                            <span className="font-medium">Absent: {stats.absent}</span>
+                        <div className="flex items-center text-red-900 bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 shadow-sm">
+                            <span className="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
+                            <span className="font-bold">Absent: {stats.absent}</span>
                         </div>
-                        <div className="flex items-center text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 shadow-sm">
-                            <span className="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
-                            <span className="font-medium">Late: {stats.late}</span>
+                        <div className="flex items-center text-amber-900 bg-amber-100 px-3 py-1.5 rounded-lg border border-amber-200 shadow-sm">
+                            <span className="w-2 h-2 bg-amber-600 rounded-full mr-2"></span>
+                            <span className="font-bold">Late: {stats.late}</span>
                         </div>
-                        <div className="text-primary font-medium ml-2 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10">
+                        <div className="text-primary font-bold ml-2 bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
                             Strength: {cadets.length}
                         </div>
                     </div>
@@ -164,7 +164,7 @@ function AttendanceContent() {
                 <CardContent className="p-0 flex-1 overflow-y-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-slate-900/60 sticky top-0 z-10 shadow-sm">
-                            <tr className="text-left text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                            <tr className="text-left text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">
                                 <th className="px-6 py-4 w-[40%]">Cadet Name</th>
                                 <th className="px-6 py-4 w-[20%]">Regimental Given ID</th>
                                 <th className="px-6 py-4 w-[15%]">Rank</th>
@@ -187,12 +187,12 @@ function AttendanceContent() {
                                                     {cadet.name.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <div className="font-semibold text-gray-900 dark:text-white">{cadet.name}</div>
-                                                    <div className="text-xs text-gray-500 md:hidden">{cadet.regimentalNumber}</div>
+                                                    <div className="font-bold text-gray-900 dark:text-white">{cadet.name}</div>
+                                                    <div className="text-xs text-gray-600 md:hidden font-medium">{cadet.regimentalNumber}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-3 text-sm text-gray-600 dark:text-slate-400 font-mono tracking-wide hidden md:table-cell">
+                                        <td className="px-6 py-3 text-sm text-gray-800 dark:text-slate-400 font-bold tracking-wide hidden md:table-cell">
                                             {cadet.regimentalNumber || "-"}
                                         </td>
                                         <td className="px-6 py-3 text-sm">
@@ -215,7 +215,7 @@ function AttendanceContent() {
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "PRESENT"
                                                             ? "bg-green-500 text-white shadow-md shadow-green-500/20 scale-105"
-                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-500 hover:bg-green-50 hover:text-green-600"
+                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-green-50 hover:text-green-700"
                                                     )}
                                                     title="Mark Present"
                                                 >
@@ -229,7 +229,7 @@ function AttendanceContent() {
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "ABSENT"
                                                             ? "bg-red-500 text-white shadow-md shadow-red-500/20 scale-105"
-                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-red-50 hover:text-red-700"
                                                     )}
                                                     title="Mark Absent"
                                                 >
@@ -243,7 +243,7 @@ function AttendanceContent() {
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "LATE"
                                                             ? "bg-yellow-500 text-white shadow-md shadow-yellow-500/20 scale-105"
-                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-500 hover:bg-yellow-50 hover:text-yellow-600"
+                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700"
                                                     )}
                                                     title="Mark Late"
                                                 >

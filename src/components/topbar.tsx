@@ -135,8 +135,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                                                 <Inbox className="w-8 h-8 text-gray-300 dark:text-slate-500" />
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="font-bold text-gray-600 dark:text-slate-300">All caught up!</p>
-                                                <p className="text-xs text-gray-400 dark:text-slate-500">No new notifications at the moment.</p>
+                                                <p className="font-bold text-gray-700 dark:text-slate-300">All caught up!</p>
+                                                <p className="text-xs text-gray-600 dark:text-slate-500 font-medium">No new notifications at the moment.</p>
                                             </div>
                                         </div>
                                     ) : (
@@ -159,10 +159,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                                                                 {new Date(note.timestamp).toLocaleDateString()}
                                                             </span>
                                                         </div>
-                                                        <p className="text-sm font-semibold text-primary/80 dark:text-blue-400/80 truncate mb-1 leading-tight">
+                                                        <p className="text-sm font-bold text-primary dark:text-blue-400 truncate mb-1 leading-tight">
                                                             {note.subject}
                                                         </p>
-                                                        <p className="text-[12px] text-gray-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                                        <p className="text-[12px] text-gray-700 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
                                                             {note.content}
                                                         </p>
                                                     </div>
@@ -187,8 +187,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
                 <div className="flex items-center space-x-3 pl-3 md:pl-4 border-l border-gray-200 dark:border-slate-700 flex-shrink-0">
                     <div className="text-right hidden md:block max-w-[120px] lg:max-w-[200px]">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{displayUser.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{displayUser.regimentalNumber}</p>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{displayUser.name}</p>
+                        <p className="text-xs text-gray-700 dark:text-slate-400 truncate font-medium">{displayUser.regimentalNumber}</p>
                     </div>
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white font-bold shadow-lg shadow-black/20 overflow-hidden ring-2 ring-white/20 dark:ring-slate-700/50 flex-shrink-0">
                         {displayUser.avatarUrl ? (

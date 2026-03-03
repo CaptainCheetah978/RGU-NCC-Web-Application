@@ -35,7 +35,7 @@ export function RecentActivity() {
                     <div key={i} className="relative">
                         <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-white dark:bg-slate-800 border-2 border-secondary shadow-sm"></div>
                         <p className="text-sm font-semibold text-gray-900 dark:text-slate-200">{item.text}</p>
-                        {item.time && <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">{item.time}</p>}
+                        {item.time && <p className="text-xs text-gray-600 dark:text-slate-500 mt-1 font-medium">{item.time}</p>}
                     </div>
                 ))}
             </div>

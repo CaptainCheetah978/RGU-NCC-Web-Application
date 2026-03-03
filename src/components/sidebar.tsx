@@ -144,8 +144,8 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                         />
                                     )}
-                                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-700 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white")} />
-                                    <span className="font-medium flex-1">{link.name}</span>
+                                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-800 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white")} />
+                                    <span className="font-black flex-1">{link.name}</span>
                                     {link.href === "/dashboard/notes" && unreadNotes > 0 && (
                                         <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
                                             {unreadNotes > 9 ? "9+" : unreadNotes}
@@ -161,16 +161,17 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     <button
                         onClick={toggleTheme}
                         className="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-800 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white w-full transition-colors"
+                        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
                     >
                         {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                        <span className="font-medium">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                        <span className="font-black">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
                     </button>
                     <button
                         onClick={logout}
-                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 w-full transition-colors"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-700 dark:text-red-400 hover:bg-red-500/10 hover:text-red-800 dark:hover:text-red-300 w-full transition-colors"
                     >
                         <LogOut className="w-5 h-5" />
-                        <span className="font-medium">Logout</span>
+                        <span className="font-black">Logout</span>
                     </button>
                 </div>
             </div>

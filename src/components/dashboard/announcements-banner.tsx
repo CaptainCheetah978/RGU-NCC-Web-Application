@@ -59,14 +59,23 @@ export function AnnouncementsBanner() {
                                     }`}>
                                     {ann.title}
                                 </h4>
-                                <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                                <p className={`text-xs line-clamp-2 mt-1 leading-relaxed ${ann.priority === "urgent"
+                                    ? "text-red-900 dark:text-slate-400"
+                                    : "text-gray-600 dark:text-slate-400"
+                                    }`}>
                                     {ann.content}
                                 </p>
                                 <div className="flex items-center justify-between mt-2">
-                                    <span className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">
+                                    <span className={`text-[10px] font-bold ${ann.priority === "urgent"
+                                        ? "text-red-700 dark:text-slate-500"
+                                        : "text-gray-600 dark:text-slate-500"
+                                        }`}>
                                         {ann.authorName}
                                     </span>
-                                    <span className="text-[10px] text-gray-400 dark:text-slate-500">
+                                    <span className={`text-[10px] ${ann.priority === "urgent"
+                                        ? "text-red-700 dark:text-slate-500"
+                                        : "text-gray-600 dark:text-slate-500"
+                                        }`}>
                                         {new Date(ann.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                                     </span>
                                 </div>

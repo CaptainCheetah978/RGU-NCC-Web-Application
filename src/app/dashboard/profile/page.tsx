@@ -217,7 +217,7 @@ export default function ProfilePage() {
 
             <div className="no-print">
                 <h1 className="text-3xl font-extrabold text-black dark:text-white tracking-tight">My Profile</h1>
-                <p className="text-gray-600 dark:text-slate-400 mt-1">Manage your official NCC records and digital identity.</p>
+                <p className="text-gray-800 dark:text-slate-400 mt-1 font-bold italic">Manage your official NCC records and digital identity.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -257,18 +257,18 @@ export default function ProfilePage() {
 
                         <div className="mt-8 w-full space-y-4">
                             <div className="flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
-                                <div className="flex items-center text-gray-600 dark:text-slate-400">
+                                <div className="flex items-center text-gray-800 dark:text-slate-400 font-black">
                                     <Award className="w-4 h-4 mr-2" />
                                     <span>Regt. Number</span>
                                 </div>
-                                <span className="font-mono font-bold text-gray-900 dark:text-white">{currentUser.regimentalNumber || "N/A"}</span>
+                                <span className="font-mono font-black text-gray-900 dark:text-white">{currentUser.regimentalNumber || "N/A"}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
-                                <div className="flex items-center text-gray-600 dark:text-slate-400">
+                                <div className="flex items-center text-gray-800 dark:text-slate-400 font-black">
                                     <Calendar className="w-4 h-4 mr-2" />
                                     <span>Attendance</span>
                                 </div>
-                                <span className="font-bold text-primary">{stats.attendanceRate}</span>
+                                <span className="font-black text-primary">{stats.attendanceRate}</span>
                             </div>
                         </div>
 
@@ -344,27 +344,27 @@ export default function ProfilePage() {
 
                                             {/* Rank & Regt No Row */}
                                             <div className="relative pt-2.5">
-                                                <p className="text-[8px] font-extrabold text-gray-600 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
+                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.role || "N/A"}</p>
                                             </div>
                                             <div className="relative pt-2.5">
-                                                <p className="text-[8px] font-extrabold text-gray-600 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
+                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.regimentalNumber || "N/A"}</p>
                                             </div>
 
                                             {/* Wing & Blood Group Row */}
                                             <div className="relative pt-2.5">
-                                                <p className="text-[8px] font-extrabold text-gray-600 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
+                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.wing || "N/A"}</p>
                                             </div>
                                             <div className="relative pt-2.5">
-                                                <p className="text-[8px] font-extrabold text-gray-600 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
+                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
                                                 <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.bloodGroup || "N/A"}</p>
                                             </div>
 
                                             {/* Unit Name Row */}
                                             <div className="relative pt-2.5 col-span-2">
-                                                <p className="text-[8px] font-extrabold text-gray-600 uppercase tracking-widest absolute top-0 left-0 leading-none">Unit Name</p>
+                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Unit Name</p>
                                                 <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-tight uppercase w-max max-w-full">
                                                     {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
                                                 </p>
@@ -417,10 +417,10 @@ export default function ProfilePage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900 dark:text-white">ID Verification</h4>
-                                        <p className="text-[10px] text-gray-600 dark:text-slate-400 uppercase font-bold tracking-widest">Digital authenticity</p>
+                                        <p className="text-[10px] text-gray-800 dark:text-slate-400 uppercase font-black tracking-widest">Digital authenticity</p>
                                     </div>
                                 </div>
-                                <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
+                                <p className="text-sm text-gray-800 dark:text-slate-300 leading-relaxed font-bold italic">
                                     This digital ID card is automatically generated using your registered NCC profile data. It can be used for local unit identification.
                                 </p>
                             </CardContent>
@@ -433,10 +433,10 @@ export default function ProfilePage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900 dark:text-white">Photo Requirements</h4>
-                                        <p className="text-[10px] text-gray-600 dark:text-slate-400 uppercase font-bold tracking-widest">Official Standards</p>
+                                        <p className="text-[10px] text-gray-800 dark:text-slate-400 uppercase font-black tracking-widest">Official Standards</p>
                                     </div>
                                 </div>
-                                <ul className="text-[11px] text-gray-600 dark:text-slate-300 space-y-2 list-disc pl-4 font-medium">
+                                <ul className="text-[11px] text-gray-800 dark:text-slate-300 space-y-2 list-disc pl-4 font-black">
                                     <li>Must be in NCC Khakhi Uniform</li>
                                     <li>No headgear/beret allowed</li>
                                     <li>Plain white background preferred</li>
@@ -465,24 +465,26 @@ export default function ProfilePage() {
                                     <form onSubmit={handleChangePinSubmit} className="space-y-3">
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">New PIN</label>
+                                                <label htmlFor="new-pin" className="text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">New PIN</label>
                                                 <input
+                                                    id="new-pin"
                                                     type="password"
                                                     value={changePinData.newPin}
                                                     onChange={(e) => setChangePinData({ ...changePinData, newPin: e.target.value })}
                                                     placeholder="New PIN"
-                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 dark:border-slate-700 px-3 text-sm bg-white dark:bg-slate-800 dark:text-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 dark:border-slate-700 px-3 text-sm bg-white dark:bg-slate-800 dark:text-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400 font-bold"
                                                     required
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Confirm PIN</label>
+                                                <label htmlFor="confirm-pin" className="text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Confirm PIN</label>
                                                 <input
+                                                    id="confirm-pin"
                                                     type="password"
                                                     value={changePinData.confirmPin}
                                                     onChange={(e) => setChangePinData({ ...changePinData, confirmPin: e.target.value })}
                                                     placeholder="Confirm PIN"
-                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 dark:border-slate-700 px-3 text-sm bg-white dark:bg-slate-800 dark:text-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                    className="mt-1 w-full h-10 rounded-lg border border-gray-200 dark:border-slate-700 px-3 text-sm bg-white dark:bg-slate-800 dark:text-white tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400 font-bold"
                                                     required
                                                 />
                                             </div>
