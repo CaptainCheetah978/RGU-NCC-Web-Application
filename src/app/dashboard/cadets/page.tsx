@@ -12,6 +12,7 @@ import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CertificatesSection } from "@/components/profile/certificates-section";
 import { createCadetAccount, updateCadetPin, getCadetPin } from "@/app/actions/cadet-actions";
+import { useToast } from "@/lib/toast-context";
 import Image from "next/image";
 
 // Lazy PIN loader — fetches PIN on demand via server action, never from cached client data
@@ -40,6 +41,7 @@ function PinDisplay({ cadetId }: { cadetId: string }) {
 export default function CadetsPage() {
     const { cadets, updateCadet, deleteCadet, logActivity, refreshData } = useData();
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -133,23 +135,26 @@ export default function CadetsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // --- Form Validation ---
-        if (!formData.name.trim()) { alert("Name is required."); return; }
-        if (formData.name.trim().length < 2) { alert("Name must be at least 2 characters."); return; }
-        if (!formData.pin || formData.pin.length < 4) { alert("PIN must be at least 4 digits."); return; }
-        if (!/^\d+$/.test(formData.pin)) { alert("PIN must contain only digits."); return; }
+        if (!formData.name.trim() || formData.name.trim().length < 2) {
+            showToast("Name must be at least 2 characters."); return;
+        }
+        if (!formData.pin || formData.pin.length < 4) {
+            showToast("PIN must be at least 4 digits."); return;
+        }
+        if (!/^\d+$/.test(formData.pin)) {
+            showToast("PIN must contain only digits."); return;
+        }
 
         setIsLoading(true);
-
         const result = await createCadetAccount(formData);
 
         if (result.success) {
             await refreshData();
             setIsModalOpen(false);
             setFormData(initialFormState);
-            alert(`Cadet Enrolled Successfully!\n\nRank: ${formData.rank}\nName: ${formData.name}\nPIN: ${formData.pin}`);
+            showToast(`${formData.name} enrolled successfully! PIN: ${formData.pin}`, "success");
         } else {
-            alert("Enrollment Failed: " + result.error);
+            showToast("Enrollment failed: " + result.error);
         }
         setIsLoading(false);
     };
@@ -158,15 +163,15 @@ export default function CadetsPage() {
         e.preventDefault();
         if (!editingCadet) return;
         setIsLoading(true);
-
         try {
             await updateCadet(editingCadet.id, editFormData);
             await refreshData();
             setIsEditModalOpen(false);
+            showToast("Cadet profile updated.", "success");
             if (logActivity) logActivity("Updated cadet profile", user.id, user.name, editingCadet.name);
         } catch (error) {
             console.error(error);
-            alert("Failed to update cadet.");
+            showToast("Failed to update cadet. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -175,31 +180,30 @@ export default function CadetsPage() {
     const handlePinUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingCadet) return;
-        if (!newPin || newPin.length < 4) { alert("PIN must be at least 4 digits."); return; }
-        if (!/^\d+$/.test(newPin)) { alert("PIN must contain only digits."); return; }
+        if (!newPin || newPin.length < 4) { showToast("PIN must be at least 4 digits."); return; }
+        if (!/^\d+$/.test(newPin)) { showToast("PIN must contain only digits."); return; }
         setIsLoading(true);
 
         const result = await updateCadetPin(editingCadet.id, newPin);
-
         if (result.success) {
             await refreshData();
             setIsPinModalOpen(false);
-            alert("PIN Updated successfully.");
+            showToast("PIN updated successfully.", "success");
         } else {
-            alert("Failed to update PIN: " + result.error);
+            showToast("Failed to update PIN: " + result.error);
         }
         setIsLoading(false);
     };
 
     const handleDelete = async (cadet: Cadet) => {
-        if (confirm(`Are you sure you want to remove ${cadet.rank} ${cadet.name}? This cannot be undone.`)) {
-            try {
-                await deleteCadet(cadet.id);
-                if (logActivity) logActivity("Removed cadet", user.id, user.name, cadet.name);
-            } catch (error) {
-                console.error(error);
-                alert("Failed to delete cadet.");
-            }
+        if (!confirm(`Remove ${cadet.rank} ${cadet.name}? This cannot be undone.`)) return;
+        try {
+            await deleteCadet(cadet.id);
+            showToast(`${cadet.name} removed from registry.`, "success");
+            if (logActivity) logActivity("Removed cadet", user.id, user.name, cadet.name);
+        } catch (error) {
+            console.error(error);
+            showToast("Failed to delete cadet. Please try again.");
         }
     };
 

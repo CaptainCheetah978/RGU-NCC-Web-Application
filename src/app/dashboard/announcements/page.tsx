@@ -10,10 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Megaphone, Plus, Trash2, AlertTriangle, Clock } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useToast } from "@/lib/toast-context";
 
 export default function AnnouncementsPage() {
     const { user } = useAuth();
     const { announcements, addAnnouncement, deleteAnnouncement, logActivity } = useData();
+    const { showToast } = useToast();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [title, setTitle] = useState("");
@@ -48,6 +50,7 @@ export default function AnnouncementsPage() {
 
         try {
             await addAnnouncement(announcement);
+            showToast(`"${title.trim()}" posted.`, "success");
             if (logActivity) logActivity("Posted announcement", user.id, user.name, title.trim());
             setIsModalOpen(false);
             setTitle("");
@@ -55,21 +58,21 @@ export default function AnnouncementsPage() {
             setPriority("normal");
         } catch (error) {
             console.error("Failed to post announcement", error);
-            alert("Failed to post announcement.");
+            showToast("Failed to post announcement. Please try again.");
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleDelete = async (ann: Announcement) => {
-        if (confirm(`Delete announcement "${ann.title}"?`)) {
-            try {
-                await deleteAnnouncement(ann.id);
-                if (logActivity) logActivity("Deleted announcement", user.id, user.name, ann.title);
-            } catch (error) {
-                console.error("Failed to delete announcement", error);
-                alert("Failed to delete announcement.");
-            }
+        if (!confirm(`Delete announcement "${ann.title}"?`)) return;
+        try {
+            await deleteAnnouncement(ann.id);
+            showToast(`"${ann.title}" deleted.`, "success");
+            if (logActivity) logActivity("Deleted announcement", user.id, user.name, ann.title);
+        } catch (error) {
+            console.error("Failed to delete announcement", error);
+            showToast("Failed to delete announcement. Please try again.");
         }
     };
 

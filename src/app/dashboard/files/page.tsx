@@ -9,6 +9,7 @@ import { Upload, FileText, Image as ImageIcon, Video, Download, Trash2, RefreshC
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase-client";
+import { useToast } from "@/lib/toast-context";
 
 type FileType = "PDF" | "IMAGE" | "VIDEO" | "OTHER";
 
@@ -42,6 +43,7 @@ function formatBytes(bytes: number) {
 
 export default function FilesPage() {
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     // ALL hooks must come before any conditional returns
     const [files, setFiles] = useState<StoredFile[]>([]);
@@ -152,8 +154,12 @@ export default function FilesPage() {
     const handleDelete = async (file: StoredFile) => {
         if (!confirm(`Delete "${file.name}"? This cannot be undone.`)) return;
         const { error: deleteError } = await supabase.storage.from(BUCKET).remove([file.path]);
-        if (deleteError) alert("Failed to delete: " + deleteError.message);
-        else await fetchFiles();
+        if (deleteError) {
+            showToast("Failed to delete: " + deleteError.message);
+        } else {
+            showToast(`"${file.name}" deleted.`, "success");
+            await fetchFiles();
+        }
     };
 
     const getIcon = (type: FileType) => {

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/lib/toast-context";
 
 export default function NotesPage() {
     const {
@@ -36,6 +37,7 @@ export default function NotesPage() {
         logActivity
     } = useData();
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<"inbox" | "sent">("inbox");
@@ -103,12 +105,13 @@ export default function NotesPage() {
 
         try {
             await sendNote(newNote);
+            showToast(`Note sent to ${recipient.name}.`, "success");
             if (logActivity) logActivity("Sent a note", user.id, user.name, recipient.name);
             setIsComposeModalOpen(false);
             setFormData({ recipientId: "", subject: "", content: "" });
         } catch (error) {
             console.error("Failed to send note", error);
-            alert("Failed to send note.");
+            showToast("Failed to send note. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -127,19 +130,15 @@ export default function NotesPage() {
 
     const handleForward = async (note: Note) => {
         const ano = messageableUsers.find(u => u.role === Role.ANO);
-        if (ano) {
-            if (confirm(`Forward this note to ${ano.name}?`)) {
-                try {
-                    await forwardNoteToANO(note.id, ano.id, ano.name);
-                    if (logActivity) logActivity("Forwarded note to ANO", user.id, user.name, ano.name);
-                    alert(`Note forwarded to ${ano.name}`);
-                } catch (error) {
-                    console.error("Failed to forward note", error);
-                    alert("Failed to forward note.");
-                }
-            }
-        } else {
-            alert("No ANO found to forward to.");
+        if (!ano) { showToast("No ANO found to forward to."); return; }
+        if (!confirm(`Forward this note to ${ano.name}?`)) return;
+        try {
+            await forwardNoteToANO(note.id, ano.id, ano.name);
+            showToast(`Note forwarded to ${ano.name}.`, "success");
+            if (logActivity) logActivity("Forwarded note to ANO", user.id, user.name, ano.name);
+        } catch (error) {
+            console.error("Failed to forward note", error);
+            showToast("Failed to forward note. Please try again.");
         }
     };
 

@@ -5,20 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Share2, Grid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useToast } from "@/lib/toast-context";
 
 export default function SheetPage() {
     const { classes, cadets, attendance } = useData();
+    const { showToast } = useToast();
     const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || "");
 
     const handleExport = () => {
-        // Mock export
-        alert("Downloading CSV report...");
+        showToast("Downloading CSV report…", "success");
     };
 
     const handleShare = () => {
-        // Mock share
         navigator.clipboard.writeText(window.location.href);
-        alert("Link copied to clipboard!");
+        showToast("Link copied to clipboard!", "success");
     };
 
     return (

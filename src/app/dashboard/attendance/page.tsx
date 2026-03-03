@@ -2,6 +2,7 @@
 
 import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast-context";
 import { Role, AttendanceRecord } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, Clock, Search, Shield } from "lucide-react";
@@ -14,6 +15,7 @@ import { AttendanceExport } from "@/components/attendance/export-button";
 function AttendanceContent() {
     const { classes, cadets, attendance, markAttendance } = useData();
     const { user } = useAuth();
+    const { showToast } = useToast();
 
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");
@@ -79,7 +81,7 @@ function AttendanceContent() {
             });
         } catch (error) {
             console.error("Failed to mark attendance", error);
-            alert("Failed to mark attendance. Please try again.");
+            showToast("Failed to mark attendance. Please try again.");
         }
     };
 

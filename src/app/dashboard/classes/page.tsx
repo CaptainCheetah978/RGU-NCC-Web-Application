@@ -12,10 +12,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/lib/toast-context";
 
 export default function ClassesPage() {
     const { classes, addClass, deleteClass, logActivity } = useData();
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,26 +51,27 @@ export default function ClassesPage() {
 
         try {
             await addClass(newClass);
+            showToast(`"${formData.title}" scheduled successfully.`, "success");
             if (logActivity) logActivity("Scheduled class", user.id, user.name, formData.title);
             setIsModalOpen(false);
             setFormData({ title: "", date: "", time: "", description: "" });
         } catch (error) {
             console.error("Failed to schedule class", error);
-            alert("Failed to schedule class. Please try again.");
+            showToast("Failed to schedule class. Please try again.");
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleDelete = async (id: string, title: string) => {
-        if (confirm("Are you sure you want to delete this class session?")) {
-            try {
-                await deleteClass(id);
-                if (logActivity) logActivity("Deleted class", user.id, user.name, title);
-            } catch (error) {
-                console.error("Failed to delete class", error);
-                alert("Failed to delete class.");
-            }
+        if (!confirm(`Delete "${title}"? All attendance for this session will also be deleted.`)) return;
+        try {
+            await deleteClass(id);
+            showToast(`"${title}" deleted.`, "success");
+            if (logActivity) logActivity("Deleted class", user.id, user.name, title);
+        } catch (error) {
+            console.error("Failed to delete class", error);
+            showToast("Failed to delete class. Please try again.");
         }
     };
 
