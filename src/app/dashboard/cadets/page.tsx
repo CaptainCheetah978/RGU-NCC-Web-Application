@@ -220,18 +220,20 @@ export default function CadetsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Cadet Registry</h2>
-                    <p className="text-gray-500 dark:text-slate-400 mt-1">Manage personnel records, promotions, and assignments.</p>
+                    <p className="text-gray-600 dark:text-slate-400 mt-1">Manage personnel records, promotions, and assignments.</p>
                 </div>
                 <div className="flex gap-3">
                     <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
                         <button
                             onClick={() => setViewMode("grid")}
+                            aria-label="Grid View"
                             className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-white dark:bg-slate-700 shadow-sm text-primary" : "text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-200"}`}
                         >
                             <LayoutGrid className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => setViewMode("list")}
+                            aria-label="List View"
                             className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-white dark:bg-slate-700 shadow-sm text-primary" : "text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-200"}`}
                         >
                             <ListIcon className="w-5 h-5" />
@@ -263,6 +265,7 @@ export default function CadetsPage() {
                         className="px-4 py-2 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer text-sm font-medium"
                         value={filterRole}
                         onChange={(e) => setFilterRole(e.target.value)}
+                        aria-label="Filter by Rank"
                     >
                         <option value="ALL">All Ranks</option>
                         <option value={Role.SUO}>SUO</option>
@@ -340,16 +343,16 @@ export default function CadetsPage() {
                                                     View Profile
                                                 </Button>
                                                 {canEdit && (
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => handleEdit(cadet)}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => handleEdit(cadet)} aria-label={`Edit ${cadet.name}`}>
                                                         <Edit2 className="w-4 h-4" />
                                                     </Button>
                                                 )}
                                                 {isANO && (
                                                     <>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-500" onClick={() => handlePinEdit(cadet)}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-500" onClick={() => handlePinEdit(cadet)} aria-label={`Update PIN for ${cadet.name}`}>
                                                             <Key className="w-4 h-4" />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(cadet)}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(cadet)} aria-label={`Delete ${cadet.name}`}>
                                                             <Trash2 className="w-4 h-4" />
                                                         </Button>
                                                     </>
@@ -394,16 +397,16 @@ export default function CadetsPage() {
                                             <td className="p-4 text-sm text-gray-600 dark:text-slate-300">{cadet.enrollmentYear}</td>
                                             <td className="p-4 text-right">
                                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => handleView(cadet)} className="p-2 text-gray-400 hover:text-primary transition-colors">
+                                                    <button onClick={() => handleView(cadet)} className="p-2 text-gray-400 hover:text-primary transition-colors" aria-label={`View ${cadet.name}`}>
                                                         <Eye className="w-4 h-4" />
                                                     </button>
                                                     {canEdit && (
-                                                        <button onClick={() => handleEdit(cadet)} className="p-2 text-gray-400 hover:text-blue-500 transition-colors">
+                                                        <button onClick={() => handleEdit(cadet)} className="p-2 text-gray-400 hover:text-blue-500 transition-colors" aria-label={`Edit ${cadet.name}`}>
                                                             <Edit2 className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                     {isANO && (
-                                                        <button onClick={() => handleDelete(cadet)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                                        <button onClick={() => handleDelete(cadet)} className="p-2 text-gray-400 hover:text-red-500 transition-colors" aria-label={`Delete ${cadet.name}`}>
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     )}
@@ -441,8 +444,9 @@ export default function CadetsPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Rank</label>
+                            <label htmlFor="enroll-rank" className="text-sm font-medium text-gray-700 dark:text-slate-300">Rank</label>
                             <select
+                                id="enroll-rank"
                                 className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
                                 value={formData.rank}
                                 onChange={(e) => setFormData({ ...formData, rank: e.target.value as Role })}
@@ -453,8 +457,9 @@ export default function CadetsPage() {
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Wing</label>
+                            <label htmlFor="enroll-wing" className="text-sm font-medium text-gray-700 dark:text-slate-300">Wing</label>
                             <select
+                                id="enroll-wing"
                                 className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
                                 value={formData.wing}
                                 onChange={(e) => setFormData({ ...formData, wing: e.target.value as Wing })}
@@ -484,8 +489,9 @@ export default function CadetsPage() {
 
                     <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Gender</label>
+                            <label htmlFor="enroll-gender" className="text-sm font-medium text-gray-700 dark:text-slate-300">Gender</label>
                             <select
+                                id="enroll-gender"
                                 className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
                                 value={formData.gender}
                                 onChange={(e) => setFormData({ ...formData, gender: e.target.value as Gender })}

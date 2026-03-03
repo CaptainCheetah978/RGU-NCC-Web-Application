@@ -77,7 +77,7 @@ export default function ActivityLogPage() {
         <div className="space-y-6 max-w-4xl mx-auto">
             <div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Activity Log</h2>
-                <p className="text-gray-500 dark:text-slate-400 mt-1">Track all actions performed across the system.</p>
+                <p className="text-gray-600 dark:text-slate-400 mt-1">Track all actions performed across the system.</p>
             </div>
 
             {/* Filter */}
@@ -87,9 +87,10 @@ export default function ActivityLogPage() {
                     <button
                         key={action}
                         onClick={() => setFilterAction(action)}
+                        aria-label={`Filter by ${action}`}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterAction === action
                             ? "bg-primary text-white shadow-md shadow-primary/20"
-                            : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700"
+                            : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700"
                             }`}
                     >
                         {action}
@@ -101,8 +102,8 @@ export default function ActivityLogPage() {
                 <Card className="border-gray-100">
                     <CardContent className="py-16 text-center">
                         <History className="w-16 h-16 mx-auto text-gray-200 mb-4" />
-                        <p className="text-gray-400 dark:text-slate-500 font-medium">No activity recorded yet.</p>
-                        <p className="text-gray-300 dark:text-slate-600 text-xs mt-1">Actions like enrolling cadets, marking attendance, and posting announcements will appear here.</p>
+                        <p className="text-gray-500 dark:text-slate-400 font-medium">No activity recorded yet.</p>
+                        <p className="text-gray-500 dark:text-slate-500 text-xs mt-1">Actions like enrolling cadets, marking attendance, and posting announcements will appear here.</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -139,7 +140,7 @@ export default function ActivityLogPage() {
                                                             <span className="font-semibold text-primary"> &quot;{entry.targetName}&quot;</span>
                                                         )}
                                                     </p>
-                                                    <span className="text-[10px] text-gray-400 dark:text-slate-500 font-medium whitespace-nowrap ml-4">
+                                                    <span className="text-[10px] text-gray-500 dark:text-slate-500 font-medium whitespace-nowrap ml-4">
                                                         {timeAgo(entry.timestamp)}
                                                     </span>
                                                 </div>

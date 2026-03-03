@@ -107,15 +107,16 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 "h-screen w-64 bg-white/5 dark:bg-slate-900/95 backdrop-blur-xl border-r border-white/10 dark:border-slate-700/50 flex flex-col fixed left-0 top-0 z-30 transition-transform duration-300 md:translate-x-0",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
-                <div className="p-6 flex items-center space-x-3 border-b border-white/10 dark:border-slate-700/50 relative">
+                <div className="p-6 flex items-center space-x-3 border-b border-gray-200 dark:border-slate-700/50 relative">
                     <div className="w-10 h-10 flex items-center justify-center">
                         <img src="/ncc-logo.png" alt="NCC" className="w-full h-full object-contain" />
                     </div>
-                    <span className="font-bold text-white text-lg tracking-tight">NCC RGU</span>
+                    <span className="font-bold text-gray-900 dark:text-white text-lg tracking-tight">NCC RGU</span>
                     {/* Close button on mobile */}
                     <button
-                        className="absolute right-4 md:hidden text-gray-400 hover:text-white"
+                        className="absolute right-4 md:hidden text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                         onClick={() => setIsOpen(false)}
+                        aria-label="Close sidebar"
                     >
                         ✕
                     </button>
@@ -132,7 +133,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                     className={cn(
                                         "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
                                         isActive
-                                            ? "text-white bg-primary shadow-lg shadow-primary/25"
+                                            ? "text-white bg-primary dark:bg-blue-700 shadow-lg shadow-primary/25"
                                             : "text-gray-800 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
                                     )}
                                 >
@@ -143,7 +144,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                         />
                                     )}
-                                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white")} />
+                                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-700 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white")} />
                                     <span className="font-medium flex-1">{link.name}</span>
                                     {link.href === "/dashboard/notes" && unreadNotes > 0 && (
                                         <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">

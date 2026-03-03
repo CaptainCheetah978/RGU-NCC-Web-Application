@@ -175,16 +175,16 @@ export default function FilesPage() {
         <div className="space-y-6 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Documents &amp; Media</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Documents &amp; Media</h2>
                     <div className="flex items-center gap-2 mt-1">
-                        <p className="text-gray-500">Shared resources — secured with expiring access links.</p>
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                        <p className="text-gray-600 dark:text-slate-400">Shared resources — secured with expiring access links.</p>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 px-2 py-0.5 rounded-full">
                             <Lock className="w-3 h-3" /> Private
                         </span>
                     </div>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="ghost" size="icon" onClick={fetchFiles} title="Refresh signed links">
+                    <Button variant="ghost" size="icon" onClick={fetchFiles} title="Refresh signed links" aria-label="Refresh secure links">
                         <RefreshCw className="w-4 h-4" />
                     </Button>
                     {canUpload && (
@@ -205,16 +205,16 @@ export default function FilesPage() {
             {isLoading ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="h-48 bg-gray-100 rounded-2xl animate-pulse" />
+                        <div key={i} className="h-48 bg-gray-100 dark:bg-slate-800/60 rounded-2xl animate-pulse" />
                     ))}
                 </div>
             ) : files.length === 0 ? (
-                <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
-                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
-                        <Upload className="w-10 h-10 text-gray-300" />
+                <div className="text-center py-24 bg-white dark:bg-slate-800/50 rounded-3xl border border-dashed border-gray-200 dark:border-slate-700">
+                    <div className="w-20 h-20 bg-gray-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100 dark:border-slate-600">
+                        <Upload className="w-10 h-10 text-gray-300 dark:text-slate-600" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-700">No files uploaded yet</h3>
-                    <p className="text-gray-400 mt-2 text-sm max-w-sm mx-auto">
+                    <h3 className="text-xl font-bold text-gray-700 dark:text-white">No files uploaded yet</h3>
+                    <p className="text-gray-500 dark:text-slate-400 mt-2 text-sm max-w-sm mx-auto">
                         {canUpload ? "Upload the first file to get started." : "No shared files available yet."}
                     </p>
                 </div>
@@ -229,9 +229,9 @@ export default function FilesPage() {
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{ delay: index * 0.04 }}
                             >
-                                <Card className="hover:shadow-lg transition-all duration-300 group cursor-pointer border border-gray-100">
+                                <Card className="bg-white dark:bg-slate-800/80 hover:shadow-lg transition-all duration-300 group cursor-pointer border border-gray-100 dark:border-slate-700/60">
                                     <div className="p-6 flex flex-col items-center text-center space-y-4">
-                                        <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                                        <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
                                             {file.type === "IMAGE" && file.signedUrl ? (
                                                 <img
                                                     src={file.signedUrl}
@@ -242,27 +242,29 @@ export default function FilesPage() {
                                             ) : getIcon(file.type)}
                                         </div>
                                         <div className="w-full">
-                                            <h3 className="font-semibold text-gray-900 truncate w-full max-w-[180px] mx-auto" title={file.name}>
+                                            <h3 className="font-semibold text-gray-900 dark:text-white truncate w-full max-w-[180px] mx-auto" title={file.name}>
                                                 {file.name}
                                             </h3>
-                                            <p className="text-xs text-gray-400 mt-1">{file.size} · {file.date}</p>
-                                            <p className="text-[10px] text-gray-400">by {file.uploadedBy}</p>
+                                            <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">{file.size} · {file.date}</p>
+                                            <p className="text-[10px] text-gray-500 dark:text-slate-500">by {file.uploadedBy}</p>
                                         </div>
-                                        <div className="flex items-center justify-center space-x-2 w-full pt-2 border-t border-gray-50">
+                                        <div className="flex items-center justify-center space-x-2 w-full pt-2 border-t border-gray-50 dark:border-slate-700/60">
                                             <a
                                                 href={file.signedUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="p-2 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
+                                                className="p-2 text-gray-400 hover:text-primary dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
                                                 title="Download / Open (link valid 1 hour)"
+                                                aria-label={`Download ${file.name}`}
                                             >
                                                 <Download className="w-4 h-4" />
                                             </a>
                                             {canDelete && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleDelete(file); }}
-                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                    className="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                                     title="Delete file"
+                                                    aria-label={`Delete ${file.name}`}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -282,25 +284,27 @@ export default function FilesPage() {
                 title="Upload Resource"
             >
                 <form onSubmit={handleUpload} className="space-y-6">
-                    <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative">
+                    <div className="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:border-primary hover:bg-primary/5 dark:hover:bg-blue-500/5 transition-all cursor-pointer relative">
                         <input
                             type="file"
+                            id="file-upload-input"
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             onChange={(e) => { setUploadFile(e.target.files?.[0] || null); setModalError(null); }}
                             accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv"
+                            aria-label="Upload resource"
                         />
-                        <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 rounded-full flex items-center justify-center mb-4">
                             <Upload className="w-8 h-8" />
                         </div>
                         {uploadFile ? (
                             <div>
-                                <p className="font-bold text-gray-900">{uploadFile.name}</p>
-                                <p className="text-sm text-gray-500">{formatBytes(uploadFile.size)}</p>
+                                <p className="font-bold text-gray-900 dark:text-white">{uploadFile.name}</p>
+                                <p className="text-sm text-gray-600 dark:text-slate-400">{formatBytes(uploadFile.size)}</p>
                             </div>
                         ) : (
                             <div>
-                                <p className="font-medium text-gray-900">Click to upload or drag and drop</p>
-                                <p className="text-sm text-gray-500 mt-1">PDF, Images, Video</p>
+                                <p className="font-medium text-gray-900 dark:text-white">Click to upload or drag and drop</p>
+                                <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">PDF, Images, Video</p>
                             </div>
                         )}
                     </div>

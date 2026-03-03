@@ -77,6 +77,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
+                        aria-label={`Notifications (${unreadCount} unread)`}
                         className={cn(
                             "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 relative group",
                             showNotifications

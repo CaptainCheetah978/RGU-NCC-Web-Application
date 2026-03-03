@@ -102,13 +102,14 @@ function AttendanceContent() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Attendance Register</h2>
-                    <p className="text-gray-500 dark:text-slate-400 mt-1">Mark and track attendance for scheduled classes.</p>
+                    <p className="text-gray-600 dark:text-slate-400 mt-1">Mark and track attendance for scheduled classes.</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <select
                         value={selectedClassId}
                         onChange={(e) => setSelectedClassId(e.target.value)}
+                        aria-label="Select Training Class"
                         className="h-10 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none w-full sm:w-64"
                     >
                         {classes.map(c => (
@@ -154,6 +155,7 @@ function AttendanceContent() {
                             placeholder="Search by name or regimental no..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            aria-label="Search by name or regimental number"
                             className="w-full pl-9 pr-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                         />
                     </div>
@@ -162,7 +164,7 @@ function AttendanceContent() {
                 <CardContent className="p-0 flex-1 overflow-y-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-slate-900/60 sticky top-0 z-10 shadow-sm">
-                            <tr className="text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                            <tr className="text-left text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
                                 <th className="px-6 py-4 w-[40%]">Cadet Name</th>
                                 <th className="px-6 py-4 w-[20%]">Regimental Given ID</th>
                                 <th className="px-6 py-4 w-[15%]">Rank</th>
@@ -186,11 +188,11 @@ function AttendanceContent() {
                                                 </div>
                                                 <div>
                                                     <div className="font-semibold text-gray-900 dark:text-white">{cadet.name}</div>
-                                                    <div className="text-xs text-gray-400 md:hidden">{cadet.regimentalNumber}</div>
+                                                    <div className="text-xs text-gray-500 md:hidden">{cadet.regimentalNumber}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-3 text-sm text-gray-500 dark:text-slate-400 font-mono tracking-wide hidden md:table-cell">
+                                        <td className="px-6 py-3 text-sm text-gray-600 dark:text-slate-400 font-mono tracking-wide hidden md:table-cell">
                                             {cadet.regimentalNumber || "-"}
                                         </td>
                                         <td className="px-6 py-3 text-sm">
@@ -208,11 +210,12 @@ function AttendanceContent() {
                                                 <button
                                                     disabled={!canMark}
                                                     onClick={() => handleStatusChange(cadet.id, "PRESENT")}
+                                                    aria-label={`Mark ${cadet.name} Present`}
                                                     className={cn(
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "PRESENT"
                                                             ? "bg-green-500 text-white shadow-md shadow-green-500/20 scale-105"
-                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-400 hover:bg-green-50 hover:text-green-600"
+                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-500 hover:bg-green-50 hover:text-green-600"
                                                     )}
                                                     title="Mark Present"
                                                 >
@@ -221,11 +224,12 @@ function AttendanceContent() {
                                                 <button
                                                     disabled={!canMark}
                                                     onClick={() => handleStatusChange(cadet.id, "ABSENT")}
+                                                    aria-label={`Mark ${cadet.name} Absent`}
                                                     className={cn(
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "ABSENT"
                                                             ? "bg-red-500 text-white shadow-md shadow-red-500/20 scale-105"
-                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-500 hover:bg-red-50 hover:text-red-600"
                                                     )}
                                                     title="Mark Absent"
                                                 >
@@ -234,11 +238,12 @@ function AttendanceContent() {
                                                 <button
                                                     disabled={!canMark}
                                                     onClick={() => handleStatusChange(cadet.id, "LATE")}
+                                                    aria-label={`Mark ${cadet.name} Late`}
                                                     className={cn(
                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                                                         status === "LATE"
                                                             ? "bg-yellow-500 text-white shadow-md shadow-yellow-500/20 scale-105"
-                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-400 hover:bg-yellow-50 hover:text-yellow-600"
+                                                            : "bg-gray-50 dark:bg-slate-700/50 text-gray-500 hover:bg-yellow-50 hover:text-yellow-600"
                                                     )}
                                                     title="Mark Late"
                                                 >

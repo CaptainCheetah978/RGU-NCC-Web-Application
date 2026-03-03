@@ -100,7 +100,7 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                 </CardHeader>
                 <CardContent>
                     {certs.length === 0 ? (
-                        <div className="py-8 text-center text-gray-400">
+                        <div className="py-8 text-center text-gray-500">
                             <Award className="w-10 h-10 mx-auto mb-2 opacity-30" />
                             <p className="text-sm font-medium">No certificates uploaded yet.</p>
                         </div>
@@ -128,11 +128,19 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                                         </span>
                                     </div>
                                     <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => setViewingCert(cert)} className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-white transition-colors">
+                                        <button
+                                            onClick={() => setViewingCert(cert)}
+                                            className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-white transition-colors"
+                                            aria-label={`View ${cert.name}`}
+                                        >
                                             <Eye className="w-3.5 h-3.5" />
                                         </button>
                                         {canDelete(cert) && (
-                                            <button onClick={() => handleDelete(cert)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-white transition-colors">
+                                            <button
+                                                onClick={() => handleDelete(cert)}
+                                                className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-white transition-colors"
+                                                aria-label={`Delete ${cert.name}`}
+                                            >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
                                         )}
@@ -148,8 +156,9 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
             <Modal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} title="Upload Certificate">
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-primary/80 ml-1">Certificate Name</label>
+                        <label htmlFor="cert-name" className="text-sm font-medium text-primary/80 ml-1">Certificate Name</label>
                         <input
+                            id="cert-name"
                             type="text"
                             placeholder="e.g. NCC B Certificate 2024"
                             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
@@ -158,9 +167,10 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-primary/80 ml-1">Certificate Type</label>
+                        <label htmlFor="cert-type" className="text-sm font-medium text-primary/80 ml-1">Certificate Type</label>
                         <select
-                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            id="cert-type"
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-primary/20 outline-none font-medium"
                             value={certType}
                             onChange={(e) => setCertType(e.target.value as Certificate["type"])}
                         >

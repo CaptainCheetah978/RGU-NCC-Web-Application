@@ -91,7 +91,7 @@ export default function AnnouncementsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Announcements</h2>
-                    <p className="text-gray-500 dark:text-slate-400 mt-1">Important notices and updates for all cadets.</p>
+                    <p className="text-gray-600 dark:text-slate-400 mt-1">Important notices and updates for all cadets.</p>
                 </div>
                 {canPost && (
                     <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-primary/25">
@@ -137,7 +137,7 @@ export default function AnnouncementsPage() {
                                                 <div className="flex items-center gap-2">
                                                     <h3 className="font-bold text-gray-900 dark:text-white text-lg">{ann.title}</h3>
                                                     {ann.priority === "urgent" && (
-                                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-100 text-red-600 border border-red-200">
+                                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50">
                                                             URGENT
                                                         </span>
                                                     )}
@@ -145,9 +145,9 @@ export default function AnnouncementsPage() {
                                                 <p className="text-gray-600 dark:text-slate-300 mt-2 text-sm leading-relaxed whitespace-pre-line">
                                                     {ann.content}
                                                 </p>
-                                                <div className="flex items-center space-x-4 mt-3 text-xs text-gray-400 dark:text-slate-500">
+                                                <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500 dark:text-slate-400">
                                                     <span className="font-bold">By {ann.authorName}</span>
-                                                    <span className="flex items-center">
+                                                    <span className="flex items-center text-gray-400 dark:text-slate-500">
                                                         <Clock className="w-3 h-3 mr-1" />
                                                         {timeAgo(ann.createdAt)}
                                                     </span>
@@ -158,6 +158,7 @@ export default function AnnouncementsPage() {
                                             <button
                                                 onClick={() => handleDelete(ann)}
                                                 className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0"
+                                                aria-label={`Delete announcement ${ann.title}`}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -181,8 +182,9 @@ export default function AnnouncementsPage() {
                         required
                     />
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-primary/80 ml-1">Content</label>
+                        <label htmlFor="ann-content" className="text-sm font-medium text-primary/80 ml-1">Content</label>
                         <textarea
+                            id="ann-content"
                             placeholder="Announcement details..."
                             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                             rows={4}

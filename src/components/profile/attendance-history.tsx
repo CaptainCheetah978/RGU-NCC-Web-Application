@@ -25,7 +25,7 @@ export function AttendanceHistory({ cadetId }: { cadetId: string }) {
             </CardHeader>
             <CardContent>
                 {records.length === 0 ? (
-                    <div className="py-8 text-center text-gray-400">
+                    <div className="py-8 text-center text-gray-500">
                         <CalendarCheck className="w-10 h-10 mx-auto mb-2 opacity-30" />
                         <p className="text-sm font-medium">No attendance records yet.</p>
                     </div>
@@ -33,7 +33,7 @@ export function AttendanceHistory({ cadetId }: { cadetId: string }) {
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                                <tr className="text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b border-gray-100">
                                     <th className="pb-3 pr-4">Date</th>
                                     <th className="pb-3 pr-4">Class</th>
                                     <th className="pb-3">Status</th>
@@ -65,7 +65,7 @@ export function AttendanceHistory({ cadetId }: { cadetId: string }) {
                             </tbody>
                         </table>
                         {records.length > 15 && (
-                            <p className="text-xs text-gray-400 mt-3 text-center">Showing latest 15 of {records.length} records</p>
+                            <p className="text-xs text-gray-500 mt-3 text-center">Showing latest 15 of {records.length} records</p>
                         )}
                     </div>
                 )}
