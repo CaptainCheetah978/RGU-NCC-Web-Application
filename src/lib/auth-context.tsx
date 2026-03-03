@@ -38,13 +38,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         initializeAuth();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_OUT') {
+                setUser(null);
+                setIsLoading(false);
+                // Hard redirect — clears all React state and re-renders from scratch
+                window.location.replace('/');
+                return;
+            }
             if (session?.user) {
                 await fetchProfile(session.user.id);
             } else {
                 setUser(null);
-                // Only redirect if specifically logging out or session expired while on a protected route
-                // We let the middleware or page components handle specific redirects
             }
             setIsLoading(false);
         });
@@ -52,13 +57,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = async (userId: string, timeoutMs = 6000) => {
+        // Race against a timeout so login never spins forever on a slow connection
+        const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Profile fetch timed out')), timeoutMs)
+        );
         try {
-            let { data, error } = await supabase
-                .from('profiles')
-                .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email')
-                .eq('id', userId)
-                .single();
+            let { data, error } = await Promise.race([
+                supabase
+                    .from('profiles')
+                    .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email')
+                    .eq('id', userId)
+                    .single(),
+                timeoutPromise
+            ]);
 
             if (error && error.code === 'PGRST116') {
                 // Profile not found, but user is authenticated.
@@ -155,16 +167,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         try {
-            await supabase.auth.signOut({ scope: 'local' });
+            // 'global' scope invalidates the server-side token, not just local storage.
+            // The redirect is handled by the SIGNED_OUT event in onAuthStateChange above,
+            // so we don't race the redirect against any pending realtime events here.
+            await supabase.auth.signOut({ scope: 'global' });
         } catch (error) {
             console.error("Error signing out:", error);
-        } finally {
-            setUser(null);
-            // Clear any lingering Supabase tokens from localStorage
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('sb-')) localStorage.removeItem(key);
-            });
-            window.location.href = "/";
+            // If signOut itself fails, force a hard redirect anyway
+            window.location.replace('/');
         }
     };
 
