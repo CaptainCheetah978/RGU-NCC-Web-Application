@@ -8,7 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Vercel-Deployed-success?style=for-the-badge&logo=vercel" alt="Vercel Deployed" />
-  <img src="https://img.shields.io/badge/Next.js%2015-Black?style=for-the-badge&logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Next.js%2016-Black?style=for-the-badge&logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/Supabase-Database-3FC68D?style=for-the-badge&logo=supabase" alt="Supabase" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License" />
 </p>
@@ -16,12 +16,14 @@
 A role-based Cadet Management System built with Next.js 15 and Supabase. Features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
 
 ## Tech Stack Overview
-- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router, Server Actions for DB mutations)
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Actions for DB mutations)
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode enabled)
 - **Database Backend**: [PostgreSQL](https://www.postgresql.org/) (Managed via Supabase)
 - **Authentication**: Custom PIN-based server-side auth (Supabase backend)
+- **Validation**: [Zod](https://zod.dev/) shared schemas for client + server
 - **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/) with custom Glassmorphism/Dark Mode support
 - **UI & Animations**: [Framer Motion](https://www.framer.com/motion/) for transitions, Shadcn UI base components
+- **PWA**: Service Worker with cache-first (stale-while-revalidate) for offline/low-connectivity
 
 ## Core Modules & Features
 
@@ -49,24 +51,29 @@ Security is rigidly enforced at the PostgreSQL database level using Supabase Row
 A mental model of the source code for new contributors:
 
 ```text
-├── public/                 # Static assets (images, logos, static SVGs)
+├── public/                 # Static assets (logos, PWA manifest, service worker)
 ├── src/
 │   ├── app/                # Next.js App Router root
-│   │   ├── actions/        # Server Actions (Zod parsing, DB inserts/updates)
-│   │   ├── dashboard/      # Protected application routes (wrapped by auth middleware)
-│   │   ├── verify/         # Public routes (QR Identity token checking)
+│   │   ├── actions/        # Server Actions (Zod validated, role-guarded DB mutations)
+│   │   ├── dashboard/      # Protected app routes (auth-guarded layout)
+│   │   ├── verify/         # Public routes (QR identity verification)
 │   │   └── page.tsx        # Auth gateway / Login component
 │   ├── components/         # Shared React Components
-│   │   ├── ui/             # Atomic design elements (buttons, inputs)
+│   │   ├── ui/             # Atomic design elements (buttons, inputs, modals)
 │   │   ├── sidebar.tsx     # Role-aware navigation controller
 │   │   └── topbar.tsx      # State-aware user header
 │   ├── lib/                # Core Business Logic & Configurations
-│   │   ├── auth-context.tsx# React Context handling Auth state & JWT tokens
-│   │   ├── data-context.tsx# Global data fetching and SWR caching logic
-│   │   └── supabase-admin.ts# Service-role database client (Bypasses RLS - CAREFUL)
-│   └── types/              # Global TypeScript interfaces and Enums (`Role`, `DB`)
-├── supabase-policies.sql   # Source of truth for DB Schema and RLS Policies
-├── package.json            # Dependencies and scripts (Start here for tooling)
+│   │   ├── auth-context.tsx  # Auth state, login/logout, session management
+│   │   ├── data-context.tsx  # Global data fetching, realtime subscriptions
+│   │   ├── toast-context.tsx # Centralized toast notification system
+│   │   ├── schemas.ts        # Shared Zod schemas (client + server)
+│   │   ├── server-auth.ts    # Server-side role guard (getCallerSession)
+│   │   ├── supabase-client.ts# Browser-side Supabase client
+│   │   └── supabase-admin.ts # Service-role client (bypasses RLS — server only)
+│   └── types/              # Global TypeScript interfaces and Enums
+├── supabase/
+│   └── migrations/         # SQL migrations (schema, RLS policies, constraints)
+├── package.json            # Dependencies and scripts
 └── tailwind.config.ts      # Tailwind token definitions
 ```
 
@@ -97,7 +104,7 @@ NEXT_PUBLIC_INSTITUTION_NAME="Royal Global University"
 **3. Initialize Database**
 - Open your Supabase Dashboard.
 - Navigate to the **SQL Editor**.
-- Paste and execute the entire contents of `supabase-policies.sql`. This creates all tables, triggers, and Row Level Security policies.
+- Paste and execute the SQL files in `supabase/migrations/` (start with `supabase-policies.sql`, then `001_data_integrity.sql`).
 - Navigate to **Storage** and create a bucket named `files` (set to Private). Add policies to allow authenticated CRUD operations.
 
 **4. Run Development Server**
@@ -115,10 +122,12 @@ This repository is built to be unit-agnostic ("white-labeled"). To fork this for
 
 ## Upcoming Roadmap
 If you are planning to contribute, we are looking at:
-- **PWA Integration**: Caching static assets for offline use in low-connectivity parade grounds.
 - **Multilingual Support**: Abstracting strings for i18n routing (Hindi/Regional languages).
 - **CI/CD Pipelines**: GitHub Actions for Prettier/ESLint checks before merging.
 - **Camp Management**: High-volume parallel data ingestion logic.
+- **Unit Tests**: Jest/Vitest + React Testing Library for Server Actions and components.
+- **Analytics Dashboard**: Attendance trends, cadet performance scoring.
+- **Export Features**: CSV/PDF attendance reports and cadet summaries.
 
 ## License & Primary Contact
 Released under the [MIT License](LICENSE).
