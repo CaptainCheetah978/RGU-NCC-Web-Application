@@ -16,7 +16,8 @@ import {
     Megaphone,
     History,
     Sun,
-    Moon
+    Moon,
+    TrendingUp
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -56,6 +57,12 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             href: "/dashboard/cadets",
             icon: Shield,
             roles: [Role.ANO, Role.SUO]
+        },
+        {
+            name: "Performance",
+            href: "/dashboard/performance",
+            icon: TrendingUp,
+            roles: [Role.ANO, Role.SUO, Role.UO, Role.SGT]
         },
         {
             name: "Files & Media",

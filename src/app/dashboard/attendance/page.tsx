@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { AttendanceExport } from "@/components/attendance/export-button";
+import { PdfExportButton } from "@/components/attendance/pdf-export-button";
 
 function AttendanceContent() {
     const { classes, cadets, attendance, markAttendance } = useData();
@@ -118,12 +119,20 @@ function AttendanceContent() {
                     </select>
 
                     {selectedClass && (
-                        <AttendanceExport
-                            classSession={selectedClass}
-                            cadets={filteredCadets}
-                            attendance={attendance.filter(r => r.classId === selectedClassId)}
-                            className="h-10"
-                        />
+                        <div className="flex items-center gap-2">
+                            <PdfExportButton
+                                classSession={selectedClass}
+                                cadets={filteredCadets}
+                                attendance={attendance.filter(r => r.classId === selectedClassId)}
+                                className="h-10"
+                            />
+                            <AttendanceExport
+                                classSession={selectedClass}
+                                cadets={filteredCadets}
+                                attendance={attendance.filter(r => r.classId === selectedClassId)}
+                                className="h-10"
+                            />
+                        </div>
                     )}
                 </div>
             </div>
