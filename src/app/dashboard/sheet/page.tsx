@@ -13,7 +13,34 @@ export default function SheetPage() {
     const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || "");
 
     const handleExport = () => {
-        showToast("Downloading CSV report…", "success");
+        if (cadets.length === 0) {
+            showToast("No data to export.");
+            return;
+        }
+
+        // Build CSV header
+        const headers = ["Regimental No", "Rank", "Name", ...classes.map(c => `${c.date} (${c.title})`)];
+        const rows = cadets.map(cadet => {
+            const statuses = classes.map(c => {
+                const record = attendance.find(r => r.classId === c.id && r.cadetId === cadet.id);
+                return record?.status || "-";
+            });
+            return [cadet.regimentalNumber || "", cadet.role, cadet.name, ...statuses];
+        });
+
+        const csvContent = [headers, ...rows]
+            .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+            .join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `NCC_Roll_Sheet_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+
+        showToast("CSV downloaded successfully!", "success");
     };
 
     const handleShare = () => {

@@ -63,7 +63,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 </button>
                 <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-tight hidden sm:block">
                     Welcome back,{" "}
-                    {(displayUser.role === Role.ANO || displayUser.role === Role.SUO)
+                    {(displayUser.role === Role.ANO)
                         ? displayUser.role
                         : `${displayUser.role === Role.CADET ? "Cadet" : displayUser.role} ${displayUser.name.split(" ")[0]}`
                     }

@@ -3,7 +3,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Shield, User, Lock, ChevronRight, Loader2, Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Role } from "@/types";
@@ -25,6 +25,10 @@ export default function LoginPage() {
   const failCountRef = useRef(0);
   const lockoutUntilRef = useRef<number>(0);
   const [lockoutRemaining, setLockoutRemaining] = useState(0);
+  const lockoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clean up lockout timer on unmount
+  useEffect(() => () => { if (lockoutTimerRef.current) clearInterval(lockoutTimerRef.current); }, []);
 
   // Forgot PIN state
   const [forgotEmail, setForgotEmail] = useState("");
@@ -58,48 +62,27 @@ export default function LoginPage() {
       setLockoutRemaining(0);
       setSubmitting(false);
     } catch (err: unknown) {
-      if (activeTab === Role.ANO && formData.username.toUpperCase() === "ANO" && formData.pin === "0324") {
-        setIsRestoring(true);
-        try {
-          await signupWithPassword(pseudoEmail, formData.pin, "Associate NCC Officer", Role.ANO);
-        } catch (err: unknown) {
-          const errMsg = err instanceof Error ? err.message : "Login failed.";
-          setError("Failed to initialize ANO account. " + errMsg);
-          setIsRestoring(false);
-        }
-      } else if (err instanceof Error && (err.message.includes("Invalid login credentials") || err.message.includes("Email not confirmed"))) {
-        if (formData.pin === "1234" || formData.pin === "2468") {
-          setIsRestoring(true);
-          try {
-            await signupWithPassword(pseudoEmail, formData.pin, formData.username, activeTab);
-          } catch (err: unknown) {
-            const errMsg = err instanceof Error ? err.message : "Account creation failed.";
-            setError("Failed to create account. " + errMsg);
-            setIsRestoring(false);
+      // All login failures — invalid credentials, email not confirmed, etc.
+      setError(err instanceof Error ? err.message : "Invalid credentials. Contact your ANO.");
+      // Increment failed attempts
+      failCountRef.current += 1;
+      if (failCountRef.current >= MAX_ATTEMPTS) {
+        lockoutUntilRef.current = Date.now() + LOCKOUT_SECONDS * 1000;
+        setLockoutRemaining(LOCKOUT_SECONDS);
+        setError(`Too many failed attempts. Locked for ${LOCKOUT_SECONDS} seconds.`);
+        // Start countdown (clear any existing timer first)
+        if (lockoutTimerRef.current) clearInterval(lockoutTimerRef.current);
+        lockoutTimerRef.current = setInterval(() => {
+          const rem = Math.ceil((lockoutUntilRef.current - Date.now()) / 1000);
+          if (rem <= 0) {
+            setLockoutRemaining(0);
+            failCountRef.current = 0;
+            if (lockoutTimerRef.current) clearInterval(lockoutTimerRef.current);
+            lockoutTimerRef.current = null;
+          } else {
+            setLockoutRemaining(rem);
           }
-        } else {
-          setError("Invalid credentials. If this is your first time, contact ANO.");
-        }
-      } else {
-        setError(err instanceof Error ? err.message : "Login failed.");
-        // Increment failed attempts
-        failCountRef.current += 1;
-        if (failCountRef.current >= MAX_ATTEMPTS) {
-          lockoutUntilRef.current = Date.now() + LOCKOUT_SECONDS * 1000;
-          setLockoutRemaining(LOCKOUT_SECONDS);
-          setError(`Too many failed attempts. Locked for ${LOCKOUT_SECONDS} seconds.`);
-          // Start countdown
-          const timer = setInterval(() => {
-            const rem = Math.ceil((lockoutUntilRef.current - Date.now()) / 1000);
-            if (rem <= 0) {
-              setLockoutRemaining(0);
-              failCountRef.current = 0;
-              clearInterval(timer);
-            } else {
-              setLockoutRemaining(rem);
-            }
-          }, 1000);
-        }
+        }, 1000);
       }
       setSubmitting(false);
     }
@@ -124,7 +107,7 @@ export default function LoginPage() {
     setError("");
     setForgotLoading(true);
     try {
-      await verifyOtp(forgotEmail, forgotOtp);
+      await verifyOtp(forgotEmail, forgotOtp, true); // skipRedirect — stay on login to set new PIN
       setStep("forgot-newpin");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Invalid or expired OTP.");

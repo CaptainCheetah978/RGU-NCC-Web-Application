@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 interface AuthContextType {
     user: User | null;
     login: (email: string) => Promise<void>;
-    verifyOtp: (email: string, token: string) => Promise<void>;
+    verifyOtp: (email: string, token: string, skipRedirect?: boolean) => Promise<void>;
     loginWithPassword: (email: string, pin: string) => Promise<void>;
     signupWithPassword: (email: string, pin: string, name: string, role: Role) => Promise<void>;
     logout: () => Promise<void>;
@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
     };
 
-    const verifyOtp = async (email: string, token: string) => {
+    const verifyOtp = async (email: string, token: string, skipRedirect: boolean = false) => {
         setIsLoading(true);
         const { data, error } = await supabase.auth.verifyOtp({
             email,
@@ -155,12 +155,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data.user) {
-            // Check if profile exists, if not maybe create it? 
-            // The SQL trigger for creating profile on user creation is not set up yet.
-            // We might need to manually ensure profile exists or depend on a trigger.
-            // For now, let's assume manual profile creation or we add a check here.
             await fetchProfile(data.user.id);
-            router.push("/dashboard");
+            if (!skipRedirect) {
+                router.push("/dashboard");
+            }
         }
         setIsLoading(false);
     };

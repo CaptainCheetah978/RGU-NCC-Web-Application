@@ -316,19 +316,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateCadet = async (id: string, updates: Partial<Cadet>) => {
-        const { error } = await supabase.from('profiles').update({
-            full_name: updates.name,
-            regimental_number: updates.regimentalNumber,
-            rank: updates.rank,
-            wing: updates.wing,
-            gender: updates.gender,
-            unit_number: updates.unitNumber,
-            unit_name: updates.unitName,
-            enrollment_year: updates.enrollmentYear,
-            blood_group: updates.bloodGroup,
-            avatar_url: updates.avatarUrl,
-            access_pin: updates.access_pin
-        }).eq('id', id);
+        // Build payload with only defined fields so we never accidentally
+        // overwrite existing DB values with null/undefined.
+        const payload: Record<string, unknown> = {};
+        if (updates.name !== undefined) payload.full_name = updates.name;
+        if (updates.regimentalNumber !== undefined) payload.regimental_number = updates.regimentalNumber;
+        // The edit form stores the rank selection in `role` (it drives the `role` column).
+        // We also support a direct `rank` field for legacy callers.
+        if (updates.role !== undefined) payload.role = updates.role;
+        if (updates.rank !== undefined) payload.rank = updates.rank;
+        if (updates.wing !== undefined) payload.wing = updates.wing;
+        if (updates.gender !== undefined) payload.gender = updates.gender;
+        if (updates.unitNumber !== undefined) payload.unit_number = updates.unitNumber;
+        if (updates.unitName !== undefined) payload.unit_name = updates.unitName;
+        if (updates.enrollmentYear !== undefined) payload.enrollment_year = updates.enrollmentYear;
+        if (updates.bloodGroup !== undefined) payload.blood_group = updates.bloodGroup;
+        if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
+        if (updates.access_pin !== undefined) payload.access_pin = updates.access_pin;
+
+        if (Object.keys(payload).length === 0) return; // Nothing to update
+        const { error } = await supabase.from('profiles').update(payload).eq('id', id);
         if (error) throw error;
         await refreshProfiles();
     };
@@ -506,7 +513,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const totalCadets = cadets.length;
         // Only count attendance records for classes that still exist
         const classIds = new Set(classes.map(c => c.id));
-        const validAttendance = attendance.filter(a => classIds.has(a.classId));
+        // When a userId is provided (personal profile), filter to that cadet's records only.
+        // For the ANO dashboard overview (no userId), show unit-wide rate.
+        const validAttendance = attendance.filter(a =>
+            classIds.has(a.classId) && (!userId || a.cadetId === userId)
+        );
         const totalAttendanceRecords = validAttendance.length;
         const presentCount = validAttendance.filter(a => a.status === "PRESENT").length;
         const attendanceRate = totalAttendanceRecords > 0

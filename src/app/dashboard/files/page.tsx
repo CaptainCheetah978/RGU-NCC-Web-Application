@@ -26,6 +26,7 @@ interface StoredFile {
 
 const BUCKET = "files";
 const SIGNED_URL_EXPIRY = 60 * 60; // 1 hour in seconds
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
 function getFileType(name: string): FileType {
     const ext = name.split(".").pop()?.toLowerCase() || "";
@@ -124,6 +125,10 @@ export default function FilesPage() {
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!uploadFile || !user) return;
+        if (uploadFile.size > MAX_FILE_SIZE) {
+            setModalError(`File too large (${formatBytes(uploadFile.size)}). Maximum allowed is ${formatBytes(MAX_FILE_SIZE)}.`);
+            return;
+        }
         setIsUploading(true);
         setModalError(null);
 
