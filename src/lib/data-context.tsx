@@ -288,10 +288,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteClass = async (id: string) => {
-        // Delete attendance records for this class first (cascade)
-        await supabase.from('attendance').delete().eq('class_id', id);
-        const { error } = await supabase.from('classes').delete().eq('id', id);
-        if (error) throw error;
+        const { deleteClassAction } = await import("@/app/actions/delete-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await deleteClassAction(id, token || "");
+        if (!result.success) throw new Error(result.error || "Failed to delete class");
         await refreshClasses();
         await refreshAttendance();
     };
@@ -341,13 +342,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteCadet = async (id: string) => {
-        // Cascade: delete all related data first
-        await supabase.from('attendance').delete().eq('cadet_id', id);
-        await supabase.from('notes').delete().eq('sender_id', id);
-        await supabase.from('notes').delete().eq('recipient_id', id);
-        await supabase.from('certificates').delete().eq('user_id', id);
-        const { error } = await supabase.from('profiles').delete().eq('id', id);
-        if (error) throw error;
+        const { deleteCadetAction } = await import("@/app/actions/delete-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await deleteCadetAction(id, token || "");
+        if (!result.success) throw new Error(result.error || "Failed to delete cadet");
         await refreshProfiles();
         await refreshAttendance();
         await refreshNotes();
@@ -449,8 +448,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteAnnouncement = async (id: string) => {
-        const { error } = await supabase.from('announcements').delete().eq('id', id);
-        if (error) throw error;
+        const { deleteAnnouncementAction } = await import("@/app/actions/delete-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await deleteAnnouncementAction(id, token || "");
+        if (!result.success) throw new Error(result.error || "Failed to delete announcement");
         await refreshAnnouncements();
     };
 
@@ -467,8 +469,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteCertificate = async (id: string) => {
-        const { error } = await supabase.from('certificates').delete().eq('id', id);
-        if (error) throw error;
+        const { deleteCertificateAction } = await import("@/app/actions/delete-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await deleteCertificateAction(id, token || "");
+        if (!result.success) throw new Error(result.error || "Failed to delete certificate");
         await refreshCertificates();
     };
 
