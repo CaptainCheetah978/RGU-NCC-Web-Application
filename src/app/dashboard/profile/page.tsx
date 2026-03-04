@@ -22,6 +22,7 @@ export default function ProfilePage() {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const idCardRef = useRef<HTMLDivElement>(null);
     const [changePinData, setChangePinData] = useState({ newPin: "", confirmPin: "" });
@@ -119,7 +120,8 @@ export default function ProfilePage() {
         if (!idCardRef.current) return;
         setIsDownloading(true);
         try {
-            const dataUrl = await toPng(idCardRef.current, { cacheBust: true, pixelRatio: 2 });
+            // Because idCardRef is firmly set to 500x312 physically, it will capture unscaled and pristine always!
+            const dataUrl = await toPng(idCardRef.current, { cacheBust: true, pixelRatio: 3 });
             const link = document.createElement("a");
             link.download = `NCC_ID_${currentUser.name.replace(/\s+/g, "_")}.png`;
             link.href = dataUrl;
@@ -128,6 +130,31 @@ export default function ProfilePage() {
             console.error("Failed to download ID card:", err);
         } finally {
             setIsDownloading(false);
+        }
+    };
+
+    const handlePrint = async () => {
+        if (!idCardRef.current) return;
+        setIsPrinting(true);
+        try {
+            // Snapshot the 500x312 rigid element perfectly.
+            const dataUrl = await toPng(idCardRef.current, { cacheBust: true, pixelRatio: 3 });
+
+            const printRoot = document.createElement("div");
+            printRoot.id = "print-root";
+            printRoot.innerHTML = `<img src="${dataUrl}" style="max-width: 100%; border-radius: 12px; margin: 0 auto; display: block;" />`;
+
+            document.body.appendChild(printRoot);
+
+            // Give the browser DOM a tiny moment to flush the image tag before invoking print driver
+            setTimeout(() => {
+                window.print();
+                document.body.removeChild(printRoot);
+                setIsPrinting(false);
+            }, 150);
+        } catch (err) {
+            console.error("Failed to print ID card:", err);
+            setIsPrinting(false);
         }
     };
 
@@ -159,58 +186,20 @@ export default function ProfilePage() {
         <div className="space-y-8 max-w-5xl mx-auto pb-12 print:p-0">
             <style jsx global>{`
                 @media print {
-                    /* Reset layout and backgrounds */
-                    body, html {
-                        background: white !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-                    
-                    /* Hide parent containers that shouldn't show */
-                    .flex.h-screen {
-                        display: block !important;
-                        height: auto !important;
-                        overflow: visible !important;
-                    }
-                    
-                    main {
-                        padding: 0 !important;
-                        margin: 0 !important;
-                        overflow: visible !important;
-                    }
-
-                    /* Hide everything by default using visibility to maintain structure if needed, 
-                       but display: none is cleaner for layout roots */
-                    body * {
-                        visibility: hidden;
-                    }
-                    
-                    /* Only show the print container and its hierarchy */
-                    .print-container, 
-                    .print-container * {
-                        visibility: visible;
-                    }
-                    
-                    .print-container {
-                        visibility: visible !important;
-                        position: absolute !important;
-                        left: 0 !important;
-                        top: 0 !important;
-                        width: 100% !important;
-                        display: flex !important;
-                        justify-content: center !important;
-                        padding-top: 50px !important;
-                        background: white !important;
-                    }
-                    
-                    .no-print {
+                    /* Rock-Solid Single-Image Print Hack */
+                    /* NextJS apps often break if visibility/display is toyed with deeply */
+                    /* We append a #print-root holding the image snapshot to body for print. */
+                    body > *:not(#print-root) {
                         display: none !important;
                     }
-                    
-                    /* Remove any shadows/borders from the card container during print */
-                    .print-container > div {
-                        box-shadow: none !important;
-                        border: 1px solid #eee !important;
+                    body {
+                        background: white !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    @page {
+                        margin: 10mm;
+                        size: auto;
                     }
                 }
             `}</style>
@@ -290,12 +279,18 @@ export default function ProfilePage() {
                                     size="sm"
                                     className={`h-8 text-[10px] font-bold uppercase ${isDownloading ? "animate-pulse" : ""}`}
                                     onClick={handleDownload}
-                                    disabled={isDownloading}
+                                    disabled={isDownloading || isPrinting}
                                 >
                                     <Download className="w-3 h-3 mr-1" /> {isDownloading ? "Processing..." : "Download"}
                                 </Button>
-                                <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase" onClick={() => window.print()}>
-                                    <Printer className="w-3 h-3 mr-1" /> Print
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={`h-8 text-[10px] font-bold uppercase ${isPrinting ? "animate-pulse" : ""}`}
+                                    onClick={handlePrint}
+                                    disabled={isDownloading || isPrinting}
+                                >
+                                    <Printer className="w-3 h-3 mr-1" /> {isPrinting ? "Processing..." : "Print"}
                                 </Button>
                             </div>
                         </CardHeader>
