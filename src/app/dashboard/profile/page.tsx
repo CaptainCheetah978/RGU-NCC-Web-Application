@@ -299,110 +299,113 @@ export default function ProfilePage() {
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-10 flex justify-center bg-gray-100/50 dark:bg-slate-900/30">
+                        <CardContent className="p-4 sm:p-10 flex justify-center bg-gray-100/50 dark:bg-slate-900/30 overflow-x-auto w-full custom-scrollbar">
                             {/* The Official ID Card Component */}
-                            <div className="print-container">
-                                <div ref={idCardRef} className="w-full max-w-[500px] aspect-[1.6/1] bg-white rounded-xl shadow-2xl border border-gray-200 relative overflow-hidden flex flex-col p-px">
-                                    {/* Side decorative border - Ensure it's at the absolute front with no gaps */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-red-600 via-white to-blue-800 z-30" />
+                            <div className="print-container min-w-max flex justify-center py-2 px-2">
+                                {/* We keep the ID Card fixed at 500x312 so the internal layout never breaks. The parent will naturally scroll horizontally on small screens. For PWA, we add a mobile scale trick via inline styles that gracefully scales down on < 500px screens */}
+                                <div className="pwa-scale-wrapper">
+                                    <div ref={idCardRef} className="w-[500px] h-[312px] shrink-0 bg-white rounded-xl shadow-2xl border border-gray-200 relative overflow-hidden flex flex-col p-px">
+                                        {/* Side decorative border - Ensure it's at the absolute front with no gaps */}
+                                        <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-red-600 via-white to-blue-800 z-30" />
 
-                                    {/* Header Section */}
-                                    <div className="p-1 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 relative z-10 pl-8">
-                                        <div className="w-11 h-11 flex items-center justify-center">
-                                            <img src="/ncc-logo.png" className="max-w-full max-h-full object-contain" alt="NCC" />
+                                        {/* Header Section */}
+                                        <div className="p-1 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 relative z-10 pl-8">
+                                            <div className="w-11 h-11 flex items-center justify-center">
+                                                <img src="/ncc-logo.png" className="max-w-full max-h-full object-contain" alt="NCC" />
+                                            </div>
+                                            <div className="text-center flex-1 mx-4">
+                                                <h3 className="text-[13px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">The Assam Royal Global University</h3>
+                                                <p className="text-[10px] font-bold text-red-700 tracking-[0.2em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
+                                            </div>
+                                            <div className="w-11 h-11 flex items-center justify-center pr-2">
+                                                <img src="/rgu-logo.png" className="max-w-full max-h-full object-contain" alt="RGU" />
+                                            </div>
                                         </div>
-                                        <div className="text-center flex-1 mx-4">
-                                            <h3 className="text-[13px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">The Assam Royal Global University</h3>
-                                            <p className="text-[10px] font-bold text-red-700 tracking-[0.2em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
-                                        </div>
-                                        <div className="w-11 h-11 flex items-center justify-center pr-2">
-                                            <img src="/rgu-logo.png" className="max-w-full max-h-full object-contain" alt="RGU" />
-                                        </div>
-                                    </div>
 
-                                    {/* Body Section */}
-                                    <div className="flex-1 px-5 py-2 flex items-center overflow-hidden pl-10 relative z-10">
-                                        {/* Photo Area */}
-                                        <div className="w-28 h-28 border-2 border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center mr-5 shrink-0 shadow-sm relative ring-4 ring-white">
-                                            {currentUser.avatarUrl ? (
-                                                <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="text-center p-2">
-                                                    <Camera className="w-8 h-8 text-gray-300 mx-auto mb-1" />
-                                                    <p className="text-[9px] text-gray-600 font-bold uppercase">No Photo</p>
+                                        {/* Body Section */}
+                                        <div className="flex-1 px-5 py-2 flex items-center overflow-hidden pl-10 relative z-10">
+                                            {/* Photo Area */}
+                                            <div className="w-28 h-28 border-2 border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center mr-5 shrink-0 shadow-sm relative ring-4 ring-white">
+                                                {currentUser.avatarUrl ? (
+                                                    <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="text-center p-2">
+                                                        <Camera className="w-8 h-8 text-gray-300 mx-auto mb-1" />
+                                                        <p className="text-[9px] text-gray-600 font-bold uppercase">No Photo</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Info Area - Unified Grid for absolute uniform spacing */}
+                                            <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-6">
+                                                {/* Name Row */}
+                                                <div className="relative pt-2.5 col-span-2">
+                                                    <p className="text-[9px] font-extrabold text-gray-600 uppercase tracking-widest absolute top-0 left-0 leading-none">Full Name</p>
+                                                    <p className="text-[14px] font-bold text-gray-900 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.name}</p>
                                                 </div>
-                                            )}
+
+                                                {/* Rank & Regt No Row */}
+                                                <div className="relative pt-2.5">
+                                                    <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
+                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.role || "N/A"}</p>
+                                                </div>
+                                                <div className="relative pt-2.5">
+                                                    <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
+                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.regimentalNumber || "N/A"}</p>
+                                                </div>
+
+                                                {/* Wing & Blood Group Row */}
+                                                <div className="relative pt-2.5">
+                                                    <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
+                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.wing || "N/A"}</p>
+                                                </div>
+                                                <div className="relative pt-2.5">
+                                                    <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
+                                                    <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.bloodGroup || "N/A"}</p>
+                                                </div>
+
+                                                {/* Unit Name Row */}
+                                                <div className="relative pt-2.5 col-span-2">
+                                                    <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Unit Name</p>
+                                                    <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-tight uppercase w-max max-w-full">
+                                                        {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* QR Code */}
+                                            <div className="ml-3 shrink-0 flex flex-col items-center">
+                                                <QRCodeSVG
+                                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?id=${currentUser.id}`}
+                                                    size={56}
+                                                    level="M"
+                                                    className="rounded"
+                                                />
+                                                <p className="text-[7px] text-gray-600 font-bold mt-0.5 uppercase tracking-wider">Scan to verify</p>
+                                            </div>
                                         </div>
 
-                                        {/* Info Area - Unified Grid for absolute uniform spacing */}
-                                        <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-6">
-                                            {/* Name Row */}
-                                            <div className="relative pt-2.5 col-span-2">
-                                                <p className="text-[9px] font-extrabold text-gray-600 uppercase tracking-widest absolute top-0 left-0 leading-none">Full Name</p>
-                                                <p className="text-[14px] font-bold text-gray-900 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.name}</p>
+                                        {/* Bottom Signatures Area */}
+                                        <div className="px-8 pb-3.5 mt-auto flex justify-between items-end relative z-30 pl-12 shrink-0">
+                                            <div className="text-center">
+                                                {/* Spacer to match ANO side's s/d- height for perfect line alignment */}
+                                                <div className="h-[10.5px] mb-0.5" />
+                                                <div className="w-20 border-b border-gray-300 mb-1" />
+                                                <p className="text-[8px] font-bold text-gray-600 uppercase tracking-tighter">Sign of Cadet</p>
                                             </div>
-
-                                            {/* Rank & Regt No Row */}
-                                            <div className="relative pt-2.5">
-                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
-                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.role || "N/A"}</p>
-                                            </div>
-                                            <div className="relative pt-2.5">
-                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
-                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.regimentalNumber || "N/A"}</p>
-                                            </div>
-
-                                            {/* Wing & Blood Group Row */}
-                                            <div className="relative pt-2.5">
-                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
-                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.wing || "N/A"}</p>
-                                            </div>
-                                            <div className="relative pt-2.5">
-                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
-                                                <p className="text-[11px] font-bold text-red-700 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.bloodGroup || "N/A"}</p>
-                                            </div>
-
-                                            {/* Unit Name Row */}
-                                            <div className="relative pt-2.5 col-span-2">
-                                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Unit Name</p>
-                                                <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-tight uppercase w-max max-w-full">
-                                                    {getFormattedUnit(currentUser.wing, currentUser.unitNumber, currentUser.unitName)}
-                                                </p>
+                                            <div className="text-center">
+                                                <div className="flex flex-col items-center">
+                                                    <p className="text-[10px] italic font-serif text-gray-600 mb-0.5 leading-none">s/d-</p>
+                                                    <div className="w-28 border-b border-gray-300 mb-1" />
+                                                    <p className="text-[10px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
+                                                    <p className="text-[8px] font-bold text-gray-600 uppercase mt-0.5 tracking-wider">Digital Signature</p>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* QR Code */}
-                                        <div className="ml-3 shrink-0 flex flex-col items-center">
-                                            <QRCodeSVG
-                                                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?id=${currentUser.id}`}
-                                                size={56}
-                                                level="M"
-                                                className="rounded"
-                                            />
-                                            <p className="text-[7px] text-gray-600 font-bold mt-0.5 uppercase tracking-wider">Scan to verify</p>
-                                        </div>
+                                        {/* Footer decorative line - ensure it's at z-20 to be below the side border (which is z-30) */}
+                                        <div className="absolute bottom-0 left-0 right-0 h-2.5 bg-[#002147] z-20" />
                                     </div>
-
-                                    {/* Bottom Signatures Area */}
-                                    <div className="px-8 pb-3.5 mt-auto flex justify-between items-end relative z-30 pl-12 shrink-0">
-                                        <div className="text-center">
-                                            {/* Spacer to match ANO side's s/d- height for perfect line alignment */}
-                                            <div className="h-[10.5px] mb-0.5" />
-                                            <div className="w-20 border-b border-gray-300 mb-1" />
-                                            <p className="text-[8px] font-bold text-gray-600 uppercase tracking-tighter">Sign of Cadet</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="flex flex-col items-center">
-                                                <p className="text-[10px] italic font-serif text-gray-600 mb-0.5 leading-none">s/d-</p>
-                                                <div className="w-28 border-b border-gray-300 mb-1" />
-                                                <p className="text-[10px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
-                                                <p className="text-[8px] font-bold text-gray-600 uppercase mt-0.5 tracking-wider">Digital Signature</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Footer decorative line - ensure it's at z-20 to be below the side border (which is z-30) */}
-                                    <div className="absolute bottom-0 left-0 right-0 h-2.5 bg-[#002147] z-20" />
                                 </div>
                             </div>
                         </CardContent>

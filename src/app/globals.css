@@ -220,3 +220,19 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-tertiary to-secondary;
   }
 }
+@layer utilities {
+  @media all and (display-mode: standalone) {
+    .pwa-scale-wrapper {
+      transform: scale(min(1, calc(100vw / 550)));
+      transform-origin: top center;
+      margin-bottom: calc(-312px * (1 - min(1, calc(100vw / 550))));
+    }
+  }
+  @media (max-width: 640px) {
+    .pwa-scale-wrapper {
+      transform: scale(min(1, calc(100vw / 550)));
+      transform-origin: top center;
+      margin-bottom: calc(-312px * (1 - min(1, calc(100vw / 550))));
+    }
+  }
+}
