@@ -8,13 +8,13 @@
     "theme_color": "#0f172a",
     "icons": [
         {
-            "src": "/ncc-logo.png",
+            "src": "/icon-192x192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/ncc-logo.png",
+            "src": "/icon-512x512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"

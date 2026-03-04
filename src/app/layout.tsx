@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   description: "Official Cadet Management System for NCC RGU Unit",
   manifest: "/manifest.json",
   icons: {
-    icon: "/ncc-logo.png",
-    apple: "/ncc-logo.png",
+    icon: "/icon-192x192.png",
+    apple: "/icon-192x192.png",
   },
 };
 
