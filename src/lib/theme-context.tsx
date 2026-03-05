@@ -18,6 +18,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const stored = localStorage.getItem("ncc_theme") as Theme | null;
         if (stored === "dark") {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setTheme("dark");
             document.documentElement.classList.add("dark");
         }

@@ -495,7 +495,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 return {
                     date: a.timestamp,
                     className: cls?.title || "Unknown Class",
-                    status: a.status as any,
+                    status: a.status as AttendanceRecord["status"],
                 };
             })
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

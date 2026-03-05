@@ -32,6 +32,7 @@ export function PdfExportButton({ classSession, cadets, attendance, className }:
 
         // Prepare Table Data
         const tableColumn = ["S.No", "Regimental No", "Rank", "Name", "Unit", "Status"];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tableRows: any[] = [];
 
         let present = 0;

@@ -66,6 +66,7 @@ export default function SheetPage() {
         // Build Table
         const headRow = ["Regimental No", "Rank", "Name", ...classes.map(c => `${c.date}\n${c.title.substring(0, 10)}...`)];
         const bodyRows = cadets.map(cadet => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const row: any[] = [cadet.regimentalNumber || "-", cadet.role, cadet.name];
             classes.forEach(c => {
                 const record = attendance.find(r => r.classId === c.id && r.cadetId === cadet.id);

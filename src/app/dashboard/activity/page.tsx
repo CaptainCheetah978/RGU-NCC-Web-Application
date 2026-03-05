@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
 import { Role } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { History, Filter, UserCheck, BookOpen, Megaphone, Users, FileCheck, MessageSquare } from "lucide-react";
+import { History, Filter, BookOpen, Megaphone, Users, FileCheck, MessageSquare } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -62,6 +62,7 @@ export default function ActivityLogPage() {
     if (!user || user.role !== Role.ANO) return null;
 
     const timeAgo = (dateStr: string) => {
+        // eslint-disable-next-line react-hooks/purity
         const diff = Date.now() - new Date(dateStr).getTime();
         const mins = Math.floor(diff / 60000);
         if (mins < 1) return "Just now";

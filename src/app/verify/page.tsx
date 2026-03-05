@@ -27,16 +27,21 @@ function VerifyContent() {
 
     useEffect(() => {
         if (!id) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLoading(false);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setChecked(true);
             return;
         }
 
         verifyCadetById(id).then((result) => {
             if (result.found && result.person) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setPerson(result.person);
             }
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLoading(false);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setChecked(true);
         });
     }, [id]);

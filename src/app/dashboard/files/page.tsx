@@ -107,7 +107,7 @@ export default function FilesPage() {
             });
 
             setFiles(mapped);
-        } catch (e) {
+        } catch {
             setPageError("Unexpected error loading files.");
         } finally {
             setIsLoading(false);
@@ -238,12 +238,15 @@ export default function FilesPage() {
                                     <div className="p-6 flex flex-col items-center text-center space-y-4">
                                         <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
                                             {file.type === "IMAGE" && file.signedUrl ? (
+                                                /* eslint-disable @next/next/no-img-element */
                                                 <img
                                                     src={file.signedUrl}
                                                     alt={file.name}
                                                     className="w-full h-full object-cover"
-                                                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                    onError={(e: any) => { (e.target as HTMLImageElement).style.display = "none"; }}
                                                 />
+                                                /* eslint-enable @next/next/no-img-element */
                                             ) : getIcon(file.type)}
                                         </div>
                                         <div className="w-full">

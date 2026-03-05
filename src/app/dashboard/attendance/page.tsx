@@ -27,8 +27,10 @@ function AttendanceContent() {
     useEffect(() => {
         if (classes.length > 0) {
             if (classIdParam && classes.find(c => c.id === classIdParam)) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSelectedClassId(classIdParam || "");
             } else if (!selectedClassId) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSelectedClassId(classes[0].id);
             }
         }

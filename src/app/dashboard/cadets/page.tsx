@@ -4,7 +4,6 @@ import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
 import { Role, Wing, Gender, Cadet } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Search, UserPlus, Trash2, Key, Edit2, Eye, LayoutGrid, List as ListIcon } from "lucide-react";

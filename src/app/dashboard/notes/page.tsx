@@ -5,7 +5,7 @@ import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
 import { Role, Note } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +16,6 @@ import {
     Clock,
     Forward,
     Trash2,
-    CheckCircle2,
     ArrowUpRight,
     User,
     Search,
@@ -67,8 +66,6 @@ export default function NotesPage() {
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     }, [notes, user]);
 
-    if (!user) return null;
-
     const filteredNotes = useMemo(() => {
         const baseNotes = activeTab === "inbox" ? inboxNotes : sentNotes;
         if (!searchQuery) return baseNotes;
@@ -80,6 +77,8 @@ export default function NotesPage() {
             n.content.toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [activeTab, inboxNotes, sentNotes, searchQuery]);
+
+    if (!user) return null;
 
     const handleSendNote = async (e: React.FormEvent) => {
         e.preventDefault();
