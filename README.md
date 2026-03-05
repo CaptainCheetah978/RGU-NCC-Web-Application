@@ -23,7 +23,8 @@ A role-based Cadet Management System built with Next.js 15 and Supabase. Feature
 - **Validation**: [Zod](https://zod.dev/) shared schemas for client + server
 - **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/) with custom Glassmorphism/Dark Mode support
 - **UI & Animations**: [Framer Motion](https://www.framer.com/motion/) for transitions, Shadcn UI base components
-- **PWA**: Service Worker with cache-first (stale-while-revalidate) for offline/low-connectivity
+- **PWA**: Service Worker with cache-first (stale-while-revalidate) and custom-padded brand icons.
+- **CI/CD**: GitHub Actions for automated linting and build verification.
 
 ## Application Walkthrough & Features
 
@@ -48,7 +49,7 @@ A role-based Cadet Management System built with Next.js 15 and Supabase. Feature
 ![Cadet Profile](public/screenshots/profile.png)
 
 ### 6. Digital Identity (QR)
-> High-resolution image generation and client-side QR generation for fast parade-ground verification.
+> High-resolution image snapshots with drop-shadows and rounded borders. Features a robust printing engine that bypasses mobile browser layout issues.
 ![Digital ID Card](public/screenshots/id-card.png)
 
 ### 7. Secure Communications
@@ -153,7 +154,6 @@ This repository is built to be unit-agnostic ("white-labeled"). To fork this for
 ## Upcoming Roadmap
 If you are planning to contribute, we are looking at:
 - **Multilingual Support**: Abstracting strings for i18n routing (Hindi/Regional languages).
-- **CI/CD Pipelines**: GitHub Actions for Prettier/ESLint checks before merging.
 - **Camp Management**: High-volume parallel data ingestion logic.
 - **Unit Tests**: Jest/Vitest + React Testing Library for Server Actions and components.
 - **Analytics Dashboard**: Attendance trends, cadet performance scoring.
