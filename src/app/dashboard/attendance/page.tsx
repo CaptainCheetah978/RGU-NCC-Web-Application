@@ -12,17 +12,75 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { AttendanceExport } from "@/components/attendance/export-button";
 import { PdfExportButton } from "@/components/attendance/pdf-export-button";
+import { queueAttendanceOffline, getOfflineAttendanceQueue, clearOfflineQueue, QueuedAttendancePayload } from "@/lib/offline-sync";
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useRef } from "react";
+
+// Helper hook to manage online/offline state
+function useNetworkStatus() {
+    const [isOnline, setIsOnline] = useState(true);
+
+    useEffect(() => {
+        // Safe check for browser environment
+        if (typeof window !== "undefined") {
+            setIsOnline(navigator.onLine);
+
+            const handleOnline = () => setIsOnline(true);
+            const handleOffline = () => setIsOnline(false);
+
+            window.addEventListener("online", handleOnline);
+            window.addEventListener("offline", handleOffline);
+
+            return () => {
+                window.removeEventListener("online", handleOnline);
+                window.removeEventListener("offline", handleOffline);
+            };
+        }
+    }, []);
+
+    return isOnline;
+}
 
 function AttendanceContent() {
-    const { classes, cadets, attendance, markAttendance } = useData();
+    const { classes, cadets, attendance, markAttendance, refreshAttendance } = useData();
     const { user } = useAuth();
     const { showToast } = useToast();
+    const isOnline = useNetworkStatus();
+    const [pendingSyncs, setPendingSyncs] = useState<number>(0);
 
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");
 
     const [selectedClassId, setSelectedClassId] = useState<string>("");
     const [searchQuery, setSearchQuery] = useState("");
+
+    // --- Offline Sync Logic ---
+    useEffect(() => {
+        const checkQueue = async () => {
+            const queue = await getOfflineAttendanceQueue();
+            setPendingSyncs(queue.length);
+
+            if (isOnline && queue.length > 0) {
+                // We're back online, let's sync!
+                try {
+                    showToast(`Syncing ${queue.length} offline records...`);
+                    for (const record of queue) {
+                        await markAttendance(record);
+                    }
+                    await clearOfflineQueue();
+                    await refreshAttendance();
+                    setPendingSyncs(0);
+                    showToast("Offline records synced successfully.");
+                } catch (error) {
+                    console.error("Failed to sync offline queue", error);
+                    showToast("Failed to sync some offline records.");
+                }
+            }
+        };
+
+        checkQueue();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOnline, markAttendance, refreshAttendance, showToast]);
 
     useEffect(() => {
         if (classes.length > 0) {
@@ -40,23 +98,35 @@ function AttendanceContent() {
 
     const selectedClass = classes.find(c => c.id === selectedClassId);
 
-    // Filter cadets based on search
+    // Filter cadets based on search, and implicitly drop 'alumni'
     const filteredCadets = useMemo(() => {
         return cadets.filter(c =>
-            c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            c.regimentalNumber?.toLowerCase().includes(searchQuery.toLowerCase())
+            c.status !== 'alumni' &&
+            (c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                c.regimentalNumber?.toLowerCase().includes(searchQuery.toLowerCase()))
         );
     }, [cadets, searchQuery]);
 
+    const parentRef = useRef<HTMLDivElement>(null);
+
+    // Setup Virtualizer on the filtered array
+    const rowVirtualizer = useVirtualizer({
+        count: filteredCadets.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 64, // Estimate height per row
+        overscan: 5, // Render 5 rows above/below visible area for smooth scrolling
+    });
+
     const stats = useMemo(() => {
         const classRecords = attendance.filter(r => r.classId === selectedClassId);
+        const activeCadetsCount = cadets.filter(c => c.status !== 'alumni').length;
         return {
             present: classRecords.filter(r => r.status === "PRESENT").length,
             absent: classRecords.filter(r => r.status === "ABSENT").length,
             late: classRecords.filter(r => r.status === "LATE").length,
-            total: cadets.length
+            total: activeCadetsCount
         };
-    }, [attendance, selectedClassId, cadets.length]);
+    }, [attendance, selectedClassId, cadets]);
 
     if (!user) return null;
 
@@ -69,19 +139,29 @@ function AttendanceContent() {
 
     const handleStatusChange = async (cadetId: string, status: AttendanceRecord["status"]) => {
         if (!canMark) return;
-        // Optimistic update or just wait? 
-        // For attendance, speed is key. Optimistic update would be best, but complex to implement without local state management or SWR/TanStack Query.
-        // For now, let's just await it and maybe add a small loading indicator on the specific button if needed? 
-        // Or just let it update. Supabase is fast.
+
+        const payload = {
+            id: `${selectedClassId}-${cadetId}`,
+            classId: selectedClassId,
+            cadetId,
+            status,
+            timestamp: new Date().toISOString()
+        };
+
+        if (!isOnline) {
+            // Offline mode: queue it
+            await queueAttendanceOffline(payload);
+
+            // We need to optimistically update the UI since the server refresh won't happen
+            const queue = await getOfflineAttendanceQueue();
+            setPendingSyncs(queue.length);
+
+            showToast("Saved offline. Will sync when reconnected.");
+            return;
+        }
 
         try {
-            await markAttendance({
-                id: `${selectedClassId}-${cadetId}`,
-                classId: selectedClassId,
-                cadetId,
-                status,
-                timestamp: new Date().toISOString()
-            });
+            await markAttendance(payload);
         } catch (error) {
             console.error("Failed to mark attendance", error);
             showToast("Failed to mark attendance. Please try again.");
@@ -104,7 +184,9 @@ function AttendanceContent() {
         <div className="space-y-6 max-w-7xl mx-auto h-[calc(100vh-140px)] flex flex-col">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Attendance Register</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+                        Attendance Register
+                    </h2>
                     <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Mark and track attendance for scheduled classes.</p>
                 </div>
 
@@ -155,7 +237,7 @@ function AttendanceContent() {
                             <span className="font-bold">Late: {stats.late}</span>
                         </div>
                         <div className="text-primary font-bold ml-2 bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
-                            Strength: {cadets.length}
+                            Strength: {stats.total}
                         </div>
                     </div>
 
@@ -172,101 +254,125 @@ function AttendanceContent() {
                     </div>
                 </div>
 
-                <CardContent className="p-0 flex-1 overflow-y-auto">
+                <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
                     <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-slate-900/60 sticky top-0 z-10 shadow-sm">
-                            <tr className="text-left text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">
+                            <tr className="text-left text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider block w-full table-fixed">
                                 <th className="px-6 py-4 w-[40%]">Cadet Name</th>
                                 <th className="px-6 py-4 w-[20%]">Regimental Given ID</th>
                                 <th className="px-6 py-4 w-[15%]">Rank</th>
                                 <th className="px-6 py-4 w-[25%] text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50 bg-transparent">
-                            {filteredCadets.map((cadet) => {
-                                const status = getStatus(cadet.id);
-                                return (
-                                    <motion.tr
-                                        key={cadet.id}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="hover:bg-gray-50/80 dark:hover:bg-slate-700/30 transition-colors group"
-                                    >
-                                        <td className="px-6 py-3">
-                                            <div className="flex items-center">
-                                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-xs font-bold text-primary mr-3 border border-primary/10">
-                                                    {cadet.name.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <div className="font-bold text-gray-900 dark:text-white">{cadet.name}</div>
-                                                    <div className="text-xs text-gray-600 md:hidden font-medium">{cadet.regimentalNumber}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-3 text-sm text-gray-800 dark:text-slate-400 font-bold tracking-wide hidden md:table-cell">
-                                            {cadet.regimentalNumber || "-"}
-                                        </td>
-                                        <td className="px-6 py-3 text-sm">
-                                            <span className={cn(
-                                                "px-2.5 py-1 rounded-md text-xs font-semibold border",
-                                                cadet.role === Role.SUO ? "bg-amber-50 text-amber-700 border-amber-100 ring-1 ring-amber-500/10" :
-                                                    cadet.role === Role.UO ? "bg-gray-100 text-gray-700 border-gray-200 ring-1 ring-gray-500/10" :
-                                                        "bg-primary/5 text-primary border-primary/10"
-                                            )}>
-                                                {cadet.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-3">
-                                            <div className="flex items-center justify-center space-x-1 sm:space-x-2">
-                                                <button
-                                                    disabled={!canMark}
-                                                    onClick={() => handleStatusChange(cadet.id, "PRESENT")}
-                                                    aria-label={`Mark ${cadet.name} Present`}
-                                                    className={cn(
-                                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                                                        status === "PRESENT"
-                                                            ? "bg-green-500 text-white shadow-md shadow-green-500/20 scale-105"
-                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-green-50 hover:text-green-700"
-                                                    )}
-                                                    title="Mark Present"
-                                                >
-                                                    <Check className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    disabled={!canMark}
-                                                    onClick={() => handleStatusChange(cadet.id, "ABSENT")}
-                                                    aria-label={`Mark ${cadet.name} Absent`}
-                                                    className={cn(
-                                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                                                        status === "ABSENT"
-                                                            ? "bg-red-500 text-white shadow-md shadow-red-500/20 scale-105"
-                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-red-50 hover:text-red-700"
-                                                    )}
-                                                    title="Mark Absent"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    disabled={!canMark}
-                                                    onClick={() => handleStatusChange(cadet.id, "LATE")}
-                                                    aria-label={`Mark ${cadet.name} Late`}
-                                                    className={cn(
-                                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                                                        status === "LATE"
-                                                            ? "bg-yellow-500 text-white shadow-md shadow-yellow-500/20 scale-105"
-                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700"
-                                                    )}
-                                                    title="Mark Late"
-                                                >
-                                                    <Clock className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </motion.tr>
-                                );
-                            })}
-                        </tbody>
                     </table>
+
+                    {/* The scrolling container mapped to virtualizer */}
+                    <div ref={parentRef} className="flex-1 overflow-auto w-full">
+                        <div
+                            style={{
+                                height: `${rowVirtualizer.getTotalSize()}px`,
+                                width: '100%',
+                                position: 'relative',
+                            }}
+                        >
+                            <table className="w-full absolute top-0 left-0">
+                                <tbody className="w-full">
+                                    {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                                        const cadet = filteredCadets[virtualItem.index];
+                                        const status = getStatus(cadet.id);
+                                        return (
+                                            <motion.tr
+                                                key={cadet.id}
+                                                // Adjust visual row translation based on virtual array
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    height: `${virtualItem.size}px`,
+                                                    transform: `translateY(${virtualItem.start}px)`,
+                                                }}
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className="hover:bg-gray-50/80 dark:hover:bg-slate-700/30 transition-colors group flex table-fixed w-full items-center border-b border-gray-100 dark:border-slate-700/50"
+                                            >
+                                                <td className="px-6 py-3 w-[40%] text-sm">
+                                                    <div className="flex items-center">
+                                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-xs font-bold text-primary mr-3 border border-primary/10 shrink-0">
+                                                            {cadet.name.charAt(0)}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="font-bold text-gray-900 dark:text-white truncate">{cadet.name}</div>
+                                                            <div className="text-xs text-gray-600 md:hidden font-medium truncate">{cadet.regimentalNumber}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-3 text-sm text-gray-800 dark:text-slate-400 font-bold tracking-wide hidden md:block w-[20%] truncate">
+                                                    {cadet.regimentalNumber || "-"}
+                                                </td>
+                                                <td className="px-6 py-3 text-sm w-[15%]">
+                                                    <span className={cn(
+                                                        "px-2.5 py-1 rounded-md text-xs font-semibold border inline-block whitespace-nowrap",
+                                                        cadet.role === Role.SUO ? "bg-amber-50 text-amber-700 border-amber-100 ring-1 ring-amber-500/10" :
+                                                            cadet.role === Role.UO ? "bg-gray-100 text-gray-700 border-gray-200 ring-1 ring-gray-500/10" :
+                                                                "bg-primary/5 text-primary border-primary/10"
+                                                    )}>
+                                                        {cadet.role}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-3 w-[25%] flex justify-center h-full items-center">
+                                                    <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+                                                        <button
+                                                            disabled={!canMark}
+                                                            onClick={() => handleStatusChange(cadet.id, "PRESENT")}
+                                                            aria-label={`Mark ${cadet.name} Present`}
+                                                            className={cn(
+                                                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                                                                status === "PRESENT"
+                                                                    ? "bg-green-500 text-white shadow-md shadow-green-500/20 scale-105"
+                                                                    : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                                            )}
+                                                            title="Mark Present"
+                                                        >
+                                                            <Check className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            disabled={!canMark}
+                                                            onClick={() => handleStatusChange(cadet.id, "ABSENT")}
+                                                            aria-label={`Mark ${cadet.name} Absent`}
+                                                            className={cn(
+                                                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                                                                status === "ABSENT"
+                                                                    ? "bg-red-500 text-white shadow-md shadow-red-500/20 scale-105"
+                                                                    : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-red-50 hover:text-red-700"
+                                                            )}
+                                                            title="Mark Absent"
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            disabled={!canMark}
+                                                            onClick={() => handleStatusChange(cadet.id, "LATE")}
+                                                            aria-label={`Mark ${cadet.name} Late`}
+                                                            className={cn(
+                                                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                                                                status === "LATE"
+                                                                    ? "bg-yellow-500 text-white shadow-md shadow-yellow-500/20 scale-105"
+                                                                    : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700"
+                                                            )}
+                                                            title="Mark Late"
+                                                        >
+                                                            <Clock className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </motion.tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>

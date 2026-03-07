@@ -20,6 +20,7 @@ interface CreateCadetFormData {
     enrollmentYear: number;
     bloodGroup: string;
     pin: string;
+    status: string;
 }
 
 export async function createCadetAccount(formData: CreateCadetFormData, accessToken: string) {
@@ -49,6 +50,7 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
         enrollmentYear,
         bloodGroup,
         pin,
+        status,
     } = parsed.data;
 
     try {
@@ -91,6 +93,7 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
                 enrollment_year: enrollmentYear,
                 blood_group: bloodGroup || null,
                 access_pin: pin,
+                status: status || 'active',
                 updated_at: new Date().toISOString(),
             });
 

@@ -38,6 +38,7 @@ export interface Cadet extends User {
     access_pin?: string; // Visible PIN for ANO/SUO
     enrollmentYear: number;
     bloodGroup?: string;
+    status: "active" | "alumni";
 }
 
 export interface ClassSession {

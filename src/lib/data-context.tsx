@@ -51,13 +51,15 @@ interface DataContextType {
     getRecentActivities: (limit: number) => ActivityLogEntry[];
     isLoading: boolean;
     refreshData: () => Promise<void>;
+    refreshAttendance: () => Promise<void>;
+    refreshProfiles: () => Promise<void>;
     currentUserProfile: (User & Partial<Cadet>) | null;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 // Column selections — fetch only what we need instead of select('*')
-const PROFILE_COLUMNS = 'id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number';
+const PROFILE_COLUMNS = 'id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, status';
 const CLASS_COLUMNS = 'id, title, date, time, instructor_id, description';
 const ATTENDANCE_COLUMNS = 'id, class_id, cadet_id, status, created_at';
 const NOTE_COLUMNS = 'id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name';
@@ -113,6 +115,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 gender: p.gender,
                 unitName: p.unit_name,
                 unitNumber: p.unit_number,
+                status: p.status || "active",
             }));
 
             setAllProfiles(mappedProfiles as (User & Partial<Cadet>)[]);
@@ -310,7 +313,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             unit_name: cadet.unitName,
             enrollment_year: cadet.enrollmentYear,
             blood_group: cadet.bloodGroup,
-            access_pin: cadet.access_pin
+            access_pin: cadet.access_pin,
+            status: cadet.status || 'active'
         });
         if (error) throw error;
         await refreshProfiles();
@@ -334,6 +338,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         if (updates.bloodGroup !== undefined) payload.blood_group = updates.bloodGroup;
         if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
         if (updates.access_pin !== undefined) payload.access_pin = updates.access_pin;
+        if (updates.status !== undefined) payload.status = updates.status;
 
         if (Object.keys(payload).length === 0) return; // Nothing to update
         const { error } = await supabase.from('profiles').update(payload).eq('id', id);
@@ -565,7 +570,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             certificates, addCertificate, deleteCertificate, getCertificates,
             announcements, addAnnouncement, deleteAnnouncement,
             activityLog, logActivity, getRecentActivities,
-            isLoading, refreshData,
+            isLoading, refreshData, refreshAttendance, refreshProfiles,
             currentUserProfile
         }}>
             {children}

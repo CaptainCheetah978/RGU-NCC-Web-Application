@@ -19,6 +19,8 @@ const PinSchema = z
 
 // ─── Cadet Creation ────────────────────────────────────────────────────────────
 
+export const CadetStatusEnum = z.enum(["active", "alumni"]);
+
 export const CreateCadetSchema = z.object({
     name: z
         .string()
@@ -51,6 +53,7 @@ export const CreateCadetSchema = z.object({
         .optional()
         .or(z.literal("")),
     pin: PinSchema,
+    status: CadetStatusEnum.optional().default("active"),
 });
 
 export type CreateCadetInput = z.infer<typeof CreateCadetSchema>;

@@ -14,6 +14,8 @@ import { createCadetAccount, updateCadetPin, getCadetPin } from "@/app/actions/c
 import { useToast } from "@/lib/toast-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import Image from "next/image";
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useRef } from "react";
 
 // Lazy PIN loader — fetches PIN on demand via server action, never from cached client data
 function PinDisplay({ cadetId }: { cadetId: string }) {
@@ -72,11 +74,14 @@ export default function CadetsPage() {
         enrollmentYear: new Date().getFullYear(),
         bloodGroup: "O+",
         pin: "1234",
+        status: "active",
     };
 
     const [formData, setFormData] = useState(initialFormState);
     const [editFormData, setEditFormData] = useState<Partial<Cadet>>({});
     const [newPin, setNewPin] = useState("");
+
+    const [filterStatus, setFilterStatus] = useState<"active" | "alumni">("active");
 
     // --- Logic: Auto-update Unit based on Wing ---
     // This provides smart defaults while allowing manual override
@@ -95,9 +100,32 @@ export default function CadetsPage() {
             const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (c.regimentalNumber && c.regimentalNumber.toLowerCase().includes(searchQuery.toLowerCase()));
             const matchesRole = filterRole === "ALL" || c.role === filterRole;
-            return matchesSearch && matchesRole;
+            const matchesStatus = c.status === filterStatus;
+
+            return matchesSearch && matchesRole && matchesStatus;
         });
-    }, [cadets, searchQuery, filterRole]);
+    }, [cadets, searchQuery, filterRole, filterStatus]);
+
+    const parentRef = useRef<HTMLDivElement>(null);
+
+    // Grid virtualizer - assuming 3 columns on large screens, 2 on medium, 1 on small.
+    // For simplicity, we'll estimate rows based on the current window width later or just use a standard list virtualization for the list view,
+    // and a specialized grid virtualizer for the grid view.
+    // Let's implement row virtualization for the List view first.
+    const listVirtualizer = useVirtualizer({
+        count: filteredCadets.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 88, // Estimate height of list row
+        overscan: 5,
+    });
+
+    // Grid virtualizer
+    const gridVirtualizer = useVirtualizer({
+        count: Math.ceil(filteredCadets.length / 3), // Estimating 3 items per row max for simplicity
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 320, // Estimate height of grid card
+        overscan: 2,
+    });
 
     if (!user) return null;
 
@@ -118,6 +146,7 @@ export default function CadetsPage() {
             unitName: cadet.unitName,
             enrollmentYear: cadet.enrollmentYear,
             bloodGroup: cadet.bloodGroup,
+            status: cadet.status,
         });
         setIsEditModalOpen(true);
     };
@@ -249,6 +278,29 @@ export default function CadetsPage() {
 
             {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-slate-800/80 p-4 rounded-2xl border border-gray-100 dark:border-slate-700/60 shadow-sm">
+
+                {/* Status Toggle (Active / Alumni) */}
+                <div className="flex bg-gray-100 dark:bg-slate-700/50 p-1 rounded-xl">
+                    <button
+                        onClick={() => setFilterStatus("active")}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterStatus === "active"
+                            ? "bg-white dark:bg-slate-600 shadow-sm text-primary dark:text-blue-400"
+                            : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"
+                            }`}
+                    >
+                        Active
+                    </button>
+                    <button
+                        onClick={() => setFilterStatus("alumni")}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterStatus === "alumni"
+                            ? "bg-white dark:bg-slate-600 shadow-sm text-amber-600 dark:text-amber-400"
+                            : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"
+                            }`}
+                    >
+                        Alumni
+                    </button>
+                </div>
+
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
                     <input
@@ -291,128 +343,191 @@ export default function CadetsPage() {
             ) : (
                 <>
                     {viewMode === "grid" ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredCadets.map((cadet, i) => (
-                                <motion.div
-                                    key={cadet.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: Math.min(i * 0.05, 0.5) }}
-                                >
-                                    <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                                        <div className="p-6">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center space-x-4">
-                                                    <div className="relative shrink-0">
-                                                        <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center">
-                                                            {cadet.avatarUrl ? (
-                                                                <Image src={cadet.avatarUrl} alt={cadet.name} width={64} height={64} className="object-cover" />
-                                                            ) : (
-                                                                <span className="text-xl font-bold text-gray-400 dark:text-slate-500">{cadet.name.charAt(0)}</span>
-                                                            )}
+                        <div ref={parentRef} className="h-[800px] overflow-auto">
+                            <div
+                                style={{
+                                    height: `${gridVirtualizer.getTotalSize()}px`,
+                                    width: '100%',
+                                    position: 'relative',
+                                }}
+                            >
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 absolute top-0 left-0 w-full">
+                                    {gridVirtualizer.getVirtualItems().map((virtualRow) => {
+                                        // A virtualRow represents one chunk of 3 items (or 1/2 items depending on viewport size, simplify for demo)
+                                        // To implement true masonry/CSS Grid Virtualization involves window width tracking (`useWindowSize`). 
+                                        // Let's use simple list virtualization as a stand-in since `@tanstack/react-virtual` natively supports simple 1D lists best out of the box.
+                                        // Note: True 2D virtualization is very complex and brittle unless using fixed cell dimensions.
+                                        const startIndex = virtualRow.index * 3;
+                                        const rowItems = filteredCadets.slice(startIndex, startIndex + 3);
+
+                                        return (
+                                            <div
+                                                key={virtualRow.index}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    height: `${virtualRow.size}px`,
+                                                    transform: `translateY(${virtualRow.start}px)`,
+                                                }}
+                                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full"
+                                            >
+                                                {rowItems.map((cadet, i) => (
+                                                    <motion.div
+                                                        key={cadet.id}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: Math.min(i * 0.05, 0.5) }}
+                                                    >
+                                                        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
+                                                            <div className="p-6 flex-1">
+                                                                <div className="flex items-start justify-between mb-4">
+                                                                    <div className="flex items-center space-x-4">
+                                                                        <div className="relative shrink-0">
+                                                                            <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center">
+                                                                                {cadet.avatarUrl ? (
+                                                                                    <Image src={cadet.avatarUrl} alt={cadet.name} width={64} height={64} className="object-cover" />
+                                                                                ) : (
+                                                                                    <span className="text-xl font-bold text-gray-400 dark:text-slate-500">{cadet.name.charAt(0)}</span>
+                                                                                )}
+                                                                            </div>
+                                                                            <span className="absolute -bottom-2 -right-2 text-lg">
+                                                                                {cadet.gender === Gender.MALE ? "👮‍♂️" : "👮‍♀️"}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div>
+                                                                            <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-blue-400 transition-colors text-lg flex items-center gap-2">
+                                                                                {cadet.rank} {cadet.name}
+                                                                                {cadet.status === 'alumni' && (
+                                                                                    <span className="text-[10px] uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
+                                                                                )}
+                                                                            </h3>
+                                                                            <p className="text-sm text-gray-700 dark:text-slate-400 font-bold decoration-primary/20 underline underline-offset-4">
+                                                                                {cadet.regimentalNumber || "N/A"}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="space-y-2 mb-4">
+                                                                    <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
+                                                                        <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Unit</span>
+                                                                        <span className="font-bold truncate">{cadet.unitNumber} {cadet.unitName}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
+                                                                        <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Batches</span>
+                                                                        <span className="font-bold bg-primary/5 dark:bg-slate-700 px-2 py-0.5 rounded text-xs text-primary dark:text-slate-300">{cadet.enrollmentYear}</span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex gap-2 border-t border-gray-100 dark:border-slate-700/60 pt-4 mt-2 mt-auto">
+                                                                    <Button variant="ghost" size="sm" className="flex-1 text-xs" onClick={() => handleView(cadet)}>
+                                                                        View Profile
+                                                                    </Button>
+                                                                    {canEdit && (
+                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => handleEdit(cadet)} aria-label={`Edit ${cadet.name}`}>
+                                                                            <Edit2 className="w-4 h-4" />
+                                                                        </Button>
+                                                                    )}
+                                                                    {isANO && (
+                                                                        <>
+                                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-500" onClick={() => handlePinEdit(cadet)} aria-label={`Update PIN for ${cadet.name}`}>
+                                                                                <Key className="w-4 h-4" />
+                                                                            </Button>
+                                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(cadet)} aria-label={`Delete ${cadet.name}`}>
+                                                                                <Trash2 className="w-4 h-4" />
+                                                                            </Button>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <span className="absolute -bottom-2 -right-2 text-lg">
-                                                            {cadet.gender === Gender.MALE ? "👮‍♂️" : "👮‍♀️"}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-blue-400 transition-colors text-lg">
-                                                            {cadet.rank} {cadet.name}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-700 dark:text-slate-400 font-bold decoration-primary/20 underline underline-offset-4">
-                                                            {cadet.regimentalNumber || "N/A"}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                                    </motion.div>
+                                                ))}
                                             </div>
-
-                                            <div className="space-y-2 mb-4">
-                                                <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
-                                                    <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Unit</span>
-                                                    <span className="font-bold truncate">{cadet.unitNumber} {cadet.unitName}</span>
-                                                </div>
-                                                <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
-                                                    <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Batches</span>
-                                                    <span className="font-bold bg-primary/5 dark:bg-slate-700 px-2 py-0.5 rounded text-xs text-primary dark:text-slate-300">{cadet.enrollmentYear}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex gap-2 border-t border-gray-100 dark:border-slate-700/60 pt-4 mt-2">
-                                                <Button variant="ghost" size="sm" className="flex-1 text-xs" onClick={() => handleView(cadet)}>
-                                                    View Profile
-                                                </Button>
-                                                {canEdit && (
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => handleEdit(cadet)} aria-label={`Edit ${cadet.name}`}>
-                                                        <Edit2 className="w-4 h-4" />
-                                                    </Button>
-                                                )}
-                                                {isANO && (
-                                                    <>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-500" onClick={() => handlePinEdit(cadet)} aria-label={`Update PIN for ${cadet.name}`}>
-                                                            <Key className="w-4 h-4" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(cadet)} aria-label={`Delete ${cadet.name}`}>
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         // List View
                         <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden shadow-sm">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-slate-900/30">
-                                    <tr>
-                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Cadet</th>
-                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Rank &amp; Regt. #</th>
-                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Unit</th>
-                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Year</th>
-                                        <th className="p-4 text-right text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                            <table className="w-full text-left border-collapse table-fixed">
+                                <thead className="bg-gray-50/50 dark:bg-slate-900/30 sticky top-0 z-10 w-full">
+                                    <tr className="flex w-full">
+                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Cadet</th>
+                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Rank &amp; Regt. #</th>
+                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Unit</th>
+                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-[15%]">Year</th>
+                                        <th className="p-4 text-right text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-[10%]">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60">
-                                    {filteredCadets.map((cadet) => (
-                                        <tr key={cadet.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors group">
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center font-bold text-gray-400 dark:text-slate-500 overflow-hidden">
-                                                        {cadet.avatarUrl ? <Image src={cadet.avatarUrl} alt="" width={40} height={40} /> : cadet.name.charAt(0)}
-                                                    </div>
-                                                    <div className="font-bold text-gray-900 dark:text-white">{cadet.name}</div>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-gray-900 dark:text-slate-200">{cadet.rank}</span>
-                                                    <span className="text-xs text-gray-700 dark:text-slate-400 font-bold underline decoration-primary/10">{cadet.regimentalNumber}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-sm text-gray-800 dark:text-slate-300 font-medium">{cadet.unitNumber} {cadet.unitName}</td>
-                                            <td className="p-4 text-sm text-gray-800 dark:text-slate-300 font-bold">{cadet.enrollmentYear}</td>
-                                            <td className="p-4 text-right">
-                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => handleView(cadet)} className="p-2 text-gray-400 hover:text-primary transition-colors" aria-label={`View ${cadet.name}`}>
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                    {canEdit && (
-                                                        <button onClick={() => handleEdit(cadet)} className="p-2 text-gray-400 hover:text-blue-500 transition-colors" aria-label={`Edit ${cadet.name}`}>
-                                                            <Edit2 className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                    {isANO && (
-                                                        <button onClick={() => handleDelete(cadet)} className="p-2 text-gray-400 hover:text-red-500 transition-colors" aria-label={`Delete ${cadet.name}`}>
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                <tbody
+                                    ref={parentRef as any}
+                                    className="block relative h-[600px] overflow-auto divide-y divide-gray-100 dark:divide-slate-700/60"
+                                >
+                                    <div style={{ height: `${listVirtualizer.getTotalSize()}px`, width: '100%' }}>
+                                        {listVirtualizer.getVirtualItems().map((virtualRow) => {
+                                            const cadet = filteredCadets[virtualRow.index];
+                                            return (
+                                                <tr
+                                                    key={cadet.id}
+                                                    className="flex w-full hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors group absolute top-0 left-0"
+                                                    style={{
+                                                        height: `${virtualRow.size}px`,
+                                                        transform: `translateY(${virtualRow.start}px)`,
+                                                    }}
+                                                >
+                                                    <td className="p-3 w-1/4 flex items-center">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center font-bold text-gray-400 dark:text-slate-500 overflow-hidden shrink-0">
+                                                                {cadet.avatarUrl ? <Image src={cadet.avatarUrl} alt="" width={40} height={40} /> : cadet.name.charAt(0)}
+                                                            </div>
+                                                            <div className="flex flex-col truncate">
+                                                                <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2 truncate">
+                                                                    <span className="truncate">{cadet.name}</span>
+                                                                    {cadet.status === 'alumni' && (
+                                                                        <span className="text-[9px] uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-1.5 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800 shrink-0">Alumni</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-3 w-1/4 flex flex-col justify-center truncate">
+                                                        <div className="flex flex-col truncate">
+                                                            <span className="font-bold text-gray-900 dark:text-slate-200">{cadet.rank}</span>
+                                                            <span className="text-xs text-gray-700 dark:text-slate-400 font-bold underline decoration-primary/10 truncate">{cadet.regimentalNumber}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-3 w-1/4 text-sm text-gray-800 dark:text-slate-300 font-medium flex items-center truncate">
+                                                        <span className="truncate">{cadet.unitNumber} {cadet.unitName}</span>
+                                                    </td>
+                                                    <td className="p-3 w-[15%] text-sm text-gray-800 dark:text-slate-300 font-bold flex items-center">
+                                                        {cadet.enrollmentYear}
+                                                    </td>
+                                                    <td className="p-3 w-[10%] text-right flex items-center justify-end">
+                                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <button onClick={() => handleView(cadet)} className="p-1.5 text-gray-400 hover:text-primary transition-colors" aria-label={`View ${cadet.name}`}>
+                                                                <Eye className="w-4 h-4" />
+                                                            </button>
+                                                            {canEdit && (
+                                                                <button onClick={() => handleEdit(cadet)} className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors" aria-label={`Edit ${cadet.name}`}>
+                                                                    <Edit2 className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                            {isANO && (
+                                                                <button onClick={() => handleDelete(cadet)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors" aria-label={`Delete ${cadet.name}`}>
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </div>
                                 </tbody>
                             </table>
                         </div>
@@ -456,6 +571,18 @@ export default function CadetsPage() {
                             </select>
                         </div>
                         <div className="space-y-2">
+                            <label htmlFor="enroll-status" className="text-sm font-medium text-gray-700 dark:text-slate-300">Status</label>
+                            <select
+                                id="enroll-status"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={formData.status}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value as "active" | "alumni" })}
+                            >
+                                <option value="active">Active</option>
+                                <option value="alumni">Alumni</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2 col-span-2">
                             <label htmlFor="enroll-wing" className="text-sm font-medium text-gray-700 dark:text-slate-300">Wing</label>
                             <select
                                 id="enroll-wing"
@@ -595,6 +722,20 @@ export default function CadetsPage() {
                             />
                         </div>
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label htmlFor="edit-status" className="text-sm font-medium text-gray-700 dark:text-slate-300">Status</label>
+                            <select
+                                id="edit-status"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={editFormData.status || "active"}
+                                onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as "active" | "alumni" })}
+                            >
+                                <option value="active">Active</option>
+                                <option value="alumni">Alumni</option>
+                            </select>
+                        </div>
+                    </div>
                     <div className="pt-4 flex justify-end gap-3">
                         <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
                         <Button type="submit" isLoading={isLoading}>Save Changes</Button>
@@ -627,11 +768,16 @@ export default function CadetsPage() {
             <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Cadet Profile">
                 {viewingCadet && (
                     <div className="space-y-6">
-                        <div className="flex flex-col items-center justify-center text-center pb-6 border-b border-gray-100 dark:border-slate-700/60">
+                        <div className="flex flex-col items-center justify-center text-center pb-6 border-b border-gray-100 dark:border-slate-700/60 relative">
                             <div className="w-24 h-24 rounded-2xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-3xl font-bold text-gray-400 dark:text-slate-500 overflow-hidden mb-3 border-4 border-white dark:border-slate-600 shadow-lg">
                                 {viewingCadet.avatarUrl ? <Image src={viewingCadet.avatarUrl} alt={viewingCadet.name} width={96} height={96} className="w-full h-full object-cover" /> : viewingCadet.name.charAt(0)}
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{viewingCadet.rank} {viewingCadet.name}</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2 flex-wrap">
+                                {viewingCadet.rank} {viewingCadet.name}
+                                {viewingCadet.status === 'alumni' && (
+                                    <span className="text-xs uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
+                                )}
+                            </h3>
                             <p className="text-gray-500 dark:text-slate-400 font-mono bg-gray-100 dark:bg-slate-700 px-3 py-1 rounded-full text-xs mt-2">{viewingCadet.regimentalNumber}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm">
