@@ -72,15 +72,15 @@ flowchart TD
     end
 
     %% Real-time and Read functionality
-    Context -->|Realtime Subscriptions| API
-    CC -->|Select Queries| API
+    Context -- "Realtime Subscriptions" --> API
+    CC -- "Select Queries" --> API
     API --> RLS --> DB
 
     %% Write and Admin functionality
-    CC -->|Form Submissions| SA
+    CC -- "Form Submissions" --> SA
     SA --> AuthGuard
-    AuthGuard -->|Bypass RLS (Admin Only)| DB
-    AuthGuard -->|Standard Update| API
+    AuthGuard -- "Bypass RLS (Admin Only)" --> DB
+    AuthGuard -- "Standard Update" --> API
 ```
 
 ### 4. QR Code Generation Pipeline
