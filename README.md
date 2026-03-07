@@ -23,7 +23,8 @@ A role-based Cadet Management System built with Next.js 15 and Supabase. Feature
 - **Validation**: [Zod](https://zod.dev/) shared schemas for client + server
 - **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/) with custom Glassmorphism/Dark Mode support
 - **UI & Animations**: [Framer Motion](https://www.framer.com/motion/) for transitions, Shadcn UI base components
-- **PWA**: Service Worker with cache-first (stale-while-revalidate) and custom-padded brand icons.
+- **PWA & Offline**: Service Worker with cache-first strategy; IndexedDB-backed offline queueing for zero-connectivity areas.
+- **Performance**: High-speed list virtualization via `@tanstack/react-virtual` for large datasets.
 - **CI/CD**: GitHub Actions for automated linting and build verification.
 
 ## Application Walkthrough & Features
@@ -56,14 +57,20 @@ A role-based Cadet Management System built with Next.js 15 and Supabase. Feature
 > Hierarchical note passing with read-receipt real-time listeners between Cadets and Officers.
 ![Messaging Interface](public/screenshots/messages.png)
 
+### 8. Offline Attendance Synchronization
+> Robust queueing system that allows marking attendance in areas with no internet. Data is automatically synced to the server once connection is restored.
+
+### 9. Alumni Lifecycle Management
+> Systematic transition pipeline for graduating cadets, archiving their service history and performance scores without data loss.
+
 ## Core Modules Overview
 
 | Module | Technical Features | Access Level |
 | :--- | :--- | :--- |
 | **Dashboard** | Real-time stats aggregation, async activity logging | ANO, SUO |
-| **Registry** | Client-side search/filtering of DB records, profile state hydration | ANO, SUO, UO |
+| **Registry** | Virtualized high-performance lists, multi-state (Active/Alumni) filtering | ANO, SUO, UO |
 | **Digital ID** | Client-side QR generation, automated PDF extraction | All Ranks |
-| **Attendance** | Relational DB joins (cadets to classes), batch status updates | ANO, SUO, UO |
+| **Attendance** | Offline-first queueing, relational DB joins, batch status updates | ANO, SUO, UO |
 | **Vault** | Supabase Storage integration with expiring signed URLs for security | All Ranks |
 | **Comms** | Hierarchical note passing, read-receipt real-time listeners | All Ranks |
 
