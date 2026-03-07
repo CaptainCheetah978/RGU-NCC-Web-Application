@@ -3,10 +3,8 @@
 import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion } from "framer-motion";
 import { TrendingUp, AlertTriangle, UserCheck, Shield } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Role } from "@/types";
 
 export default function PerformanceDashboard() {
     const { classes, cadets, attendance } = useData();
@@ -234,7 +232,7 @@ export default function PerformanceDashboard() {
                                             <div className="flex-1 h-2.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full rounded-full transition-all duration-1000 ${cadet.percentage >= 80 ? 'bg-green-500' :
-                                                            cadet.percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                                                        cadet.percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                                                         }`}
                                                     style={{ width: `${cadet.percentage}%` }}
                                                 />

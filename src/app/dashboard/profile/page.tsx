@@ -3,7 +3,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
 import { supabase } from "@/lib/supabase-client";
-import { Role, Wing, Gender, Cadet, User } from "@/types";
+import { Role, Wing, Cadet, User } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";

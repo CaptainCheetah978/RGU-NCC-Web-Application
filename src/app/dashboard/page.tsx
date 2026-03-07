@@ -8,6 +8,7 @@ import { UpcomingClasses } from "@/components/dashboard/upcoming-classes";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { AnnouncementsBanner } from "@/components/dashboard/announcements-banner";
 import { AttendanceChart } from "@/components/dashboard/attendance-chart";
+import Image from "next/image";
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -27,12 +28,12 @@ export default function DashboardPage() {
                     <p className="text-gray-600 dark:text-slate-400 font-medium">Here&apos;s what&apos;s happening in your unit today.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
-                    <img src="/ncc-logo.png" alt="NCC Logo" className="h-10 w-10 md:h-16 md:w-16 object-contain dark:drop-shadow-[0_0_8px_rgba(75,146,219,0.4)]" />
-                    <img src="/rgu-logo.png" alt="RGU Logo" className="h-10 w-10 md:h-16 md:w-16 object-contain dark:drop-shadow-[0_0_8px_rgba(240,85,35,0.4)]" />
+                    <Image src="/ncc-logo.png" alt="NCC Logo" width={64} height={64} className="h-10 w-10 md:h-16 md:w-16 object-contain dark:drop-shadow-[0_0_8px_rgba(75,146,219,0.4)]" />
+                    <Image src="/rgu-logo.png" alt="RGU Logo" width={64} height={64} className="h-10 w-10 md:h-16 md:w-16 object-contain dark:drop-shadow-[0_0_8px_rgba(240,85,35,0.4)]" />
                     <div className="flex items-center border-l border-gray-300 dark:border-slate-700 pl-4 space-x-3 shrink-0 hidden sm:flex">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-lg font-bold text-white shadow-lg overflow-hidden shrink-0">
                             {displayUser.avatarUrl ? (
-                                <img src={displayUser.avatarUrl} alt={displayUser.name} className="w-full h-full object-cover" />
+                                <Image src={displayUser.avatarUrl} alt={displayUser.name} width={48} height={48} className="w-full h-full object-cover" />
                             ) : (
                                 displayUser.name.charAt(0)
                             )}

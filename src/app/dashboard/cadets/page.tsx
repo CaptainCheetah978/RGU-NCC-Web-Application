@@ -465,7 +465,7 @@ export default function CadetsPage() {
                                     </tr>
                                 </thead>
                                 <tbody
-                                    ref={parentRef as any}
+                                    ref={parentRef as unknown as React.RefObject<HTMLTableSectionElement>}
                                     className="block relative h-[600px] overflow-auto divide-y divide-gray-100 dark:divide-slate-700/60"
                                 >
                                     <div style={{ height: `${listVirtualizer.getTotalSize()}px`, width: '100%' }}>

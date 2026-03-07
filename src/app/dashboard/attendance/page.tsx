@@ -12,30 +12,31 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { AttendanceExport } from "@/components/attendance/export-button";
 import { PdfExportButton } from "@/components/attendance/pdf-export-button";
-import { queueAttendanceOffline, getOfflineAttendanceQueue, clearOfflineQueue, QueuedAttendancePayload } from "@/lib/offline-sync";
+import { queueAttendanceOffline, getOfflineAttendanceQueue, clearOfflineQueue } from "@/lib/offline-sync";
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRef } from "react";
 
 // Helper hook to manage online/offline state
 function useNetworkStatus() {
-    const [isOnline, setIsOnline] = useState(true);
+    const [isOnline, setIsOnline] = useState(() => {
+        if (typeof window !== "undefined") return navigator.onLine;
+        return true;
+    });
 
     useEffect(() => {
         // Safe check for browser environment
-        if (typeof window !== "undefined") {
-            setIsOnline(navigator.onLine);
 
-            const handleOnline = () => setIsOnline(true);
-            const handleOffline = () => setIsOnline(false);
 
-            window.addEventListener("online", handleOnline);
-            window.addEventListener("offline", handleOffline);
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
 
-            return () => {
-                window.removeEventListener("online", handleOnline);
-                window.removeEventListener("offline", handleOffline);
-            };
-        }
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+            window.removeEventListener("offline", handleOffline);
+        };
     }, []);
 
     return isOnline;
@@ -46,7 +47,6 @@ function AttendanceContent() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const isOnline = useNetworkStatus();
-    const [pendingSyncs, setPendingSyncs] = useState<number>(0);
 
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");
@@ -58,7 +58,6 @@ function AttendanceContent() {
     useEffect(() => {
         const checkQueue = async () => {
             const queue = await getOfflineAttendanceQueue();
-            setPendingSyncs(queue.length);
 
             if (isOnline && queue.length > 0) {
                 // We're back online, let's sync!
@@ -69,7 +68,6 @@ function AttendanceContent() {
                     }
                     await clearOfflineQueue();
                     await refreshAttendance();
-                    setPendingSyncs(0);
                     showToast("Offline records synced successfully.");
                 } catch (error) {
                     console.error("Failed to sync offline queue", error);
@@ -79,16 +77,13 @@ function AttendanceContent() {
         };
 
         checkQueue();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOnline, markAttendance, refreshAttendance, showToast]);
 
     useEffect(() => {
         if (classes.length > 0) {
             if (classIdParam && classes.find(c => c.id === classIdParam)) {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSelectedClassId(classIdParam || "");
             } else if (!selectedClassId) {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSelectedClassId(classes[0].id);
             }
         }
@@ -153,8 +148,7 @@ function AttendanceContent() {
             await queueAttendanceOffline(payload);
 
             // We need to optimistically update the UI since the server refresh won't happen
-            const queue = await getOfflineAttendanceQueue();
-            setPendingSyncs(queue.length);
+            await getOfflineAttendanceQueue();
 
             showToast("Saved offline. Will sync when reconnected.");
             return;

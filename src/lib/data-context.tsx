@@ -32,7 +32,7 @@ interface DataContextType {
     notes: Note[];
     sendNote: (note: Note) => Promise<void>;
     markNoteAsRead: (id: string) => Promise<void>;
-    forwardNoteToANO: (noteId: string, anoId: string, anoName: string) => Promise<void>;
+    forwardNoteToANO: (noteId: string, anoId: string) => Promise<void>;
     deleteNote: (id: string) => Promise<void>;
     getStats: (userId?: string) => DashboardStats;
     messageableUsers: (Cadet | User)[];
@@ -240,7 +240,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         } finally {
             setIsLoading(false);
         }
-    }, [refreshClasses, refreshProfiles, refreshAttendance, refreshNotes, refreshAnnouncements, refreshCertificates, refreshActivity]);
+    }, [refreshClasses, refreshProfiles, refreshAttendance, refreshNotes, refreshAnnouncements, refreshCertificates, refreshActivity, showToast]);
 
     // Initial load + targeted Realtime subscriptions
     useEffect(() => {
@@ -411,7 +411,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         await refreshNotes();
     };
 
-    const forwardNoteToANO = async (noteId: string, anoId: string, anoName: string) => {
+    const forwardNoteToANO = async (noteId: string, anoId: string) => {
         const originalNote = notes.find(n => n.id === noteId);
         if (!originalNote) throw new Error("Note not found");
 

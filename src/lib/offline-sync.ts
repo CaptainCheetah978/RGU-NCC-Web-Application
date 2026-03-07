@@ -1,4 +1,4 @@
-import { get, set, update, clear } from 'idb-keyval';
+import { get, update, clear } from 'idb-keyval';
 import { AttendanceRecord } from '@/types';
 
 // The key we use in IndexedDB to store pending attendance mutations

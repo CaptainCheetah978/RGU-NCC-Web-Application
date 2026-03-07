@@ -16,8 +16,6 @@ import {
     Clock,
     Forward,
     Trash2,
-    ArrowUpRight,
-    User,
     Search,
     Reply
 } from "lucide-react";
@@ -132,7 +130,7 @@ export default function NotesPage() {
         if (!ano) { showToast("No ANO found to forward to."); return; }
         if (!confirm(`Forward this note to ${ano.name}?`)) return;
         try {
-            await forwardNoteToANO(note.id, ano.id, ano.name);
+            await forwardNoteToANO(note.id, ano.id);
             showToast(`Note forwarded to ${ano.name}.`, "success");
             if (logActivity) logActivity("Forwarded note to ANO", user.id, user.name, ano.name);
         } catch (error) {
