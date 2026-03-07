@@ -48,3 +48,19 @@ lint*.json
 # backups
 *.bak
 *.unused
+
+# Assistant/Session history
+session_history.md
+
+# Build and Lint logs
+build.txt
+build_output.log
+eslint.txt
+lint-output.txt
+lint_utf8.json
+
+# Large/Auto-generated changelog
+complete_changelog.md
+
+# Supabase local config
+supabase/config.toml

@@ -14,6 +14,7 @@ DROP POLICY IF EXISTS "ANO update all" ON profiles;
 DROP POLICY IF EXISTS "Enable users to view own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable users to update own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable users to insert own profile" ON profiles;
+DROP POLICY IF EXISTS "Users insert own profile" ON profiles;
 
 -- announcements
 DROP POLICY IF EXISTS "View announcements" ON announcements;
