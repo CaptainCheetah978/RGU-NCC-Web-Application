@@ -1,0 +1,108 @@
+# NCC RGU System Architecture
+
+This document provides a high-level overview of the system architecture, access control, and data flow mechanisms utilized within the NCC RGU Cadet Management System.
+
+## Architecture Diagrams
+
+### 1. Authentication Flow
+The system uses a custom PIN-based server-side authentication flow interacting with Supabase.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Client as Next.js Client
+    participant Server as Next.js Server Actions
+    participant SubaAuth as Supabase Auth
+    participant DB as Supabase Database
+
+    User->>Client: Enters 6-digit PIN
+    Client->>Server: Submits PIN via Server Action
+    Server->>DB: Verify PIN matches cadet profile
+    DB-->>Server: Profile validation result
+    Server->>SubaAuth: Issue JWT / Session
+    SubaAuth-->>Server: Returns secure access token
+    Server->>Client: Sets internal HTTP-only Cookie
+    Client->>User: Redirects to Dashboard
+```
+
+### 2. Permission Decision Tree
+Row-Level Security (RLS) and server-side logic dictate operations based on the user's role.
+
+```mermaid
+graph TD
+    A[Incoming Request] --> B{Valid Session?}
+    B -- No --> C[Redirect to Gatekeeper / Login]
+    B -- Yes --> D{Evaluate Role Profile}
+    
+    D -- "ANO" --> E[SuperAdmin]
+    E --> E1[Full Database Bypass via supabaseAdmin]
+    E1 --> E2[Manage all Cadets, Classes, Notes, Announcements]
+    
+    D -- "SUO" --> F[Admin]
+    F --> F1[Standard Auth Context]
+    F1 --> F2[Read/Write Class, Attendance, Registry]
+    
+    D -- "UO/SGT" --> G[Moderator]
+    G --> G1[Write Attendance, Read Registry]
+    
+    D -- "Cadet" --> H[Standard User]
+    H --> H1[Read/Write Personal Profile]
+    H1 --> H2[Read Scoped Notes / Certificates]
+```
+
+### 3. Data Flow Between Client & Server
+We utilize both direct Supabase standard clients for realtime/READ access, and Next.js Server Actions with the `supabaseAdmin` client directly for WRITE mutations, providing a robust, fast, and secure workflow.
+
+```mermaid
+flowchart TD
+    subgraph Client Application
+        CC[Client Components]
+        Context[React Context Providers]
+    end
+    
+    subgraph Next.js Backend
+        SA[Server Actions]
+        AuthGuard[Server Role Guard]
+    end
+
+    subgraph Supabase Backend
+        API[PostgREST API]
+        RLS[Row Level Security]
+        DB[(PostgreSQL Database)]
+    end
+
+    %% Real-time and Read functionality
+    Context -->|Realtime Subscriptions| API
+    CC -->|Select Queries| API
+    API --> RLS --> DB
+
+    %% Write and Admin functionality
+    CC -->|Form Submissions| SA
+    SA --> AuthGuard
+    AuthGuard -->|Bypass RLS (Admin Only)| DB
+    AuthGuard -->|Standard Update| API
+```
+
+### 4. QR Code Generation Pipeline
+Our application uses `html-to-image` for generating pristine digital snapshots, effectively skipping standard CSS scaling issues that frequently break on diverse mobile devices.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant DOM as Digital ID Component
+    participant HTI as html-to-image
+    participant Output as Image Blob / Print Spooler
+
+    User->>DOM: Clicks "Download" or "Print"
+    DOM->>HTI: Triggers `toPng` transformation
+    HTI->>DOM: Clones element at rigid 500x312px bounds
+    Note over HTI: Wraps card to preserve 'shadow-2xl' and 'rounded-3xl'
+    HTI-->>DOM: Returns Base64 PNG snapshot
+    
+    alt is Downloading
+        DOM->>Output: Triggers `<a href="..." download>`
+    else is Printing
+        DOM->>Output: Overlays high-res <img> on screen with max z-index
+        Output->>User: Invokes `window.print()` automatically
+    end
+```
