@@ -381,7 +381,7 @@ export default function CadetsPage() {
                                                         transition={{ delay: Math.min(i * 0.05, 0.5) }}
                                                     >
                                                         <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
-                                                            <div className="p-6 flex-1">
+                                                            <div className="p-6 flex-1 flex flex-col">
                                                                 <div className="flex items-start justify-between mb-4">
                                                                     <div className="flex items-center space-x-4">
                                                                         <div className="relative shrink-0">
