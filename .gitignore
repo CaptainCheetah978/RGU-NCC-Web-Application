@@ -51,9 +51,8 @@ lint*.json
 
 # Session history
 session_history.md
-docs/wiki/How-to-White-Lable-and-Develop-By-Clone-Fork-and-Local.md
-docs/wiki/How-to-Host-and-Deploy.md
-docs/wiki/_Sidebar.md
+# Wiki Documentation (Local-only)
+docs/wiki/
 
 # Build and Lint logs
 build.txt
