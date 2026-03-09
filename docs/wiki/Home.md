@@ -1,12 +1,12 @@
-# Welcome to the NCC RGU Cadet Management System Wiki! 🇮🇳
+# Welcome to the NCC RGU Cadet Management System Wiki! 
 
 **Jai Hind!**
 
 Welcome to the digital command center. Whether you are an ANO overseeing unit operations, a SUO managing the administrative workflow, or a developer maintaining the codebase, this Wiki is your comprehensive guide to mastering the Cadet Management System.
 
-This system was built to modernize battalion administration—transitioning manual administrative tasks into a secure, high-performance, and offline-capable digital platform. Let's get started.
+This system was built to modernize battalion administration-transitioning manual administrative tasks into a secure, high-performance, and offline-capable digital platform. Let's get started.
 
-## 🗺️ What's inside?
+## ️ What's inside?
 
 We have structured the documentation into three core manuals:
 
@@ -16,7 +16,7 @@ We have structured the documentation into three core manuals:
 
 ---
 
-## 📸 System Overview
+##  System Overview
 
 A quick visual tour of the platform's core capabilities.
 
@@ -57,6 +57,6 @@ A quick visual tour of the platform's core capabilities.
 
 ---
 
-## 🛠️ Contributing
+## ️ Contributing
 
 If you have discovered a bug, or if you want to help expand the application, please refer over to our [Contribution Guidelines](https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/blob/main/CONTRIBUTING.md) on the main repository.

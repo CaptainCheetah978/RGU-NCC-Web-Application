@@ -4,10 +4,10 @@
 
 <div align="center">
   <p>
-    🛡️ <b>NCC Web Application</b>
+    ️ <b>NCC Web Application</b>
   </p>
   <p>
-    Built with ❤️ by <a href="https://github.com/CaptainCheetah978">CaptainCheetah978</a> to modernize battalion administration. <br>
+    Built with ️ by <a href="https://github.com/CaptainCheetah978">CaptainCheetah978</a> to modernize battalion administration. <br>
     Open-source & White-label Ready.
   </p>
   <p>

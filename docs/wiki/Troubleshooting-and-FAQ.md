@@ -114,4 +114,4 @@ This document serves as the ultimate diagnostic manual for both end-users (Cadet
 If you have exhausted all diagnostic steps listed above:
 1. Isolate the explicit error message from the browser's Developer Console (F12 > Console tab).
 2. Document the steps to reproduce the exact failure.
-3. Open a detailed Issue Ticket on the project's GitHub Repository.
+3. [Report Issue to Author](https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/security/advisories/new) directly.
