@@ -49,7 +49,7 @@ lint*.json
 *.bak
 *.unused
 
-# Assistant/Session history
+# Session history
 session_history.md
 
 # Build and Lint logs
