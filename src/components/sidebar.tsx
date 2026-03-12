@@ -20,6 +20,7 @@ import {
     TrendingUp
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -116,7 +117,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             )}>
                 <div className="p-6 flex items-center space-x-3 border-b border-gray-200 dark:border-slate-700/50 relative">
                     <div className="w-10 h-10 flex items-center justify-center">
-                        <img src="/ncc-logo.png" alt="NCC" className="w-full h-full object-contain" />
+                        <Image src="/ncc-logo.png" alt="NCC" width={40} height={40} className="object-contain" />
                     </div>
                     <span className="font-bold text-gray-900 dark:text-white text-lg tracking-tight">NCC RGU</span>
                     {/* Close button on mobile */}

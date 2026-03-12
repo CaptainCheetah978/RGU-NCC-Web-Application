@@ -199,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (error) {
                 // Secure login failed — try with the RAW PIN (Legacy accounts created before fix)
 
-                const { data: legacyData, error: legacyError } = await supabase.auth.signInWithPassword({
+                const { data: legacyData } = await supabase.auth.signInWithPassword({
                     email,
                     password: pin, // Try raw PIN (e.g., '0324')
                 });

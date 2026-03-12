@@ -13,6 +13,7 @@ import { toPng } from "html-to-image";
 import { QRCodeSVG } from "qrcode.react";
 import { AttendanceHistory } from "@/components/profile/attendance-history";
 import { CertificatesSection } from "@/components/profile/certificates-section";
+import Image from "next/image";
 
 export default function ProfilePage() {
     const { user, updatePin } = useAuth();
@@ -232,7 +233,7 @@ export default function ProfilePage() {
                         <div className="relative group mb-6">
                             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center text-4xl font-bold text-white relative">
                                 {currentUser.avatarUrl ? (
-                                    <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-full h-full object-cover" />
+                                    <Image src={currentUser.avatarUrl} alt={currentUser.name} fill sizes="128px" className="object-cover" />
                                 ) : (
                                     currentUser.name.charAt(0)
                                 )}
@@ -324,14 +325,14 @@ export default function ProfilePage() {
                                             {/* Header Section */}
                                             <div className="p-1 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 relative z-10 pl-8">
                                                 <div className="w-11 h-11 flex items-center justify-center">
-                                                    <img src="/ncc-logo.png" className="max-w-full max-h-full object-contain" alt="NCC" />
+                                                    <Image src="/ncc-logo.png" width={44} height={44} className="object-contain" alt="NCC" />
                                                 </div>
                                                 <div className="text-center flex-1 mx-4">
                                                     <h3 className="text-[13px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">The Assam Royal Global University</h3>
                                                     <p className="text-[10px] font-bold text-red-700 tracking-[0.2em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
                                                 </div>
                                                 <div className="w-11 h-11 flex items-center justify-center pr-2">
-                                                    <img src="/rgu-logo.png" className="max-w-full max-h-full object-contain" alt="RGU" />
+                                                    <Image src="/rgu-logo.png" width={44} height={44} className="object-contain" alt="RGU" />
                                                 </div>
                                             </div>
 
@@ -340,7 +341,7 @@ export default function ProfilePage() {
                                                 {/* Photo Area */}
                                                 <div className="w-28 h-28 border-2 border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center mr-5 shrink-0 shadow-sm relative ring-4 ring-white">
                                                     {currentUser.avatarUrl ? (
-                                                        <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-full h-full object-cover" />
+                                                        <Image src={currentUser.avatarUrl} alt={currentUser.name} fill sizes="112px" className="object-cover" />
                                                     ) : (
                                                         <div className="text-center p-2">
                                                             <Camera className="w-8 h-8 text-gray-300 mx-auto mb-1" />

@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { Shield, User, Lock, ChevronRight, Loader2, Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Role } from "@/types";
@@ -11,11 +12,11 @@ import { Role } from "@/types";
 type LoginStep = "login" | "forgot-email" | "forgot-otp" | "forgot-newpin" | "forgot-done";
 
 export default function LoginPage() {
-  const { loginWithPassword, signupWithPassword, resetPin, updatePin, verifyOtp } = useAuth();
+  const { loginWithPassword, resetPin, updatePin, verifyOtp } = useAuth();
   const [activeTab, setActiveTab] = useState<Role>(Role.CADET);
   const [formData, setFormData] = useState({ username: "", pin: "" });
   const [error, setError] = useState("");
-  const [isRestoring, setIsRestoring] = useState(false);
+  const [isRestoring] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState<LoginStep>("login");
 
@@ -164,9 +165,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="flex justify-center items-center space-x-4 mb-6">
-            <img src="/ncc-logo.png" alt="NCC" className="w-16 h-16 object-contain drop-shadow-2xl" />
+            <Image src="/ncc-logo.png" alt="NCC" width={64} height={64} className="w-16 h-16 object-contain drop-shadow-2xl" />
             <div className="h-12 w-[1px] bg-white/20"></div>
-            <img src="/rgu-logo.png" alt="RGU" className="w-16 h-16 object-contain drop-shadow-2xl" />
+            <Image src="/rgu-logo.png" alt="RGU" width={64} height={64} className="w-16 h-16 object-contain drop-shadow-2xl" />
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">NCC Management</h1>
           <p className="text-gray-400 text-sm mt-1">Royal Global University Unit</p>
