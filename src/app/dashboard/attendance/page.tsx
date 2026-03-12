@@ -108,6 +108,7 @@ function AttendanceContent() {
     const parentRef = useRef<HTMLDivElement>(null);
 
     // Setup Virtualizer on the filtered array
+    // eslint-disable-next-line react-hooks/incompatible-library
     const rowVirtualizer = useVirtualizer({
         count: filteredCadets.length,
         getScrollElement: () => parentRef.current,

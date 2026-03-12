@@ -7,6 +7,7 @@ import { Bell, Check, Inbox, MessageSquare, ExternalLink } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -190,9 +191,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                         <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{displayUser.name}</p>
                         <p className="text-xs text-gray-700 dark:text-slate-400 truncate font-medium">{displayUser.regimentalNumber}</p>
                     </div>
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white font-bold shadow-lg shadow-black/20 overflow-hidden ring-2 ring-white/20 dark:ring-slate-700/50 flex-shrink-0">
+                    <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white font-bold shadow-lg shadow-black/20 overflow-hidden ring-2 ring-white/20 dark:ring-slate-700/50 flex-shrink-0">
                         {displayUser.avatarUrl ? (
-                            <img src={displayUser.avatarUrl} alt={displayUser.name} className="w-full h-full object-cover" />
+                            <Image src={displayUser.avatarUrl} alt={displayUser.name} fill sizes="40px" className="object-cover" />
                         ) : (
                             displayUser.name.charAt(0)
                         )}

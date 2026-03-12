@@ -22,15 +22,11 @@ function VerifyContent() {
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
     const [person, setPerson] = useState<VerifiedPerson | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [checked, setChecked] = useState(false);
+    const [loading, setLoading] = useState(() => !!id);
+    const [checked, setChecked] = useState(() => !id);
 
     useEffect(() => {
-        if (!id) {
-            setLoading(false);
-            setChecked(true);
-            return;
-        }
+        if (!id) return;
 
         let isMounted = true;
         verifyCadetById(id).then((result) => {
