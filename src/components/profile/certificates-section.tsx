@@ -117,7 +117,7 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                                 >
                                     <div className="w-10 h-10 rounded-lg bg-white border border-gray-100 flex items-center justify-center mr-3 shrink-0">
                                         {cert.fileData.startsWith("data:image") ? (
-                                            <Image src={cert.fileData} alt={cert.name} width={40} height={40} unoptimized className="w-full h-full object-cover rounded-lg" />
+                                            <Image src={cert.fileData} alt={cert.name} width={40} height={40} unoptimized className="object-cover rounded-lg" />
                                         ) : (
                                             <FileText className="w-5 h-5 text-gray-400" />
                                         )}
@@ -210,7 +210,7 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                 {viewingCert && (
                     <div className="space-y-4">
                         {viewingCert.fileData.startsWith("data:image") ? (
-                            <Image src={viewingCert.fileData} alt={viewingCert.name} width={600} height={400} unoptimized className="w-full rounded-xl border border-gray-100" />
+                            <Image src={viewingCert.fileData} alt={viewingCert.name} width={0} height={0} sizes="100vw" unoptimized className="w-full h-auto rounded-xl border border-gray-100" />
                         ) : (
                             <div className="p-8 bg-gray-50 rounded-xl text-center">
                                 <FileText className="w-16 h-16 text-gray-300 mx-auto mb-2" />
