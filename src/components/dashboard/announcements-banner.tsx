@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useData } from "@/lib/data-context";
 import { Megaphone, AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -8,13 +9,16 @@ import { motion } from "framer-motion";
 export function AnnouncementsBanner() {
     const { announcements } = useData();
 
-    const sorted = [...announcements]
-        .sort((a, b) => {
-            if (a.priority === "urgent" && b.priority !== "urgent") return -1;
-            if (b.priority === "urgent" && a.priority !== "urgent") return 1;
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        })
-        .slice(0, 3);
+    const sorted = useMemo(() =>
+        [...announcements]
+            .sort((a, b) => {
+                if (a.priority === "urgent" && b.priority !== "urgent") return -1;
+                if (b.priority === "urgent" && a.priority !== "urgent") return 1;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            })
+            .slice(0, 3),
+        [announcements]
+    );
 
     if (sorted.length === 0) return null;
 
