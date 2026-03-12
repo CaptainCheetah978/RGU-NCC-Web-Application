@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 
@@ -11,31 +11,36 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function applyThemeClass(theme: Theme) {
+    if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+    } else {
+        document.documentElement.classList.remove("dark");
+    }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    // Lazy initializer reads localStorage once on mount — avoids a render with the
-    // wrong theme ("light") followed by a setState("dark") that causes a flash.
+    // Lazy initializer reads localStorage once on mount and immediately applies
+    // the dark class to <html> to minimise the theme flash before first paint.
     const [theme, setTheme] = useState<Theme>(() => {
         if (typeof window !== "undefined") {
-            return (localStorage.getItem("ncc_theme") as Theme | null) === "dark" ? "dark" : "light";
+            const stored = localStorage.getItem("ncc_theme") as Theme | null;
+            const resolved: Theme = stored === "dark" ? "dark" : "light";
+            applyThemeClass(resolved);
+            return resolved;
         }
         return "light";
     });
 
-    // Keep the <html> class in sync with the theme state.
+    // Keep the <html> class and localStorage in sync whenever the theme changes.
     useEffect(() => {
-        if (theme === "dark") {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
+        applyThemeClass(theme);
+        localStorage.setItem("ncc_theme", theme);
     }, [theme]);
 
-    const toggleTheme = () => {
-        const next = theme === "light" ? "dark" : "light";
-        setTheme(next);
-        localStorage.setItem("ncc_theme", next);
-        // DOM class is kept in sync by the useEffect above.
-    };
+    const toggleTheme = useCallback(() => {
+        setTheme(prev => (prev === "light" ? "dark" : "light"));
+    }, []);
 
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
