@@ -497,9 +497,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         await refreshCertificates();
     };
 
-    const getCertificates = (userId: string) => {
+    const getCertificates = useCallback((userId: string) => {
         return certificates.filter(c => c.userId === userId);
-    };
+    }, [certificates]);
 
     // --- Getters & Helpers ---
 
@@ -541,7 +541,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }).slice(-8);
     }, [attendance, classes]);
 
-    const getStats = (userId?: string): DashboardStats => {
+    const getStats = useCallback((userId?: string): DashboardStats => {
         const totalCadets = cadets.length;
         // Only count attendance records for classes that still exist
         const classIds = new Set(classes.map(c => c.id));
@@ -560,7 +560,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             ? notes.filter(n => n.recipientId === userId && !n.isRead).length
             : 0;
         return { totalCadets, attendanceRate, activeClasses, unreadNotes };
-    };
+    }, [cadets, classes, attendance, notes]);
 
     const logActivity = (action: string, userId: string, userName: string, targetName?: string) => {
         supabase.from('activity_log').insert({
@@ -574,9 +574,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         });
     };
 
-    const getRecentActivities = (limit: number) => {
+    const getRecentActivities = useCallback((limit: number) => {
         return activityLog.slice(0, limit);
-    };
+    }, [activityLog]);
 
     return (
         <DataContext.Provider value={{
