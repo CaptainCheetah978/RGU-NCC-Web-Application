@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { ClassSession, Cadet, AttendanceRecord, Note, Role, User, Certificate, Announcement, ActivityLogEntry } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useAuth } from "@/lib/auth-context";
@@ -74,6 +74,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const [classes, setClasses] = useState<ClassSession[]>([]);
     const [cadets, setCadets] = useState<Cadet[]>([]);
     const [allProfiles, setAllProfiles] = useState<(User & Partial<Cadet>)[]>([]);
+    // Keep a ref to allProfiles so async callbacks can access the latest value
+    // without stale-closure issues and without adding it to their dependency arrays.
+    const allProfilesRef = useRef<(User & Partial<Cadet>)[]>([]);
+    useEffect(() => { allProfilesRef.current = allProfiles; }, [allProfiles]);
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
     const [notes, setNotes] = useState<Note[]>([]);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
@@ -145,11 +149,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const refreshNotes = useCallback(async () => {
         const { data: notesData } = await supabase.from('notes').select(NOTE_COLUMNS);
-        // We need profile names for sender/recipient lookup
-        const { data: profilesData } = await supabase.from('profiles').select('id, full_name');
+        // Reuse already-loaded profiles when available to avoid a redundant DB round-trip.
+        // Fall back to fetching profiles only on initial load when allProfiles is empty.
         const profileMap = new Map<string, string>();
-        if (profilesData) {
-            profilesData.forEach(p => profileMap.set(p.id, p.full_name || 'Unknown'));
+        if (allProfilesRef.current.length > 0) {
+            allProfilesRef.current.forEach(p => profileMap.set(p.id, p.name));
+        } else {
+            const { data: profilesData } = await supabase.from('profiles').select('id, full_name');
+            if (profilesData) {
+                profilesData.forEach(p => profileMap.set(p.id, p.full_name || 'Unknown'));
+            }
         }
         if (notesData) {
             setNotes(notesData.map(n => ({
@@ -171,10 +180,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const refreshAnnouncements = useCallback(async () => {
         const { data: announcementsData } = await supabase.from('announcements').select(ANNOUNCEMENT_COLUMNS);
-        const { data: profilesData } = await supabase.from('profiles').select('id, full_name');
+        // Reuse already-loaded profiles when available to avoid a redundant DB round-trip.
+        // Fall back to fetching profiles only on initial load when allProfiles is empty.
         const profileMap = new Map<string, string>();
-        if (profilesData) {
-            profilesData.forEach(p => profileMap.set(p.id, p.full_name || 'Unknown'));
+        if (allProfilesRef.current.length > 0) {
+            allProfilesRef.current.forEach(p => profileMap.set(p.id, p.name));
+        } else {
+            const { data: profilesData } = await supabase.from('profiles').select('id, full_name');
+            if (profilesData) {
+                profilesData.forEach(p => profileMap.set(p.id, p.full_name || 'Unknown'));
+            }
         }
         if (announcementsData) {
             setAnnouncements(announcementsData.map(a => ({
@@ -493,29 +508,36 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }, [allProfiles]);
 
     const getPersonalAttendance = useCallback((cadetId: string): PersonalAttendanceEntry[] => {
+        // Build a class-id → title map in O(N) so the subsequent .map() is O(1) per lookup
+        // instead of O(N) each, avoiding an overall O(N*M) scan.
+        const classMap = new Map(classes.map(c => [c.id, c.title]));
         return attendance
             .filter(a => a.cadetId === cadetId)
-            .map(a => {
-                const cls = classes.find(c => c.id === a.classId);
-                return {
-                    date: a.timestamp,
-                    className: cls?.title || "Unknown Class",
-                    status: a.status as AttendanceRecord["status"],
-                };
-            })
+            .map(a => ({
+                date: a.timestamp,
+                className: classMap.get(a.classId) ?? "Unknown Class",
+                status: a.status as AttendanceRecord["status"],
+            }))
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }, [attendance, classes]);
 
     const getAttendanceByClass = useCallback(() => {
+        // Aggregate counts in a single O(M) pass over attendance records,
+        // then do an O(N) pass over classes — total O(N+M) instead of O(N*M).
+        const statsByClass = new Map<string, { present: number; absent: number; late: number; excused: number }>();
+        for (const record of attendance) {
+            if (!statsByClass.has(record.classId)) {
+                statsByClass.set(record.classId, { present: 0, absent: 0, late: 0, excused: 0 });
+            }
+            const stats = statsByClass.get(record.classId)!;
+            if (record.status === "PRESENT") stats.present++;
+            else if (record.status === "ABSENT") stats.absent++;
+            else if (record.status === "LATE") stats.late++;
+            else if (record.status === "EXCUSED") stats.excused++;
+        }
         return classes.map(cls => {
-            const records = attendance.filter(a => a.classId === cls.id);
-            return {
-                className: cls.title,
-                present: records.filter(r => r.status === "PRESENT").length,
-                absent: records.filter(r => r.status === "ABSENT").length,
-                late: records.filter(r => r.status === "LATE").length,
-                excused: records.filter(r => r.status === "EXCUSED").length,
-            };
+            const stats = statsByClass.get(cls.id) ?? { present: 0, absent: 0, late: 0, excused: 0 };
+            return { className: cls.title, ...stats };
         }).slice(-8);
     }, [attendance, classes]);
 

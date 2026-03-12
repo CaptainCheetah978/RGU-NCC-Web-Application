@@ -50,6 +50,29 @@ export default function PerformanceDashboard() {
         }).sort((a, b) => b.percentage - a.percentage);
     }, [classes, cadets, attendance]);
 
+    // Derived summaries — memoized so they only recompute when performanceData changes,
+    // not on every keystroke or parent re-render.
+    const topPerformers = useMemo(
+        () => performanceData.filter(c => c.percentage >= 90).slice(0, 5),
+        [performanceData]
+    );
+    const atRiskCadets = useMemo(
+        () => [...performanceData].reverse().filter(c => c.percentage <= 50).slice(0, 5),
+        [performanceData]
+    );
+    const avgAttendance = useMemo(
+        () => Math.round(performanceData.reduce((acc, curr) => acc + curr.percentage, 0) / performanceData.length) || 0,
+        [performanceData]
+    );
+    // Search filter — memoized so keystroke changes only re-filter, not re-sort the full list.
+    const filteredData = useMemo(
+        () => performanceData.filter(c =>
+            c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.regimentalNumber?.toLowerCase().includes(searchQuery.toLowerCase())
+        ),
+        [performanceData, searchQuery]
+    );
+
     if (!user) return null;
 
     if (performanceData.length === 0) {
@@ -63,17 +86,6 @@ export default function PerformanceDashboard() {
             </div>
         );
     }
-
-    const topPerformers = performanceData.filter(c => c.percentage >= 90).slice(0, 5);
-    const atRiskCadets = [...performanceData].reverse().filter(c => c.percentage <= 50).slice(0, 5);
-
-    // Average unit attendance
-    const avgAttendance = Math.round(performanceData.reduce((acc, curr) => acc + curr.percentage, 0) / performanceData.length) || 0;
-
-    const filteredData = performanceData.filter(c =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.regimentalNumber?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto">

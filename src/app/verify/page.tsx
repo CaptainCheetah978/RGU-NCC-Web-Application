@@ -27,23 +27,22 @@ function VerifyContent() {
 
     useEffect(() => {
         if (!id) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLoading(false);
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setChecked(true);
             return;
         }
 
+        let isMounted = true;
         verifyCadetById(id).then((result) => {
+            if (!isMounted) return;
             if (result.found && result.person) {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setPerson(result.person);
             }
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLoading(false);
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setChecked(true);
         });
+
+        return () => { isMounted = false; };
     }, [id]);
 
     if (loading) {

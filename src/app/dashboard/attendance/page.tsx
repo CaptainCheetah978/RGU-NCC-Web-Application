@@ -91,7 +91,10 @@ function AttendanceContent() {
 
     const canMark = user && [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
 
-    const selectedClass = classes.find(c => c.id === selectedClassId);
+    const selectedClass = useMemo(
+        () => classes.find(c => c.id === selectedClassId),
+        [classes, selectedClassId]
+    );
 
     // Filter cadets based on search, and implicitly drop 'alumni'
     const filteredCadets = useMemo(() => {
@@ -123,14 +126,26 @@ function AttendanceContent() {
         };
     }, [attendance, selectedClassId, cadets]);
 
+    // Pre-build a cadetId → status map for the selected class so each row can look
+    // up its status in O(1) instead of scanning the whole attendance array per row.
+    const classAttendanceMap = useMemo(() => {
+        const map = new Map<string, AttendanceRecord["status"]>();
+        for (const r of attendance) {
+            if (r.classId === selectedClassId) map.set(r.cadetId, r.status);
+        }
+        return map;
+    }, [attendance, selectedClassId]);
+
+    // Memoize the filtered attendance array for the selected class so the export
+    // buttons receive a stable reference and don't trigger extra renders.
+    const classAttendanceRecords = useMemo(
+        () => attendance.filter(r => r.classId === selectedClassId),
+        [attendance, selectedClassId]
+    );
+
     if (!user) return null;
 
-    const getStatus = (cadetId: string) => {
-        const record = attendance.find(
-            r => r.classId === selectedClassId && r.cadetId === cadetId
-        );
-        return record?.status || null;
-    };
+    const getStatus = (cadetId: string) => classAttendanceMap.get(cadetId) ?? null;
 
     const handleStatusChange = async (cadetId: string, status: AttendanceRecord["status"]) => {
         if (!canMark) return;
@@ -201,13 +216,13 @@ function AttendanceContent() {
                             <PdfExportButton
                                 classSession={selectedClass}
                                 cadets={filteredCadets}
-                                attendance={attendance.filter(r => r.classId === selectedClassId)}
+                                attendance={classAttendanceRecords}
                                 className="h-10"
                             />
                             <AttendanceExport
                                 classSession={selectedClass}
                                 cadets={filteredCadets}
-                                attendance={attendance.filter(r => r.classId === selectedClassId)}
+                                attendance={classAttendanceRecords}
                                 className="h-10"
                             />
                         </div>

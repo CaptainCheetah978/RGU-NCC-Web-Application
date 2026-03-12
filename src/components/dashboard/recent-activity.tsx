@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useData } from "@/lib/data-context";
 
 function timeAgo(dateStr: string): string {
@@ -16,16 +17,21 @@ function timeAgo(dateStr: string): string {
 
 export function RecentActivity() {
     const { getRecentActivities } = useData();
-    const activities = getRecentActivities(5);
 
-    const displayActivities = activities.length > 0
-        ? activities.map(a => ({
-            text: `${a.performedByName} ${a.action.toLowerCase()}${a.targetName ? ` "${a.targetName}"` : ""}`,
-            time: timeAgo(a.timestamp),
-        }))
-        : [
-            { text: "No recent activity recorded.", time: "" },
-        ];
+    // Memoize the slice so it doesn't produce a new array reference every render.
+    const activities = useMemo(() => getRecentActivities(5), [getRecentActivities]);
+
+    // Memoize the mapped display list so the text/time formatting only re-runs
+    // when the underlying activity data actually changes.
+    const displayActivities = useMemo(() =>
+        activities.length > 0
+            ? activities.map(a => ({
+                text: `${a.performedByName} ${a.action.toLowerCase()}${a.targetName ? ` "${a.targetName}"` : ""}`,
+                time: timeAgo(a.timestamp),
+            }))
+            : [{ text: "No recent activity recorded.", time: "" }],
+        [activities]
+    );
 
     return (
         <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/60">

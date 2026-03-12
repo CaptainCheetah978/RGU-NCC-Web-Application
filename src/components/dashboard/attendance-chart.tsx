@@ -1,14 +1,21 @@
 "use client";
 
+import { useMemo } from "react";
 import { useData } from "@/lib/data-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
 
 export function AttendanceChart() {
     const { getAttendanceByClass } = useData();
-    const data = getAttendanceByClass();
 
-    const maxTotal = Math.max(...data.map(d => d.present + d.absent + d.late + d.excused), 1);
+    // Memoize the data fetch so the array is only re-built when attendance/classes change.
+    const data = useMemo(() => getAttendanceByClass(), [getAttendanceByClass]);
+
+    // Memoize the scale denominator so it doesn't recalculate on unrelated re-renders.
+    const maxTotal = useMemo(
+        () => Math.max(...data.map(d => d.present + d.absent + d.late + d.excused), 1),
+        [data]
+    );
 
     return (
         <Card className="border-gray-100 shadow-sm">

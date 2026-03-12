@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Megaphone, Plus, Trash2, AlertTriangle, Clock } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/lib/toast-context";
 
@@ -24,15 +24,20 @@ export default function AnnouncementsPage() {
 
     const [isLoading, setIsLoading] = useState(false);
 
+    // Hooks must be called before any conditional returns.
+    // Memoize the sort so it only re-runs when the announcements array changes.
+    const sortedAnnouncements = useMemo(() =>
+        [...announcements].sort((a, b) => {
+            if (a.priority === "urgent" && b.priority !== "urgent") return -1;
+            if (b.priority === "urgent" && a.priority !== "urgent") return 1;
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }),
+        [announcements]
+    );
+
     if (!user) return null;
 
     const canPost = [Role.ANO, Role.SUO].includes(user.role);
-
-    const sortedAnnouncements = [...announcements].sort((a, b) => {
-        if (a.priority === "urgent" && b.priority !== "urgent") return -1;
-        if (b.priority === "urgent" && a.priority !== "urgent") return 1;
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
 
     const handlePost = async () => {
         if (!title.trim() || !content.trim()) return;

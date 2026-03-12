@@ -4,7 +4,7 @@ import { useData } from "@/lib/data-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Download, Share2, Grid, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/lib/toast-context";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -13,6 +13,16 @@ export default function SheetPage() {
     const { classes, cadets, attendance } = useData();
     const { showToast } = useToast();
     const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || "");
+
+    // Pre-build a composite-key Map so every cell lookup (in the table and in both
+    // export functions) is O(1) instead of O(attendance) per cadet+class pair.
+    const attendanceMap = useMemo(() => {
+        const map = new Map<string, string>();
+        for (const r of attendance) {
+            map.set(`${r.classId}-${r.cadetId}`, r.status);
+        }
+        return map;
+    }, [attendance]);
 
     const handleExport = () => {
         if (cadets.length === 0) {
@@ -23,10 +33,7 @@ export default function SheetPage() {
         // Build CSV header
         const headers = ["Regimental No", "Rank", "Name", ...classes.map(c => `${c.date} (${c.title})`)];
         const rows = cadets.map(cadet => {
-            const statuses = classes.map(c => {
-                const record = attendance.find(r => r.classId === c.id && r.cadetId === cadet.id);
-                return record?.status || "-";
-            });
+            const statuses = classes.map(c => attendanceMap.get(`${c.id}-${cadet.id}`) || "-");
             return [cadet.regimentalNumber || "", cadet.role, cadet.name, ...statuses];
         });
 
@@ -69,8 +76,8 @@ export default function SheetPage() {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const row: any[] = [cadet.regimentalNumber || "-", cadet.role, cadet.name];
             classes.forEach(c => {
-                const record = attendance.find(r => r.classId === c.id && r.cadetId === cadet.id);
-                const statusStr = record?.status === "PRESENT" ? "P" : record?.status === "ABSENT" ? "A" : record?.status === "LATE" ? "L" : "-";
+                const status = attendanceMap.get(`${c.id}-${cadet.id}`);
+                const statusStr = status === "PRESENT" ? "P" : status === "ABSENT" ? "A" : status === "LATE" ? "L" : "-";
 
                 let textColor: [number, number, number] = [100, 100, 100];
                 if (statusStr === "P") textColor = [22, 163, 74];
@@ -174,7 +181,7 @@ export default function SheetPage() {
                                     <td className="px-6 py-3 font-medium text-gray-900">{cadet.role}</td>
                                     <td className="px-6 py-3 text-gray-800">{cadet.name}</td>
                                     {classes.slice(0, 5).map(c => {
-                                        const status = attendance.find(r => r.classId === c.id && r.cadetId === cadet.id)?.status;
+                                        const status = attendanceMap.get(`${c.id}-${cadet.id}`);
                                         return (
                                             <td key={c.id} className="px-6 py-3 text-center">
                                                 {status === "PRESENT" && <span className="text-green-600 font-bold">P</span>}
