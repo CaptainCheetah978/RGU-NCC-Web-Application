@@ -12,27 +12,29 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>("light");
-
-    // On mount, read from localStorage
-    useEffect(() => {
-        const stored = localStorage.getItem("ncc_theme") as Theme | null;
-        if (stored === "dark") {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setTheme("dark");
-            document.documentElement.classList.add("dark");
+    // Lazy initializer reads localStorage once on mount — avoids a render with the
+    // wrong theme ("light") followed by a setState("dark") that causes a flash.
+    const [theme, setTheme] = useState<Theme>(() => {
+        if (typeof window !== "undefined") {
+            return (localStorage.getItem("ncc_theme") as Theme | null) === "dark" ? "dark" : "light";
         }
-    }, []);
+        return "light";
+    });
+
+    // Keep the <html> class in sync with the theme state.
+    useEffect(() => {
+        if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    }, [theme]);
 
     const toggleTheme = () => {
         const next = theme === "light" ? "dark" : "light";
         setTheme(next);
         localStorage.setItem("ncc_theme", next);
-        if (next === "dark") {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
+        // DOM class is kept in sync by the useEffect above.
     };
 
     return (
