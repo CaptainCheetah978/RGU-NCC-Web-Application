@@ -51,8 +51,20 @@ function AttendanceContent() {
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");
 
-    const [selectedClassId, setSelectedClassId] = useState<string>("");
+    // Track user's explicit class selection; null means "not yet chosen by user"
+    const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Derive the effective class ID without synchronous setState in an effect:
+    // 1. User's manual selection takes priority (if valid)
+    // 2. Otherwise fall back to classIdParam from URL (if valid)
+    // 3. Otherwise select the first available class
+    const effectiveClassId = useMemo(() => {
+        if (classes.length === 0) return "";
+        if (selectedClassId && classes.find(c => c.id === selectedClassId)) return selectedClassId;
+        if (classIdParam && classes.find(c => c.id === classIdParam)) return classIdParam;
+        return classes[0].id;
+    }, [classes, classIdParam, selectedClassId]);
 
     // --- Offline Sync Logic ---
     useEffect(() => {
@@ -79,21 +91,11 @@ function AttendanceContent() {
         checkQueue();
     }, [isOnline, markAttendance, refreshAttendance, showToast]);
 
-    useEffect(() => {
-        if (classes.length > 0) {
-            if (classIdParam && classes.find(c => c.id === classIdParam)) {
-                setSelectedClassId(classIdParam || "");
-            } else if (!selectedClassId) {
-                setSelectedClassId(classes[0].id);
-            }
-        }
-    }, [classes, classIdParam, selectedClassId]);
-
     const canMark = user && [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
 
     const selectedClass = useMemo(
-        () => classes.find(c => c.id === selectedClassId),
-        [classes, selectedClassId]
+        () => classes.find(c => c.id === effectiveClassId),
+        [classes, effectiveClassId]
     );
 
     // Filter cadets based on search, and implicitly drop 'alumni'
@@ -117,7 +119,7 @@ function AttendanceContent() {
     });
 
     const stats = useMemo(() => {
-        const classRecords = attendance.filter(r => r.classId === selectedClassId);
+        const classRecords = attendance.filter(r => r.classId === effectiveClassId);
         const activeCadetsCount = cadets.filter(c => c.status !== 'alumni').length;
         return {
             present: classRecords.filter(r => r.status === "PRESENT").length,
@@ -125,23 +127,23 @@ function AttendanceContent() {
             late: classRecords.filter(r => r.status === "LATE").length,
             total: activeCadetsCount
         };
-    }, [attendance, selectedClassId, cadets]);
+    }, [attendance, effectiveClassId, cadets]);
 
     // Pre-build a cadetId → status map for the selected class so each row can look
     // up its status in O(1) instead of scanning the whole attendance array per row.
     const classAttendanceMap = useMemo(() => {
         const map = new Map<string, AttendanceRecord["status"]>();
         for (const r of attendance) {
-            if (r.classId === selectedClassId) map.set(r.cadetId, r.status);
+            if (r.classId === effectiveClassId) map.set(r.cadetId, r.status);
         }
         return map;
-    }, [attendance, selectedClassId]);
+    }, [attendance, effectiveClassId]);
 
     // Memoize the filtered attendance array for the selected class so the export
     // buttons receive a stable reference and don't trigger extra renders.
     const classAttendanceRecords = useMemo(
-        () => attendance.filter(r => r.classId === selectedClassId),
-        [attendance, selectedClassId]
+        () => attendance.filter(r => r.classId === effectiveClassId),
+        [attendance, effectiveClassId]
     );
 
     if (!user) return null;
@@ -152,8 +154,8 @@ function AttendanceContent() {
         if (!canMark) return;
 
         const payload = {
-            id: `${selectedClassId}-${cadetId}`,
-            classId: selectedClassId,
+            id: `${effectiveClassId}-${cadetId}`,
+            classId: effectiveClassId,
             cadetId,
             status,
             timestamp: new Date().toISOString()
@@ -202,7 +204,7 @@ function AttendanceContent() {
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <select
-                        value={selectedClassId}
+                        value={effectiveClassId}
                         onChange={(e) => setSelectedClassId(e.target.value)}
                         aria-label="Select Training Class"
                         className="h-10 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none w-full sm:w-64"
