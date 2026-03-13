@@ -121,16 +121,59 @@ A mental model of the source code for new contributors:
 └── postcss.config.mjs      # PostCSS config (Tailwind 4 plugin)
 ```
 
+## Quick Start (Local Development)
+
+This guide assumes you have Node.js (v20+) and Git installed.
+
+**1. Clone & Install Dependencies**
+```bash
+git clone https://github.com/CaptainCheetah978/RGU-NCC-Web-Application.git
+cd RGU-NCC-Web-Application
+npm install
+```
+
+**2. Configure Environment**
+Create a `.env.local` file in the project root. You will need a Supabase project.
+```env
+# Required Supabase Keys (from your Supabase Project Settings)
+NEXT_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-api-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key" # Never expose this to the client!
+
+# Branding Variables (Allows you to white-label the app)
+NEXT_PUBLIC_UNIT_NAME="NCC RGU"
+NEXT_PUBLIC_INSTITUTION_NAME="Royal Global University"
+```
+
 **3. Initialize Database**
 - Open your Supabase Dashboard and navigate to the **SQL Editor**.
-- Execute the migration files in `supabase/migrations/` in the following recommended order to ensure schema stability and RLS integrity:
+- Execute the migration files in `supabase/migrations/` in the following recommended order:
   1. `add_missing_columns.sql` — Ensures core profile schema
   2. `supabase-policies.sql` — Sets up base Row Level Security
   3. `001_data_integrity.sql` — Foreign keys, cascade deletes, and attendance locks
   4. `002_alumni_status.sql` — Lifecycle management enums
   5. `pending_migrations.sql` — Notes, logs, and storage setup instructions
-  6. `fix_rls_performance.sql` — Optimized policy lookups for large datasets
-- Navigate to **Storage** and create a bucket named `files` (set to Private), then apply the policy instructions found in `pending_migrations.sql`.
+  6. `fix_rls_performance.sql` — Optimized policy lookups (Supersedes `clean-slate-policies.sql`)
+- Navigate to **Storage** and create a bucket named `files` (set to Private), then apply the storage policy instructions from `pending_migrations.sql`.
+
+> [!NOTE]
+> `clean-slate-policies.sql` is a legacy file and is effectively superseded by `fix_rls_performance.sql`. No need to run both.
+
+**4. Run Development Server**
+```bash
+npm run dev
+# App is ready at http://localhost:3000
+```
+
+## Documentation & Governance
+
+To ensure consistency and high-quality contributions across all units, please review the following technical and community documents:
+
+- **[Architecture Overview](ARCHITECTURE.md)**: Detailed diagrams covering authentication flows, the PWA QR pipeline, and Permission Trees.
+- **[Contributing Guidelines](CONTRIBUTING.md)**: Standards for bug reporting, PR workflow, and code styling.
+- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Our expectations for community behavior and enforcement details.
+- **[Project Wiki](https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/wiki)**: Comprehensive deployment guides, white-labeling instructions, and troubleshooting.
+- **[Security Policy](SECURITY.md)**: Guidelines for reporting vulnerabilities.
 
 ## Multi-Unit Deployment
 This repository is built to be unit-agnostic ("white-labeled"). To fork this for a different battalion or institution:
