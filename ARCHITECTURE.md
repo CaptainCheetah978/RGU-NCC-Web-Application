@@ -5,7 +5,7 @@ This document provides a high-level overview of the system architecture, access 
 ## Architecture Diagrams
 
 ### 1. Authentication Flow
-The system uses a custom PIN-based server-side authentication flow interacting with Supabase.
+The system maps username + PIN credentials to Supabase Auth's email/password flow, providing a seamless identity experience with standardized security.
 
 ```mermaid
 sequenceDiagram
