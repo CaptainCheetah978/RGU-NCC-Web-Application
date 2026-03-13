@@ -11,6 +11,7 @@
 DROP POLICY IF EXISTS "Public profiles" ON profiles;
 DROP POLICY IF EXISTS "Update own profile" ON profiles;
 DROP POLICY IF EXISTS "ANO update all" ON profiles;
+DROP POLICY IF EXISTS "SUO update all" ON profiles;
 DROP POLICY IF EXISTS "Enable users to view own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable users to update own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable users to insert own profile" ON profiles;
@@ -35,6 +36,7 @@ DROP POLICY IF EXISTS "View own attendance" ON attendance;
 DROP POLICY IF EXISTS "Cadets view own attendance" ON attendance;
 DROP POLICY IF EXISTS "ANO/SUO View all attendance" ON attendance;
 DROP POLICY IF EXISTS "ANO/SUO Manage attendance" ON attendance;
+DROP POLICY IF EXISTS "Manage attendance" ON attendance;
 DROP POLICY IF EXISTS "ANO/SUO Mark attendance" ON attendance;
 DROP POLICY IF EXISTS "ANO/SUO Update attendance" ON attendance;
 DROP POLICY IF EXISTS "Admins view all attendance" ON attendance;
@@ -42,7 +44,9 @@ DROP POLICY IF EXISTS "Admins manage attendance" ON attendance;
 
 -- notes
 DROP POLICY IF EXISTS "Users manage own notes" ON notes;
+DROP POLICY IF EXISTS "Recipients update received notes" ON notes;
 DROP POLICY IF EXISTS "ANO views all notes" ON notes;
+DROP POLICY IF EXISTS "Users view received notes" ON notes;
 
 -- certificates
 DROP POLICY IF EXISTS "Users manage own certificates" ON certificates;
@@ -91,6 +95,12 @@ CREATE POLICY "ANO update all" ON profiles
     (select auth.uid()) IN (SELECT id FROM profiles WHERE role = 'ANO')
   );
 
+-- SUO can update any profile (edit cadets)
+CREATE POLICY "SUO update all" ON profiles
+  FOR UPDATE USING (
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role = 'SUO')
+  );
+
 
 -- ── ANNOUNCEMENTS ─────────────────────────────
 -- Everyone can view announcements
@@ -124,13 +134,13 @@ CREATE POLICY "View own attendance" ON attendance
 -- ANO/SUO can view all attendance
 CREATE POLICY "ANO/SUO View all attendance" ON attendance
   FOR SELECT USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO', 'UO', 'SGT'))
   );
 
--- ANO/SUO can manage attendance (insert, update, delete)
-CREATE POLICY "ANO/SUO Manage attendance" ON attendance
+-- ANO/SUO/UO/SGT can manage attendance (insert, update, delete)
+CREATE POLICY "Manage attendance" ON attendance
   FOR ALL USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO', 'UO', 'SGT'))
   );
 
 
@@ -138,6 +148,10 @@ CREATE POLICY "ANO/SUO Manage attendance" ON attendance
 -- Users can manage their own notes (sent by them)
 CREATE POLICY "Users manage own notes" ON notes
   FOR ALL USING (sender_id = (select auth.uid()));
+
+-- Recipients can update notes sent to them (mark as read)
+CREATE POLICY "Recipients update received notes" ON notes
+  FOR UPDATE USING (recipient_id = (select auth.uid()));
 
 -- ANO can view all notes
 CREATE POLICY "ANO views all notes" ON notes
