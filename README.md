@@ -13,13 +13,13 @@
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License" />
 </p>
 
-A role-based Cadet Management System built with Next.js 15 and Supabase. Features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
+A role-based Cadet Management System built with Next.js 16 and Supabase. Features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
 
 ## Tech Stack Overview
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Actions for DB mutations)
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode enabled)
 - **Database Backend**: [PostgreSQL](https://www.postgresql.org/) (Managed via Supabase)
-- **Authentication**: Custom PIN-based server-side auth (Supabase backend)
+- **Authentication**: Username + PIN authentication (mapped to Supabase Auth email/password)
 - **Validation**: [Zod](https://zod.dev/) shared schemas for client + server
 - **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/) with custom Glassmorphism/Dark Mode support
 - **UI & Animations**: [Framer Motion](https://www.framer.com/motion/) for transitions, Shadcn UI base components
@@ -30,7 +30,7 @@ A role-based Cadet Management System built with Next.js 15 and Supabase. Feature
 ## Application Walkthrough & Features
 
 ### 1. Secure Login & Authentication
-> Custom PIN-based server-side authentication with strict role-based access control.
+> Username + PIN authentication mapped to Supabase Auth under the hood with strict role-based access control.
 ![Login Screen](public/screenshots/login.png)
 
 ### 2. Comprehensive Dashboard
@@ -98,20 +98,26 @@ A mental model of the source code for new contributors:
 │   │   └── page.tsx        # Auth gateway / Login component
 │   ├── components/         # Shared React Components
 │   │   ├── ui/             # Atomic design elements (buttons, inputs, modals)
+│   │   ├── providers.tsx   # Global Context Providers composition
+│   │   ├── pwa-registration.tsx # Service Worker registration
 │   │   ├── sidebar.tsx     # Role-aware navigation controller
 │   │   └── topbar.tsx      # State-aware user header
 │   ├── lib/                # Core Business Logic & Configurations
 │   │   ├── auth-context.tsx  # Auth state, login/logout, session management
 │   │   ├── data-context.tsx  # Global data fetching, realtime subscriptions
 │   │   ├── toast-context.tsx # Centralized toast notification system
+│   │   ├── theme-context.tsx # Dark/light mode toggle state
+│   │   ├── offline-sync.ts   # IndexedDB offline attendance queueing
 │   │   ├── schemas.ts        # Shared Zod schemas (client + server)
+│   │   ├── get-access-token.ts# Client-side helper for JWT extraction
 │   │   ├── server-auth.ts    # Server-side role guard (getCallerSession)
 │   │   ├── supabase-client.ts# Browser-side Supabase client
-│   │   └── supabase-admin.ts # Service-role client (bypasses RLS — server only)
+│   │   ├── supabase-admin.ts # Service-role client (bypasses RLS — server only)
+│   │   └── utils.ts          # Utility functions (cn, etc.)
 │   └── types/              # Global TypeScript interfaces and Enums
 ├── supabase/
 │   └── migrations/         # SQL migrations (schema, RLS policies, constraints)
-├── package.json            # Dependencies and scripts
+├── package.json            # Dependencies and scripts (Tailwind 4 via PostCSS)
 └── tailwind.config.ts      # Tailwind token definitions
 ```
 
@@ -164,7 +170,7 @@ If you are planning to contribute, we are looking at:
 - **Camp Management**: High-volume parallel data ingestion logic.
 - **Unit Tests**: Jest/Vitest + React Testing Library for Server Actions and components.
 - **Analytics Dashboard**: Attendance trends, cadet performance scoring.
-- **Export Features**: CSV/PDF attendance reports and cadet summaries.
+- **Export Features**: Integrated `jspdf` and `jspdf-autotable` for attendance reports and cadet summaries.
 
 ## License & Primary Contact
 Released under the [MIT License](LICENSE).

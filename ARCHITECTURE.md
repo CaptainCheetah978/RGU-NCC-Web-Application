@@ -11,17 +11,15 @@ The system uses a custom PIN-based server-side authentication flow interacting w
 sequenceDiagram
     participant User
     participant Client as Next.js Client
-    participant Server as Next.js Server Actions
-    participant SubaAuth as Supabase Auth
-    participant DB as Supabase Database
+    participant Server as Auth Context / Supabase Auth
+    participant DB as Supabase Profiles Table
 
-    User->>Client: Enters 6-digit PIN
-    Client->>Server: Submits PIN via Server Action
-    Server->>DB: Verify PIN matches cadet profile
-    DB-->>Server: Profile validation result
-    Server->>SubaAuth: Issue JWT / Session
-    SubaAuth-->>Server: Returns secure access token
-    Server->>Client: Sets internal HTTP-only Cookie
+    User->>Client: Enters Regt. Number & PIN
+    Client->>Server: Maps to pseudo-email & secure-padded PIN
+    Server->>Server: supabase.auth.signInWithPassword()
+    Server->>DB: Fetch associated Cadet Profile
+    DB-->>Server: Returns Profile Data (Role, Name, etc.)
+    Server-->>Client: Update Auth State / Set Session
     Client->>User: Redirects to Dashboard
 ```
 

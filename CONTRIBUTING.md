@@ -47,7 +47,7 @@ The process described here has several goals:
 
 ## Environment Setup
 
-To set up the project locally for development, please refer to the "Getting Started" section in our [README.md](README.md).
+To set up the project locally for development, please refer to the "Quick Start (Local Development)" section in our [README.md](README.md).
 
 If you run into issues during setup (such as Supabase RLS policies or local PWA caching bugs), please check our [FAQ.md](FAQ.md) for troubleshooting steps.
 

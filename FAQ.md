@@ -8,7 +8,7 @@ This guide addresses common setup hurdles and operational issues encountered dur
 **A:** Run `npm ci` or `npm install` in the root folder. Additionally, ensure you are using Node.js v20.x or above, as Next.js 15+ Server Actions and React 19 abstractions require modern runtime features.
 
 **Q: The application shows a blank screen or loops on the login page initially.**
-**A:** Check your `.env.local` file. You must have valid strings for `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Also, ensure you have ran the `clean-slate-policies.sql` and initialized your DB schemas.
+**A:** Check your `.env.local` file. You must have valid strings for `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Also, ensure you have ran the `supabase-policies.sql` and initialized your DB schemas.
 
 ## 2. Row Level Security (RLS) Policy Errors
 
