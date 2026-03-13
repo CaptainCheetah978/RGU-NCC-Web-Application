@@ -302,16 +302,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setClasses(prev => [...prev, cls]);
 
         try {
-            const { error } = await supabase.from('classes').insert({
-                id: cls.id, // Use the client-generated ID
-                title: cls.title,
-                date: cls.date,
-                time: cls.time,
-                instructor_id: cls.instructorId,
-                description: cls.description
-            });
+            const { addClassAction } = await import("@/app/actions/class-actions");
+            const { getAccessToken } = await import("@/lib/get-access-token");
+            const token = await getAccessToken();
             
-            if (error) throw error;
+            const result = await addClassAction(
+                { 
+                    id: cls.id, 
+                    title: cls.title, 
+                    date: cls.date, 
+                    time: cls.time, 
+                    instructorId: cls.instructorId, 
+                    description: cls.description 
+                },
+                token || ""
+            );
+            
+            if (!result.success) throw new Error(result.error || "Failed to schedule class");
             
             // 3. Background Sync
             refreshClasses().catch(e => console.error("Background class refresh failed:", e));
