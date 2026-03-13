@@ -4,6 +4,7 @@ DROP POLICY IF EXISTS "Public profiles" ON profiles;
 DROP POLICY IF EXISTS "Update own profile" ON profiles;
 DROP POLICY IF EXISTS "ANO update all" ON profiles;
 DROP POLICY IF EXISTS "SUO update all" ON profiles;
+DROP POLICY IF EXISTS "Admin update all" ON profiles;
 DROP POLICY IF EXISTS "Users insert own profile" ON profiles;
 DROP POLICY IF EXISTS "View announcements" ON announcements;
 DROP POLICY IF EXISTS "ANO/SUO Manage announcements" ON announcements;
@@ -35,15 +36,11 @@ ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public profiles" ON profiles FOR SELECT USING (true);
 -- Safe: User can update own
 CREATE POLICY "Update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
--- Safe: ANO can update all. 
+-- Safe: ANO/SUO can update all.
 -- CRITICAL: Prevent recursion. This policy queries 'profiles'. 
 -- But since 'Public profiles' allows SELECT (true), this subquery matches 'true', NO recursion.
-CREATE POLICY "ANO update all" ON profiles FOR UPDATE USING (
-  auth.uid() IN (SELECT id FROM profiles WHERE role = 'ANO')
-);
--- Safe: SUO can update all (edit cadets)
-CREATE POLICY "SUO update all" ON profiles FOR UPDATE USING (
-  auth.uid() IN (SELECT id FROM profiles WHERE role = 'SUO')
+CREATE POLICY "Admin update all" ON profiles FOR UPDATE USING (
+  auth.uid() IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
 );
 
 -- ANNOUNCEMENTS

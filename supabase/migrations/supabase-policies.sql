@@ -10,13 +10,9 @@ ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public profiles" ON profiles FOR SELECT USING (true);
 -- Allow users to update their own profile
 CREATE POLICY "Update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
--- Allow ANO to update ANY profile (for assigning ranks, PINs, etc)
-CREATE POLICY "ANO update all" ON profiles FOR UPDATE USING (
-  auth.uid() IN (SELECT id FROM profiles WHERE role = 'ANO')
-);
--- Allow SUO to update ANY profile (edit cadets)
-CREATE POLICY "SUO update all" ON profiles FOR UPDATE USING (
-  auth.uid() IN (SELECT id FROM profiles WHERE role = 'SUO')
+-- Allow ANO/SUO to update ANY profile (edit cadets, assign ranks)
+CREATE POLICY "Admin update all" ON profiles FOR UPDATE USING (
+  auth.uid() IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
 );
 
 -- 2. ANNOUNCEMENTS (News Feed)

@@ -12,6 +12,7 @@ DROP POLICY IF EXISTS "Public profiles" ON profiles;
 DROP POLICY IF EXISTS "Update own profile" ON profiles;
 DROP POLICY IF EXISTS "ANO update all" ON profiles;
 DROP POLICY IF EXISTS "SUO update all" ON profiles;
+DROP POLICY IF EXISTS "Admin update all" ON profiles;
 DROP POLICY IF EXISTS "Enable users to view own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable users to update own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable users to insert own profile" ON profiles;
@@ -89,16 +90,10 @@ CREATE POLICY "Users insert own profile" ON profiles
 CREATE POLICY "Update own profile" ON profiles
   FOR UPDATE USING ((select auth.uid()) = id);
 
--- ANO can update any profile (assign ranks, edit cadets)
-CREATE POLICY "ANO update all" ON profiles
+-- ANO/SUO can update any profile (assign ranks, edit cadets)
+CREATE POLICY "Admin update all" ON profiles
   FOR UPDATE USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role = 'ANO')
-  );
-
--- SUO can update any profile (edit cadets)
-CREATE POLICY "SUO update all" ON profiles
-  FOR UPDATE USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role = 'SUO')
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
   );
 
 
