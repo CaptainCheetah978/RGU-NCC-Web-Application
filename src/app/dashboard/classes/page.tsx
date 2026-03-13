@@ -8,7 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Plus, Calendar, Clock, Users, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
@@ -18,6 +18,7 @@ export default function ClassesPage() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+    const [isPending, startTransition] = useTransition();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -64,14 +65,17 @@ export default function ClassesPage() {
 
     const handleDelete = async (id: string, title: string) => {
         if (!confirm(`Delete "${title}"? All attendance for this session will also be deleted.`)) return;
-        try {
-            await deleteClass(id);
-            showToast(`"${title}" deleted.`, "success");
-            if (logActivity) logActivity("Deleted class", user.id, user.name, title);
-        } catch (error) {
-            console.error("Failed to delete class", error);
-            showToast("Failed to delete class. Please try again.");
-        }
+        
+        startTransition(async () => {
+            try {
+                await deleteClass(id);
+                showToast(`"${title}" deleted.`, "success");
+                if (logActivity) logActivity("Deleted class", user.id, user.name, title);
+            } catch (error) {
+                console.error("Failed to delete class", error);
+                showToast("Failed to delete class. Please try again.");
+            }
+        });
     };
 
     return (

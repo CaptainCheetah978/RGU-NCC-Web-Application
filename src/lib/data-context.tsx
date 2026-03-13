@@ -294,25 +294,61 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     // --- Actions (each calls only the relevant per-table refresh) ---
 
     const addClass = async (cls: ClassSession) => {
-        const { error } = await supabase.from('classes').insert({
-            title: cls.title,
-            date: cls.date,
-            time: cls.time,
-            instructor_id: cls.instructorId,
-            description: cls.description
-        });
-        if (error) throw error;
-        await refreshClasses();
+        // 1. Snapshot for rollback
+        const previousClasses = [...classes];
+
+        // 2. Optimistic Update
+        // Note: The UI might need the ID immediately, so we ensure it's in the cls object.
+        setClasses(prev => [...prev, cls]);
+
+        try {
+            const { error } = await supabase.from('classes').insert({
+                id: cls.id, // Use the client-generated ID
+                title: cls.title,
+                date: cls.date,
+                time: cls.time,
+                instructor_id: cls.instructorId,
+                description: cls.description
+            });
+            
+            if (error) throw error;
+            
+            // 3. Background Sync
+            refreshClasses().catch(e => console.error("Background class refresh failed:", e));
+        } catch (error) {
+            // 4. Rollback
+            setClasses(previousClasses);
+            throw error;
+        }
     };
 
     const deleteClass = async (id: string) => {
-        const { deleteClassAction } = await import("@/app/actions/delete-actions");
-        const { getAccessToken } = await import("@/lib/get-access-token");
-        const token = await getAccessToken();
-        const result = await deleteClassAction(id, token || "");
-        if (!result.success) throw new Error(result.error || "Failed to delete class");
-        await refreshClasses();
-        await refreshAttendance();
+        // 1. Snapshot previous state for rollback
+        const previousClasses = [...classes];
+        const previousAttendance = [...attendance];
+
+        // 2. Optimistic Update: Remove from local state immediately
+        setClasses(prev => prev.filter(c => c.id !== id));
+        setAttendance(prev => prev.filter(a => a.classId !== id));
+
+        try {
+            const { deleteClassAction } = await import("@/app/actions/delete-actions");
+            const { getAccessToken } = await import("@/lib/get-access-token");
+            const token = await getAccessToken();
+            
+            const result = await deleteClassAction(id, token || "");
+            if (!result.success) throw new Error(result.error || "Failed to delete class");
+            
+            // 3. Background Sync (No 'await' here to keep UI snappy)
+            // We only refresh classes to ensure any server-side computed fields are sync'd
+            // but we skip the massive attendance refresh because we filtered it locally.
+            refreshClasses().catch(e => console.error("Background class refresh failed:", e));
+        } catch (error) {
+            // 4. Rollback on failure
+            setClasses(previousClasses);
+            setAttendance(previousAttendance);
+            throw error;
+        }
     };
 
     const addCadet = async (cadet: Cadet) => {
