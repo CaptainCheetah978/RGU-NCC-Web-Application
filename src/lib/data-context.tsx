@@ -294,14 +294,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     // --- Actions (each calls only the relevant per-table refresh) ---
 
     const addClass = async (cls: ClassSession) => {
-        const { error } = await supabase.from('classes').insert({
-            title: cls.title,
-            date: cls.date,
-            time: cls.time,
-            instructor_id: cls.instructorId,
-            description: cls.description
-        });
-        if (error) throw error;
+        const { addClassAction } = await import("@/app/actions/class-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await addClassAction(
+            { title: cls.title, date: cls.date, time: cls.time, instructorId: cls.instructorId, description: cls.description },
+            token || ""
+        );
+        if (!result.success) throw new Error(result.error || "Failed to schedule class");
         await refreshClasses();
     };
 

@@ -26,6 +26,7 @@ DROP POLICY IF EXISTS "Anyone can read announcements" ON announcements;
 -- classes
 DROP POLICY IF EXISTS "View classes" ON classes;
 DROP POLICY IF EXISTS "ANO/SUO Manage classes" ON classes;
+DROP POLICY IF EXISTS "Manage classes" ON classes;
 DROP POLICY IF EXISTS "Admins can manage classes" ON classes;
 DROP POLICY IF EXISTS "Classes are viewable by everyone" ON classes;
 
@@ -108,10 +109,10 @@ CREATE POLICY "ANO/SUO Manage announcements" ON announcements
 CREATE POLICY "View classes" ON classes
   FOR SELECT USING (true);
 
--- ANO/SUO can manage classes
-CREATE POLICY "ANO/SUO Manage classes" ON classes
+-- ANO/SUO/UO can manage classes
+CREATE POLICY "Manage classes" ON classes
   FOR ALL USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO', 'UO'))
   );
 
 

@@ -30,9 +30,9 @@ CREATE POLICY "ANO/SUO Manage announcements" ON announcements FOR ALL USING (
 -- 3. CLASSES (Schedule)
 -- Everyone can read
 CREATE POLICY "View classes" ON classes FOR SELECT USING (true);
--- ANO/SUO can manage
-CREATE POLICY "ANO/SUO Manage classes" ON classes FOR ALL USING (
-  auth.uid() IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
+-- ANO/SUO/UO can manage
+CREATE POLICY "Manage classes" ON classes FOR ALL USING (
+  auth.uid() IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO', 'UO'))
 );
 
 -- 4. ATTENDANCE

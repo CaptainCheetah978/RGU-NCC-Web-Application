@@ -7,6 +7,7 @@ DROP POLICY IF EXISTS "View announcements" ON announcements;
 DROP POLICY IF EXISTS "ANO/SUO Manage announcements" ON announcements;
 DROP POLICY IF EXISTS "View classes" ON classes;
 DROP POLICY IF EXISTS "ANO/SUO Manage classes" ON classes;
+DROP POLICY IF EXISTS "Manage classes" ON classes;
 DROP POLICY IF EXISTS "View own attendance" ON attendance;
 DROP POLICY IF EXISTS "ANO/SUO View all attendance" ON attendance;
 DROP POLICY IF EXISTS "ANO/SUO Mark attendance" ON attendance;
@@ -43,9 +44,9 @@ CREATE POLICY "ANO/SUO Manage announcements" ON announcements FOR ALL USING (
 -- CLASSES
 -- Safe: Everyone sees
 CREATE POLICY "View classes" ON classes FOR SELECT USING (true);
--- Safe: ANO/SUO manage
-CREATE POLICY "ANO/SUO Manage classes" ON classes FOR ALL USING (
-  auth.uid() IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
+-- Safe: ANO/SUO/UO manage
+CREATE POLICY "Manage classes" ON classes FOR ALL USING (
+  auth.uid() IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO', 'UO'))
 );
 
 -- ATTENDANCE
