@@ -26,7 +26,7 @@ export async function addCertificateAction(
     if (!data.uploadDate) return { success: false, error: "Upload date is required." };
     const uploadDate = new Date(data.uploadDate);
     const uploadTimestamp = uploadDate.getTime();
-    if (!Number.isFinite(uploadTimestamp)) return { success: false, error: "Invalid upload date." };
+    if (Number.isNaN(uploadTimestamp)) return { success: false, error: "Invalid upload date." };
     if (uploadTimestamp > Date.now()) return { success: false, error: "Upload date cannot be in the future." };
     if (session.role !== Role.ANO && data.userId !== session.userId) {
         return { success: false, error: "Forbidden: you can only upload your own certificates." };
@@ -34,7 +34,7 @@ export async function addCertificateAction(
 
     try {
         if (session.role === Role.ANO) {
-            const { data: profileExists, error: profileError } = await supabaseAdmin
+            const { error: profileError } = await supabaseAdmin
                 .from("profiles")
                 .select("id")
                 .eq("id", data.userId)
@@ -44,7 +44,6 @@ export async function addCertificateAction(
                 if (code === "PGRST116") return { success: false, error: "User not found." };
                 return { success: false, error: profileError.message };
             }
-            if (!profileExists) return { success: false, error: "User not found." };
         }
 
         const { error } = await supabaseAdmin.from("certificates").insert({
