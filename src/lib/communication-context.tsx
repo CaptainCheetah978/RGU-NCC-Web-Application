@@ -7,6 +7,12 @@ import { supabase } from "@/lib/supabase-client";
 import { getAccessToken } from "@/lib/get-access-token";
 import { useCadetData } from "./cadet-context";
 
+const requireAccessToken = async () => {
+    const token = await getAccessToken();
+    if (!token) throw new Error("Missing access token");
+    return token;
+};
+
 const NOTE_COLUMNS =
     "id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name";
 const ANNOUNCEMENT_COLUMNS = "id, title, content, author_id, priority, created_at";
@@ -53,12 +59,6 @@ const CommunicationContext = createContext<CommunicationContextType | undefined>
 export function CommunicationProvider({ children }: { children: React.ReactNode }) {
     const { allProfiles } = useCadetData();
     const queryClient = useQueryClient();
-
-    const requireAccessToken = async () => {
-        const token = await getAccessToken();
-        if (!token) throw new Error("Missing access token");
-        return token;
-    };
 
     const notesQuery = useQuery<Note[]>({
         queryKey: ["notes", allProfiles.length],
