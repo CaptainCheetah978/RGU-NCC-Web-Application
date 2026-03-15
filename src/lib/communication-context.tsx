@@ -4,14 +4,8 @@ import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Announcement, Note } from "@/types";
 import { supabase } from "@/lib/supabase-client";
-import { getAccessToken } from "@/lib/get-access-token";
+import { requireAccessToken } from "@/lib/require-access-token";
 import { useCadetData } from "./cadet-context";
-
-const requireAccessToken = async () => {
-    const token = await getAccessToken();
-    if (!token) throw new Error("Missing access token");
-    return token;
-};
 
 const NOTE_COLUMNS =
     "id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name";
