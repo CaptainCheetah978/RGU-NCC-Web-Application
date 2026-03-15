@@ -1,6 +1,7 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
+import { useTrainingData } from "@/lib/training-context";
+import { useCadetData } from "@/lib/cadet-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Download, Share2, Grid, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,8 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export default function SheetPage() {
-    const { classes, cadets, attendance } = useData();
+    const { classes, attendance } = useTrainingData();
+    const { cadets } = useCadetData();
     const { showToast } = useToast();
     const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || "");
 

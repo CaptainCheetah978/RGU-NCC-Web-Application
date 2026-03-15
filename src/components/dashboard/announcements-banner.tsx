@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { useData } from "@/lib/data-context";
+import { useCommunicationData } from "@/lib/communication-context";
 import { Megaphone, AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
 export function AnnouncementsBanner() {
-    const { announcements } = useData();
+    const { announcements } = useCommunicationData();
 
     const sorted = useMemo(() =>
         [...announcements]

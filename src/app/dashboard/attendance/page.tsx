@@ -1,6 +1,7 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
+import { useTrainingData } from "@/lib/training-context";
+import { useCadetData } from "@/lib/cadet-context";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import { Role, AttendanceRecord } from "@/types";
@@ -43,7 +44,8 @@ function useNetworkStatus() {
 }
 
 function AttendanceContent() {
-    const { classes, cadets, attendance, markAttendance, refreshAttendance } = useData();
+    const { classes, attendance, markAttendance, refreshAttendance } = useTrainingData();
+    const { cadets } = useCadetData();
     const { user } = useAuth();
     const { showToast } = useToast();
     const isOnline = useNetworkStatus();

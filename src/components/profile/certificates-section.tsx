@@ -1,6 +1,7 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
+import { useCadetData } from "@/lib/cadet-context";
+import { useActivityData } from "@/lib/activity-context";
 import { useAuth } from "@/lib/auth-context";
 import { Certificate, Role } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +31,8 @@ const CERT_COLORS: Record<string, string> = {
 };
 
 export function CertificatesSection({ userId, isReadOnly = false }: { userId: string; isReadOnly?: boolean }) {
-    const { getCertificates, addCertificate, deleteCertificate, logActivity } = useData();
+    const { getCertificates, addCertificate, deleteCertificate } = useCadetData();
+    const { logActivity } = useActivityData();
     const { user } = useAuth();
     const certs = getCertificates(userId);
     const [isUploadOpen, setIsUploadOpen] = useState(false);

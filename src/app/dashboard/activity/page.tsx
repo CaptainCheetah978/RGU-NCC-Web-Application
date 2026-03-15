@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useData } from "@/lib/data-context";
+import { useActivityData } from "@/lib/activity-context";
 import { Role } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { History, Filter, BookOpen, Megaphone, Users, FileCheck, MessageSquare } from "lucide-react";
@@ -38,7 +38,7 @@ const ACTION_COLORS: Record<string, string> = {
 
 export default function ActivityLogPage() {
     const { user } = useAuth();
-    const { activityLog } = useData();
+    const { activityLog } = useActivityData();
     const router = useRouter();
     const [filterAction, setFilterAction] = useState("ALL");
 

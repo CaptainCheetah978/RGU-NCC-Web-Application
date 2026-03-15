@@ -1,21 +1,26 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
+import { useCadetData } from "@/lib/cadet-context";
+import { useActivityData } from "@/lib/activity-context";
 import { useAuth } from "@/lib/auth-context";
 import { Role, Wing, Gender, Cadet } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, Trash2, Key, Edit2, Eye, LayoutGrid, List as ListIcon } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { Search, UserPlus, Trash2, Key, Edit2, LayoutGrid, List as ListIcon } from "lucide-react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CertificatesSection } from "@/components/profile/certificates-section";
 import { createCadetAccount, updateCadetPin, getCadetPin } from "@/app/actions/cadet-actions";
 import { useToast } from "@/lib/toast-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import Image from "next/image";
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
+import { AddCadetModal, CadetFormState } from "@/components/cadets/add-cadet-modal";
+import { EditCadetModal } from "@/components/cadets/edit-cadet-modal";
+import { CadetsTable } from "@/components/cadets/cadets-table";
+import { useCadetFilter } from "@/components/cadets/use-cadet-filter";
+import { Modal } from "@/components/ui/modal";
 
 // Lazy PIN loader — fetches PIN on demand via server action, never from cached client data
 function PinDisplay({ cadetId }: { cadetId: string }) {
@@ -44,7 +49,8 @@ function PinDisplay({ cadetId }: { cadetId: string }) {
 }
 
 export default function CadetsPage() {
-    const { cadets, updateCadet, deleteCadet, logActivity, refreshData } = useData();
+    const { cadets, updateCadet, deleteCadet, refreshProfiles } = useCadetData();
+    const { logActivity } = useActivityData();
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -56,14 +62,10 @@ export default function CadetsPage() {
     const [editingCadet, setEditingCadet] = useState<Cadet | null>(null);
     const [viewingCadet, setViewingCadet] = useState<Cadet | null>(null);
 
-    const [searchQuery, setSearchQuery] = useState("");
-    const [filterRole, setFilterRole] = useState<string>("ALL");
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
     const [isLoading, setIsLoading] = useState(false);
 
     // Initial Form State
-    const initialFormState = {
+    const initialFormState: CadetFormState = {
         name: "",
         regimentalNumber: "",
         rank: Role.CADET,
@@ -81,7 +83,17 @@ export default function CadetsPage() {
     const [editFormData, setEditFormData] = useState<Partial<Cadet>>({});
     const [newPin, setNewPin] = useState("");
 
-    const [filterStatus, setFilterStatus] = useState<"active" | "alumni">("active");
+    const {
+        searchQuery,
+        setSearchQuery,
+        filterRole,
+        setFilterRole,
+        filterStatus,
+        setFilterStatus,
+        viewMode,
+        setViewMode,
+        filteredCadets,
+    } = useCadetFilter(cadets);
 
     // --- Logic: Auto-update Unit based on Wing ---
     // This provides smart defaults while allowing manual override
@@ -95,29 +107,7 @@ export default function CadetsPage() {
         }
     }, [formData.wing]);
 
-    const filteredCadets = useMemo(() => {
-        return cadets.filter(c => {
-            const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (c.regimentalNumber && c.regimentalNumber.toLowerCase().includes(searchQuery.toLowerCase()));
-            const matchesRole = filterRole === "ALL" || c.role === filterRole;
-            const matchesStatus = c.status === filterStatus;
-
-            return matchesSearch && matchesRole && matchesStatus;
-        });
-    }, [cadets, searchQuery, filterRole, filterStatus]);
-
     const parentRef = useRef<HTMLDivElement>(null);
-
-    // Grid virtualizer - assuming 3 columns on large screens, 2 on medium, 1 on small.
-    // For simplicity, we'll estimate rows based on the current window width later or just use a standard list virtualization for the list view,
-    // and a specialized grid virtualizer for the grid view.
-    // Let's implement row virtualization for the List view first.
-    const listVirtualizer = useVirtualizer({
-        count: filteredCadets.length,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => 88, // Estimate height of list row
-        overscan: 5,
-    });
 
     // Grid virtualizer
     const gridVirtualizer = useVirtualizer({
@@ -183,7 +173,7 @@ export default function CadetsPage() {
         const result = await createCadetAccount(formData, token || "");
 
         if (result.success) {
-            await refreshData();
+            await refreshProfiles();
             setIsModalOpen(false);
             setFormData(initialFormState);
             showToast(`${formData.name} enrolled successfully! PIN: ${formData.pin}`, "success");
@@ -199,7 +189,7 @@ export default function CadetsPage() {
         setIsLoading(true);
         try {
             await updateCadet(editingCadet.id, editFormData);
-            await refreshData();
+            await refreshProfiles();
             setIsEditModalOpen(false);
             showToast("Cadet profile updated.", "success");
             if (logActivity) logActivity("Updated cadet profile", user.id, user.name, editingCadet.name);
@@ -221,7 +211,7 @@ export default function CadetsPage() {
         const token = await getAccessToken();
         const result = await updateCadetPin(editingCadet.id, newPin, token || "");
         if (result.success) {
-            await refreshData();
+            await refreshProfiles();
             setIsPinModalOpen(false);
             showToast("PIN updated successfully.", "success");
         } else {
@@ -302,11 +292,11 @@ export default function CadetsPage() {
                 </div>
 
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
-                    <input
-                        type="text"
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500 pointer-events-none" />
+                    <Input
+                        label="Search"
                         placeholder="Search by name, regimental number, or rank..."
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100 placeholder:text-gray-600 dark:placeholder:text-slate-500 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
+                        className="pl-10"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -452,296 +442,36 @@ export default function CadetsPage() {
                             </div>
                         </div>
                     ) : (
-                        // List View
-                        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden shadow-sm">
-                            <table className="w-full text-left border-collapse table-fixed">
-                                <thead className="bg-gray-50/50 dark:bg-slate-900/30 sticky top-0 z-10 w-full">
-                                    <tr className="flex w-full">
-                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Cadet</th>
-                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Rank &amp; Regt. #</th>
-                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Unit</th>
-                                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-[15%]">Year</th>
-                                        <th className="p-4 text-right text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-[10%]">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody
-                                    ref={parentRef as unknown as React.RefObject<HTMLTableSectionElement>}
-                                    className="block relative h-[600px] overflow-auto divide-y divide-gray-100 dark:divide-slate-700/60"
-                                >
-                                    <div style={{ height: `${listVirtualizer.getTotalSize()}px`, width: '100%' }}>
-                                        {listVirtualizer.getVirtualItems().map((virtualRow) => {
-                                            const cadet = filteredCadets[virtualRow.index];
-                                            return (
-                                                <tr
-                                                    key={cadet.id}
-                                                    className="flex w-full hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors group absolute top-0 left-0"
-                                                    style={{
-                                                        height: `${virtualRow.size}px`,
-                                                        transform: `translateY(${virtualRow.start}px)`,
-                                                    }}
-                                                >
-                                                    <td className="p-3 w-1/4 flex items-center">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center font-bold text-gray-400 dark:text-slate-500 overflow-hidden shrink-0">
-                                                                {cadet.avatarUrl ? <Image src={cadet.avatarUrl} alt="" width={40} height={40} /> : cadet.name.charAt(0)}
-                                                            </div>
-                                                            <div className="flex flex-col truncate">
-                                                                <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2 truncate">
-                                                                    <span className="truncate">{cadet.name}</span>
-                                                                    {cadet.status === 'alumni' && (
-                                                                        <span className="text-[9px] uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-1.5 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800 shrink-0">Alumni</span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-3 w-1/4 flex flex-col justify-center truncate">
-                                                        <div className="flex flex-col truncate">
-                                                            <span className="font-bold text-gray-900 dark:text-slate-200">{cadet.rank}</span>
-                                                            <span className="text-xs text-gray-700 dark:text-slate-400 font-bold underline decoration-primary/10 truncate">{cadet.regimentalNumber}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-3 w-1/4 text-sm text-gray-800 dark:text-slate-300 font-medium flex items-center truncate">
-                                                        <span className="truncate">{cadet.unitNumber} {cadet.unitName}</span>
-                                                    </td>
-                                                    <td className="p-3 w-[15%] text-sm text-gray-800 dark:text-slate-300 font-bold flex items-center">
-                                                        {cadet.enrollmentYear}
-                                                    </td>
-                                                    <td className="p-3 w-[10%] text-right flex items-center justify-end">
-                                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <button onClick={() => handleView(cadet)} className="p-1.5 text-gray-400 hover:text-primary transition-colors" aria-label={`View ${cadet.name}`}>
-                                                                <Eye className="w-4 h-4" />
-                                                            </button>
-                                                            {canEdit && (
-                                                                <button onClick={() => handleEdit(cadet)} className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors" aria-label={`Edit ${cadet.name}`}>
-                                                                    <Edit2 className="w-4 h-4" />
-                                                                </button>
-                                                            )}
-                                                            {isANO && (
-                                                                <button onClick={() => handleDelete(cadet)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors" aria-label={`Delete ${cadet.name}`}>
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </div>
-                                </tbody>
-                            </table>
-                        </div>
+                        <CadetsTable
+                            cadets={filteredCadets}
+                            canEdit={canEdit}
+                            isANO={isANO}
+                            onView={handleView}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                        />
                     )}
                 </>
             )}
 
             {/* --- MODALS --- */}
+            <AddCadetModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                formData={formData}
+                onChange={(updates) => setFormData({ ...formData, ...updates })}
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+            />
 
-            {/* Enroll Modal */}
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Enroll New Cadet">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Full Name"
-                            placeholder="e.g. John Doe"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            required
-                        />
-                        <Input
-                            label="Regimental Number"
-                            placeholder="e.g. AS21SDA100001"
-                            value={formData.regimentalNumber}
-                            onChange={(e) => setFormData({ ...formData, regimentalNumber: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label htmlFor="enroll-rank" className="text-sm font-medium text-gray-700 dark:text-slate-300">Rank</label>
-                            <select
-                                id="enroll-rank"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
-                                value={formData.rank}
-                                onChange={(e) => setFormData({ ...formData, rank: e.target.value as Role })}
-                            >
-                                {Object.values(Role).filter(r => r !== Role.ANO).map(r => (
-                                    <option key={r} value={r}>{r}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="enroll-status" className="text-sm font-medium text-gray-700 dark:text-slate-300">Status</label>
-                            <select
-                                id="enroll-status"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
-                                value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value as "active" | "alumni" })}
-                            >
-                                <option value="active">Active</option>
-                                <option value="alumni">Alumni</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                            <label htmlFor="enroll-wing" className="text-sm font-medium text-gray-700 dark:text-slate-300">Wing</label>
-                            <select
-                                id="enroll-wing"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
-                                value={formData.wing}
-                                onChange={(e) => setFormData({ ...formData, wing: e.target.value as Wing })}
-                            >
-                                <option value={Wing.ARMY}>Army</option>
-                                <option value={Wing.NAVY}>Navy</option>
-                                <option value={Wing.AIR}>Air Force</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Auto-filled Unit Info (Read Only/Editable) */}
-                    <div className="p-4 bg-gray-50 dark:bg-slate-700/40 rounded-xl border border-gray-100 dark:border-slate-600/60 grid grid-cols-2 gap-4">
-                        <Input
-                            label="Unit Name"
-                            value={formData.unitName}
-                            onChange={(e) => setFormData({ ...formData, unitName: e.target.value })}
-                            className="bg-white"
-                        />
-                        <Input
-                            label="Unit Number"
-                            value={formData.unitNumber}
-                            onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
-                            className="bg-white"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                            <label htmlFor="enroll-gender" className="text-sm font-medium text-gray-700 dark:text-slate-300">Gender</label>
-                            <select
-                                id="enroll-gender"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
-                                value={formData.gender}
-                                onChange={(e) => setFormData({ ...formData, gender: e.target.value as Gender })}
-                            >
-                                <option value={Gender.MALE}>Male</option>
-                                <option value={Gender.FEMALE}>Female</option>
-                            </select>
-                        </div>
-                        <Input
-                            label="Year"
-                            type="number"
-                            value={formData.enrollmentYear}
-                            onChange={(e) => setFormData({ ...formData, enrollmentYear: parseInt(e.target.value) })}
-                        />
-                        <Input
-                            label="Blood Gp."
-                            value={formData.bloodGroup}
-                            onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
-                            placeholder="O+"
-                        />
-                    </div>
-
-                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-100 dark:border-yellow-800/50">
-                        <Input
-                            label="Access PIN (4 digits)"
-                            value={formData.pin}
-                            onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
-                            maxLength={4}
-                            required
-                            className="font-mono text-lg tracking-widest text-center"
-                            placeholder="XXXX"
-                        />
-                        <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-2 text-center">
-                            This PIN will be used for login. Keep it secure.
-                        </p>
-                    </div>
-
-                    <div className="pt-4 flex justify-end gap-3">
-                        <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                        <Button type="submit" isLoading={isLoading}>Hereby Enroll</Button>
-                    </div>
-                </form>
-            </Modal>
-
-            {/* Edit Modal - NOW FULLY FEATURED */}
-            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Cadet Profile">
-                <form onSubmit={handleUpdate} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Full Name"
-                            id="edit-name"
-                            value={editFormData.name || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        />
-                        <Input
-                            label="Regimental Number"
-                            id="edit-regimental"
-                            value={editFormData.regimentalNumber || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, regimentalNumber: e.target.value })}
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label htmlFor="edit-rank" className="text-sm font-medium text-gray-700 dark:text-slate-300">Rank</label>
-                            <select
-                                id="edit-rank"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
-                                value={editFormData.role || Role.CADET}
-                                onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value as Role })}
-                            >
-                                {Object.values(Role).map(r => (
-                                    <option key={r} value={r}>{r}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <Input
-                            label="Blood Group"
-                            id="edit-blood-group"
-                            value={editFormData.bloodGroup || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, bloodGroup: e.target.value })}
-                        />
-                    </div>
-                    <div className="p-4 bg-gray-50 dark:bg-slate-700/40 rounded-xl border border-gray-100 dark:border-slate-600/60">
-                        <Input
-                            label="Unit Name"
-                            value={editFormData.unitName || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, unitName: e.target.value })}
-                            className="bg-white mb-3"
-                        />
-                        <div className="grid grid-cols-2 gap-3">
-                            <Input
-                                label="Unit No"
-                                value={editFormData.unitNumber || ""}
-                                onChange={(e) => setEditFormData({ ...editFormData, unitNumber: e.target.value })}
-                                className="bg-white"
-                            />
-                            <Input
-                                label="Year"
-                                value={editFormData.enrollmentYear || ""}
-                                onChange={(e) => setEditFormData({ ...editFormData, enrollmentYear: parseInt(e.target.value) })}
-                                className="bg-white"
-                            />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label htmlFor="edit-status" className="text-sm font-medium text-gray-700 dark:text-slate-300">Status</label>
-                            <select
-                                id="edit-status"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/20 outline-none"
-                                value={editFormData.status || "active"}
-                                onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as "active" | "alumni" })}
-                            >
-                                <option value="active">Active</option>
-                                <option value="alumni">Alumni</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="pt-4 flex justify-end gap-3">
-                        <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-                        <Button type="submit" isLoading={isLoading}>Save Changes</Button>
-                    </div>
-                </form>
-            </Modal>
+            <EditCadetModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                formData={editFormData}
+                onChange={(updates) => setEditFormData({ ...editFormData, ...updates })}
+                onSubmit={handleUpdate}
+                isLoading={isLoading}
+            />
 
             {/* PIN Modal */}
             <Modal isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title="Update Access PIN">

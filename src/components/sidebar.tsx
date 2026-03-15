@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useData } from "@/lib/data-context";
+import { useDashboardStats } from "@/lib/dashboard-stats";
 import { useTheme } from "@/lib/theme-context";
 import { Role } from "@/types";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const { getStats } = useData();
+    const getStats = useDashboardStats();
     const pathname = usePathname();
 
     if (!user) return null;
