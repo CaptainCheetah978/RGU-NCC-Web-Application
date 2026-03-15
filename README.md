@@ -58,21 +58,21 @@ A role-based Cadet Management System built with Next.js 16 and Supabase. Feature
 ![Messaging Interface](public/screenshots/messages.png)
 
 ### 8. Offline Attendance Synchronization
-> Robust queueing system that allows marking attendance in areas with no internet. Data is automatically synced to the server once connection is restored.
+> Built with an asynchronous IndexedDB queueing engine. Allows marking attendance in zero-connectivity environments (e.g., parade grounds). Data is automatically synced to the server with optimistic UI updates once a connection is restored.
 
 ### 9. Alumni Lifecycle Management
-> Systematic transition pipeline for graduating cadets, archiving their service history and performance scores without data loss.
+> Systematic transition pipeline for graduating cadets. Archives service history and performance scores to a specialized alumni vault without data loss, ensuring clean active rosters.
 
 ## Core Modules Overview
 
-| Module | Technical Features | Access Level |
+| Module | Description | Target User |
 | :--- | :--- | :--- |
-| **Dashboard** | Real-time stats aggregation, async activity logging | ANO, SUO |
-| **Registry** | Virtualized high-performance lists, multi-state (Active/Alumni) filtering | ANO, SUO, UO |
-| **Digital ID** | Client-side QR generation, automated PDF extraction | All Ranks |
-| **Attendance** | Offline-first queueing, relational DB joins, batch status updates | ANO, SUO, UO |
-| **Vault** | Supabase Storage integration with expiring signed URLs for security | All Ranks |
-| **Comms** | Hierarchical note passing, read-receipt real-time listeners | All Ranks |
+| **Dashboard** | Real-time stats aggregation and unit telemetry analytics. | ANO, SUO |
+| **Registry** | Virtualized high-performance lists with multi-state (Active/Alumni) filtering. | ANO, SUO, UO |
+| **Digital ID** | High-resolution snapshot engine with mobile-safe print/download pipeline. | All Ranks |
+| **Attendance** | Offline-first queueing with incremental resync alerts. | SUO, UO |
+| **Private Notes** | Hierarchical note passing with read-receipts and ANO escalation. | All Ranks |
+| **Alumni Vault** | Permanent archiving of service history post-graduation. | ANO, SUO |
 
 ## Role-Based Access Control (RLS)
 Security is rigidly enforced at the PostgreSQL database level using Supabase Row Level Security (RLS). UI conditional rendering provides a fallback, but DB policies dictate true access.
