@@ -175,7 +175,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                     (a) => a.classId === record.classId && a.cadetId === record.cadetId
                 );
                 const optimisticEntry: AttendanceRecord = {
-                    id: record.id || `optimistic-${record.classId}-${record.cadetId}`,
+                    id: record.id || `optimistic-${record.classId}-${record.cadetId}-${Date.now()}`,
                     classId: record.classId,
                     cadetId: record.cadetId,
                     status: record.status,
