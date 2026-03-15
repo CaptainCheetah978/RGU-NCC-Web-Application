@@ -25,7 +25,6 @@ export async function addCertificateAction(
     const uploadDate = new Date(data.uploadDate);
     const uploadTimestamp = uploadDate.getTime();
     if (!Number.isFinite(uploadTimestamp)) return { success: false, error: "Invalid upload date." };
-    if (uploadDate.toString() === "Invalid Date") return { success: false, error: "Invalid upload date format." };
     if (uploadTimestamp > Date.now()) return { success: false, error: "Upload date cannot be in the future." };
     if (session.role !== Role.ANO && data.userId !== session.userId) {
         return { success: false, error: "Forbidden: you can only upload your own certificates." };
@@ -38,7 +37,8 @@ export async function addCertificateAction(
                 .select("id")
                 .eq("id", data.userId)
                 .single();
-            if (profileError || !profileExists) return { success: false, error: "Target user does not exist." };
+            if (profileError) return { success: false, error: profileError.message };
+            if (!profileExists) return { success: false, error: "User not found." };
         }
 
         const { error } = await supabaseAdmin.from("certificates").insert({
