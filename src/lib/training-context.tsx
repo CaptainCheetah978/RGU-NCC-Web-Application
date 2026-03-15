@@ -31,6 +31,18 @@ const ATTENDANCE_COLUMNS = "id, class_id, cadet_id, status, created_at";
 
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
 
+const generateOptimisticId = (scope = "id") =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `optimistic-${scope}-${Date.now()}-${Math.random().toString(16).slice(2)}-${Math.random()
+              .toString(16)
+              .slice(2)}`;
+
+const getClassId = (record: Partial<AttendanceRecord> & { class_id?: string }) =>
+    record.classId ?? record.class_id;
+const getCadetIdFromAttendance = (record: Partial<AttendanceRecord> & { cadet_id?: string }) =>
+    record.cadetId ?? record.cadet_id;
+
 async function fetchClasses(): Promise<ClassSession[]> {
     const { data, error } = await supabase.from("classes").select(CLASS_COLUMNS);
     if (error) throw error;
@@ -92,16 +104,17 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             );
             if (!result.success) throw new Error(result.error || "Failed to schedule class");
         },
-        // Optimistic Update
-        onMutate: async (newClass) => {
+        onMutate: async (cls: ClassSession) => {
             await queryClient.cancelQueries({ queryKey: ["classes"] });
-            const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]);
-            if (previousClasses) {
-                queryClient.setQueryData<ClassSession[]>(["classes"], [...previousClasses, newClass]);
-            }
+            const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]) || [];
+            const optimisticClass: ClassSession = { ...cls, id: cls.id ?? generateOptimisticId("class") };
+            queryClient.setQueryData<ClassSession[]>(["classes"], (old) => {
+                const withoutDuplicate = (old || []).filter((c) => c.id !== optimisticClass.id);
+                return [...withoutDuplicate, optimisticClass];
+            });
             return { previousClasses };
         },
-        onError: (err, newClass, context) => {
+        onError: (_error, _variables, context) => {
             if (context?.previousClasses) {
                 queryClient.setQueryData(["classes"], context.previousClasses);
             }
@@ -118,30 +131,24 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             const result = await deleteClassAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete class");
         },
-        // Optimistic Update
-        onMutate: async (id) => {
-            await queryClient.cancelQueries({ queryKey: ["classes"] });
-            await queryClient.cancelQueries({ queryKey: ["attendance"] });
+        onMutate: async (id: string) => {
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: ["classes"] }),
+                queryClient.cancelQueries({ queryKey: ["attendance"] }),
+            ]);
+            const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]) || [];
+            const previousAttendance = queryClient.getQueryData<AttendanceRecord[]>(["attendance"]) || [];
 
-            const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]);
-            const previousAttendance = queryClient.getQueryData<AttendanceRecord[]>(["attendance"]);
-
-            if (previousClasses) {
-                queryClient.setQueryData<ClassSession[]>(["classes"], previousClasses.filter(c => c.id !== id));
-            }
-            if (previousAttendance) {
-                queryClient.setQueryData<AttendanceRecord[]>(["attendance"], previousAttendance.filter(a => a.classId !== id));
-            }
+            queryClient.setQueryData<ClassSession[]>(["classes"], (old) => (old || []).filter((c) => c.id !== id));
+            queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) =>
+                (old || []).filter((a) => getClassId(a) !== id)
+            );
 
             return { previousClasses, previousAttendance };
         },
-        onError: (err, id, context) => {
-            if (context?.previousClasses) {
-                queryClient.setQueryData(["classes"], context.previousClasses);
-            }
-            if (context?.previousAttendance) {
-                queryClient.setQueryData(["attendance"], context.previousAttendance);
-            }
+        onError: (_error, _variables, context) => {
+            if (context?.previousClasses) queryClient.setQueryData(["classes"], context.previousClasses);
+            if (context?.previousAttendance) queryClient.setQueryData(["attendance"], context.previousAttendance);
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["classes"] });
@@ -174,7 +181,38 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                 if (error) throw error;
             }
         },
-        onSuccess: () => {
+        onMutate: async (record: AttendanceRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["attendance"] });
+            const previousAttendance = queryClient.getQueryData<AttendanceRecord[]>(["attendance"]) || [];
+
+            queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) => {
+                const list = [...(old || [])];
+                const idx = list.findIndex(
+                    (a) => getClassId(a) === record.classId && getCadetIdFromAttendance(a) === record.cadetId
+                );
+                const optimisticEntry: AttendanceRecord = {
+                    id: record.id || generateOptimisticId("attendance"),
+                    classId: record.classId,
+                    cadetId: record.cadetId,
+                    status: record.status,
+                    timestamp: record.timestamp || new Date().toISOString(),
+                };
+                if (idx >= 0) {
+                    list[idx] = { ...list[idx], ...optimisticEntry };
+                } else {
+                    list.push(optimisticEntry);
+                }
+                return list;
+            });
+
+            return { previousAttendance };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousAttendance) {
+                queryClient.setQueryData(["attendance"], context.previousAttendance);
+            }
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["attendance"] });
         },
     });

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cadet, Certificate, Role, User } from "@/types";
+import { Cadet, Certificate, Role, User, AttendanceRecord, Note } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessToken } from "@/lib/get-access-token";
@@ -10,6 +10,10 @@ import { getAccessToken } from "@/lib/get-access-token";
 const PROFILE_COLUMNS =
     "id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, status";
 const CERTIFICATE_COLUMNS = "id, user_id, name, type, file_data, upload_date";
+const getCadetId = (record: Partial<AttendanceRecord> & { cadet_id?: string }) =>
+    record.cadetId ?? record.cadet_id;
+const getCertificateUserId = (record: Partial<Certificate> & { user_id?: string }) =>
+    record.userId ?? record.user_id;
 
 interface CadetContextType {
     cadets: Cadet[];
@@ -125,7 +129,20 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             const { error } = await supabase.from("profiles").update(payload).eq("id", id);
             if (error) throw error;
         },
-        onSuccess: () => {
+        onMutate: async ({ id, updates }) => {
+            await queryClient.cancelQueries({ queryKey: ["profiles"] });
+            const previousProfiles = queryClient.getQueryData<(User & Partial<Cadet>)[]>(["profiles"]) || [];
+            queryClient.setQueryData<(User & Partial<Cadet>)[]>(["profiles"], (old) =>
+                (old || []).map((p) => (p.id === id ? { ...p, ...updates } : p))
+            );
+            return { previousProfiles };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousProfiles) {
+                queryClient.setQueryData(["profiles"], context.previousProfiles);
+            }
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["profiles"] });
         },
     });
@@ -137,23 +154,43 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             const result = await deleteCadetAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete cadet");
         },
-        // Optimistic Update
-        onMutate: async (id) => {
-            await queryClient.cancelQueries({ queryKey: ["profiles"] });
-            const previousProfiles = queryClient.getQueryData<any[]>(["profiles"]);
-            if (previousProfiles) {
-                queryClient.setQueryData<any[]>(["profiles"], previousProfiles.filter(p => p.id !== id));
-            }
-            return { previousProfiles };
+        onMutate: async (id: string) => {
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: ["profiles"] }),
+                queryClient.cancelQueries({ queryKey: ["attendance"] }),
+                queryClient.cancelQueries({ queryKey: ["certificates"] }),
+                queryClient.cancelQueries({ queryKey: ["notes"] }),
+            ]);
+
+            const previousProfiles = queryClient.getQueryData<(User & Partial<Cadet>)[]>(["profiles"]) || [];
+            const previousAttendance = queryClient.getQueryData<AttendanceRecord[]>(["attendance"]) || [];
+            const previousCertificates = queryClient.getQueryData<Certificate[]>(["certificates"]) || [];
+            const previousNotes = queryClient.getQueryData<Note[]>(["notes"]) || [];
+
+            queryClient.setQueryData<(User & Partial<Cadet>)[]>(["profiles"], (old) =>
+                (old || []).filter((p) => p.id !== id)
+            );
+            queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) =>
+                (old || []).filter((a) => getCadetId(a) !== id)
+            );
+            queryClient.setQueryData<Certificate[]>(["certificates"], (old) =>
+                (old || []).filter((c) => getCertificateUserId(c) !== id)
+            );
+            queryClient.setQueryData<Note[]>(["notes"], (old) =>
+                // Remove any note involving the deleted cadet (either sender or recipient).
+                (old || []).filter((n) => n.senderId !== id && n.recipientId !== id)
+            );
+
+            return { previousProfiles, previousAttendance, previousCertificates, previousNotes };
         },
-        onError: (err, id, context) => {
-            if (context?.previousProfiles) {
-                queryClient.setQueryData(["profiles"], context.previousProfiles);
-            }
+        onError: (_error, _variables, context) => {
+            if (context?.previousProfiles) queryClient.setQueryData(["profiles"], context.previousProfiles);
+            if (context?.previousAttendance) queryClient.setQueryData(["attendance"], context.previousAttendance);
+            if (context?.previousCertificates) queryClient.setQueryData(["certificates"], context.previousCertificates);
+            if (context?.previousNotes) queryClient.setQueryData(["notes"], context.previousNotes);
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["profiles"] });
-            // Associated data also needs refresh
             queryClient.invalidateQueries({ queryKey: ["attendance"] });
             queryClient.invalidateQueries({ queryKey: ["certificates"] });
             queryClient.invalidateQueries({ queryKey: ["notes"] });
