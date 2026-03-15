@@ -31,11 +31,12 @@ const ATTENDANCE_COLUMNS = "id, class_id, cadet_id, status, created_at";
 
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
 
-let optimisticCounter = 0;
 const generateOptimisticId = (scope = "id") =>
     typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
-        : `optimistic-${scope}-${Date.now()}-${++optimisticCounter}-${Math.random().toString(16).slice(2)}`;
+        : `optimistic-${scope}-${Date.now()}-${Math.random().toString(16).slice(2)}-${Math.random()
+              .toString(16)
+              .slice(2)}`;
 
 const getClassId = (record: Partial<AttendanceRecord> & { class_id?: string }) =>
     record.classId ?? record.class_id;
@@ -107,7 +108,10 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             await queryClient.cancelQueries({ queryKey: ["classes"] });
             const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]) || [];
             const optimisticClass: ClassSession = { ...cls, id: cls.id ?? generateOptimisticId("class") };
-            queryClient.setQueryData<ClassSession[]>(["classes"], (old) => [...(old || []), optimisticClass]);
+            queryClient.setQueryData<ClassSession[]>(["classes"], (old) => {
+                const withoutDuplicate = (old || []).filter((c) => c.id !== optimisticClass.id);
+                return [...withoutDuplicate, optimisticClass];
+            });
             return { previousClasses };
         },
         onError: (_error, _variables, context) => {

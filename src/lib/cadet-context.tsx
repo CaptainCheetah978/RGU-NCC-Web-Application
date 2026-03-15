@@ -12,6 +12,8 @@ const PROFILE_COLUMNS =
 const CERTIFICATE_COLUMNS = "id, user_id, name, type, file_data, upload_date";
 const getCadetId = (record: Partial<AttendanceRecord> & { cadet_id?: string }) =>
     record.cadetId ?? record.cadet_id;
+const getCertificateUserId = (record: Partial<Certificate> & { user_id?: string }) =>
+    record.userId ?? record.user_id;
 
 interface CadetContextType {
     cadets: Cadet[];
@@ -172,7 +174,7 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                 (old || []).filter((a) => getCadetId(a) !== id)
             );
             queryClient.setQueryData<Certificate[]>(["certificates"], (old) =>
-                (old || []).filter((c) => c.userId !== id)
+                (old || []).filter((c) => getCertificateUserId(c) !== id)
             );
             queryClient.setQueryData<Note[]>(["notes"], (old) =>
                 // Remove any note involving the deleted cadet (either sender or recipient).
