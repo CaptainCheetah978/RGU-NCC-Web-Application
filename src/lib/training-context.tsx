@@ -36,6 +36,9 @@ const generateOptimisticId = (scope = "id") =>
         ? crypto.randomUUID()
         : `optimistic-${scope}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+const getClassId = (record: Partial<AttendanceRecord> & { class_id?: string }) =>
+    record.classId ?? record.class_id;
+
 async function fetchClasses(): Promise<ClassSession[]> {
     const { data, error } = await supabase.from("classes").select(CLASS_COLUMNS);
     if (error) throw error;
@@ -131,12 +134,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
 
             queryClient.setQueryData<ClassSession[]>(["classes"], (old) => (old || []).filter((c) => c.id !== id));
             queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) =>
-                (old || []).filter((a) => {
-                    const classId =
-                        (a as Partial<AttendanceRecord> & { class_id?: string }).classId ??
-                        (a as { class_id?: string }).class_id;
-                    return classId !== id;
-                })
+                (old || []).filter((a) => getClassId(a) !== id)
             );
 
             return { previousClasses, previousAttendance };

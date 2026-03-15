@@ -10,6 +10,8 @@ import { getAccessToken } from "@/lib/get-access-token";
 const PROFILE_COLUMNS =
     "id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, status";
 const CERTIFICATE_COLUMNS = "id, user_id, name, type, file_data, upload_date";
+const getCadetId = (record: Partial<AttendanceRecord> & { cadet_id?: string }) =>
+    record.cadetId ?? record.cadet_id;
 
 interface CadetContextType {
     cadets: Cadet[];
@@ -167,18 +169,13 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                 (old || []).filter((p) => p.id !== id)
             );
             queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) =>
-                (old || []).filter((a) => {
-                    const cadetId =
-                        (a as Partial<AttendanceRecord> & { cadet_id?: string }).cadetId ??
-                        (a as { cadet_id?: string }).cadet_id;
-                    return cadetId !== id;
-                })
+                (old || []).filter((a) => getCadetId(a) !== id)
             );
             queryClient.setQueryData<Certificate[]>(["certificates"], (old) =>
                 (old || []).filter((c) => c.userId !== id)
             );
             queryClient.setQueryData<Note[]>(["notes"], (old) =>
-                (old || []).filter((n) => !(n.senderId === id || n.recipientId === id))
+                (old || []).filter((n) => n.senderId !== id && n.recipientId !== id)
             );
 
             return { previousProfiles, previousAttendance, previousCertificates, previousNotes };
