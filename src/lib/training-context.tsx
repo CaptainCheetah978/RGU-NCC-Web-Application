@@ -159,27 +159,14 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
     const markAttendanceMutation = useMutation({
         mutationFn: async (record: AttendanceRecord) => {
             if (!user) throw new Error("Unauthorized");
-            const { data: existing, error: fetchError } = await supabase
-                .from("attendance")
-                .select("id")
-                .eq("class_id", record.classId)
-                .eq("cadet_id", record.cadetId)
-                .single();
-
-            if (fetchError && fetchError.code !== "PGRST116") throw fetchError;
-
-            if (existing) {
-                const { error } = await supabase.from("attendance").update({ status: record.status }).eq("id", existing.id);
-                if (error) throw error;
-            } else {
-                const { error } = await supabase.from("attendance").insert({
-                    class_id: record.classId,
-                    cadet_id: record.cadetId,
-                    status: record.status,
-                    marked_by: user.id,
-                });
-                if (error) throw error;
-            }
+            const { markAttendanceAction } = await import("@/app/actions/attendance-actions");
+            const token = await getAccessToken();
+            if (!token) throw new Error("Unauthorized");
+            const result = await markAttendanceAction(
+                { classId: record.classId, cadetId: record.cadetId, status: record.status },
+                token
+            );
+            if (!result.success) throw new Error(result.error || "Failed to mark attendance");
         },
         onMutate: async (record: AttendanceRecord) => {
             await queryClient.cancelQueries({ queryKey: ["attendance"] });
