@@ -474,7 +474,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const { markAllAsReadAction } = await import("@/app/actions/note-actions");
         const { getAccessToken } = await import("@/lib/get-access-token");
         const token = await getAccessToken();
-        const result = await markAllAsReadAction(token || "");
+        if (!token) throw new Error("Missing access token");
+        const result = await markAllAsReadAction(token);
         if (!result.success) throw new Error(result.error || "Failed to mark all as read");
         await refreshNotes();
     };
@@ -504,6 +505,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const { addCertificateAction } = await import("@/app/actions/certificate-actions");
         const { getAccessToken } = await import("@/lib/get-access-token");
         const token = await getAccessToken();
+        if (!token) throw new Error("Missing access token");
         const result = await addCertificateAction(
             {
                 userId: cert.userId,
@@ -512,7 +514,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 fileData: cert.fileData,
                 uploadDate: cert.uploadDate
             },
-            token || ""
+            token
         );
         if (!result.success) throw new Error(result.error || "Failed to add certificate");
         await refreshCertificates();

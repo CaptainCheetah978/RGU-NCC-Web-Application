@@ -6,6 +6,8 @@ import { Certificate, Role } from "@/types";
 
 type ActionResult = { success: boolean; error?: string };
 
+const ALLOWED_CERTIFICATE_TYPES: Certificate["type"][] = ["A", "B", "C", "Camp", "Award", "Other"];
+
 export async function addCertificateAction(
     data: Pick<Certificate, "userId" | "name" | "type" | "fileData" | "uploadDate">,
     accessToken: string
@@ -13,9 +15,8 @@ export async function addCertificateAction(
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
-    const allowedTypes: Certificate["type"][] = ["A", "B", "C", "Camp", "Award", "Other"];
     if (!data.name?.trim()) return { success: false, error: "Certificate name is required." };
-    if (!allowedTypes.includes(data.type)) return { success: false, error: "Invalid certificate type." };
+    if (!ALLOWED_CERTIFICATE_TYPES.includes(data.type)) return { success: false, error: "Invalid certificate type." };
     if (session.role !== Role.ANO && data.userId !== session.userId) {
         return { success: false, error: "Forbidden: you can only upload your own certificates." };
     }

@@ -201,6 +201,7 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
         mutationFn: async (cert: Certificate) => {
             const { addCertificateAction } = await import("@/app/actions/certificate-actions");
             const token = await getAccessToken();
+            if (!token) throw new Error("Missing access token");
             const result = await addCertificateAction(
                 {
                     userId: cert.userId,
@@ -209,7 +210,7 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                     fileData: cert.fileData,
                     uploadDate: cert.uploadDate,
                 },
-                token || ""
+                token
             );
             if (!result.success) throw new Error(result.error || "Failed to add certificate");
         },

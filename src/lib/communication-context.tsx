@@ -108,9 +108,10 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
         mutationFn: async (note: Note) => {
             const { sendNoteAction } = await import("@/app/actions/note-actions");
             const token = await getAccessToken();
+            if (!token) throw new Error("Missing access token");
             const result = await sendNoteAction(
                 { recipientId: note.recipientId, subject: note.subject, content: note.content },
-                token || ""
+                token
             );
             if (!result.success) throw new Error(result.error || "Failed to send note");
         },
@@ -123,7 +124,8 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
         mutationFn: async (id: string) => {
             const { markNoteAsReadAction } = await import("@/app/actions/note-actions");
             const token = await getAccessToken();
-            const result = await markNoteAsReadAction(id, token || "");
+            if (!token) throw new Error("Missing access token");
+            const result = await markNoteAsReadAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to mark note as read");
         },
         onSuccess: () => {
@@ -135,7 +137,8 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
         mutationFn: async () => {
             const { markAllAsReadAction } = await import("@/app/actions/note-actions");
             const token = await getAccessToken();
-            const result = await markAllAsReadAction(token || "");
+            if (!token) throw new Error("Missing access token");
+            const result = await markAllAsReadAction(token);
             if (!result.success) throw new Error(result.error || "Failed to mark all notes as read");
         },
         onSuccess: () => {
@@ -159,7 +162,8 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
         mutationFn: async ({ noteId, anoId }: { noteId: string; anoId: string }) => {
             const { forwardNoteToANOAction } = await import("@/app/actions/note-actions");
             const token = await getAccessToken();
-            const result = await forwardNoteToANOAction(noteId, anoId, token || "");
+            if (!token) throw new Error("Missing access token");
+            const result = await forwardNoteToANOAction(noteId, anoId, token);
             if (!result.success) throw new Error(result.error || "Failed to forward note");
         },
         onSuccess: () => {
