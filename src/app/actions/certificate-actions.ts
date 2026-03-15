@@ -7,6 +7,7 @@ import { Certificate, Role } from "@/types";
 type ActionResult = { success: boolean; error?: string };
 
 const ALLOWED_CERTIFICATE_TYPES: Certificate["type"][] = ["A", "B", "C", "Camp", "Award", "Other"];
+const MAX_CERTIFICATE_NAME_LENGTH = 150;
 
 export async function addCertificateAction(
     data: Pick<Certificate, "userId" | "name" | "type" | "fileData" | "uploadDate">,
@@ -17,7 +18,8 @@ export async function addCertificateAction(
 
     const trimmedName = data.name?.trim() || "";
     if (!trimmedName) return { success: false, error: "Certificate name is required." };
-    if (trimmedName.length > 150) return { success: false, error: "Certificate name must be 150 characters or fewer." };
+    if (trimmedName.length > MAX_CERTIFICATE_NAME_LENGTH)
+        return { success: false, error: `Certificate name must be ${MAX_CERTIFICATE_NAME_LENGTH} characters or fewer.` };
     if (!ALLOWED_CERTIFICATE_TYPES.includes(data.type)) return { success: false, error: "Invalid certificate type." };
     if (!data.fileData?.trim()) return { success: false, error: "Certificate file data is required." };
 
@@ -37,7 +39,11 @@ export async function addCertificateAction(
                 .select("id")
                 .eq("id", data.userId)
                 .single();
-            if (profileError) return { success: false, error: profileError.message };
+            if (profileError) {
+                const code = (profileError as { code?: string }).code;
+                if (code === "PGRST116") return { success: false, error: "User not found." };
+                return { success: false, error: profileError.message };
+            }
             if (!profileExists) return { success: false, error: "User not found." };
         }
 
