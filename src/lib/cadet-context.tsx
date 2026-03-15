@@ -175,6 +175,7 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                 (old || []).filter((c) => c.userId !== id)
             );
             queryClient.setQueryData<Note[]>(["notes"], (old) =>
+                // Remove any note involving the deleted cadet (either sender or recipient).
                 (old || []).filter((n) => n.senderId !== id && n.recipientId !== id)
             );
 
