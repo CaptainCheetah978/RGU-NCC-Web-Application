@@ -15,8 +15,15 @@ export async function addCertificateAction(
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
-    if (!data.name?.trim()) return { success: false, error: "Certificate name is required." };
+    const trimmedName = data.name?.trim() || "";
+    if (!trimmedName) return { success: false, error: "Certificate name is required." };
+    if (trimmedName.length > 150) return { success: false, error: "Certificate name must be 150 characters or fewer." };
     if (!ALLOWED_CERTIFICATE_TYPES.includes(data.type)) return { success: false, error: "Invalid certificate type." };
+    if (!data.fileData?.trim()) return { success: false, error: "Certificate file data is required." };
+
+    const uploadDate = new Date(data.uploadDate);
+    if (Number.isNaN(uploadDate.getTime())) return { success: false, error: "Invalid upload date." };
+    if (uploadDate.getTime() > Date.now()) return { success: false, error: "Upload date cannot be in the future." };
     if (session.role !== Role.ANO && data.userId !== session.userId) {
         return { success: false, error: "Forbidden: you can only upload your own certificates." };
     }
@@ -24,10 +31,10 @@ export async function addCertificateAction(
     try {
         const { error } = await supabaseAdmin.from("certificates").insert({
             user_id: data.userId,
-            name: data.name.trim(),
+            name: trimmedName,
             type: data.type,
             file_data: data.fileData,
-            upload_date: data.uploadDate,
+            upload_date: uploadDate.toISOString(),
         });
         if (error) return { success: false, error: error.message };
         return { success: true };
