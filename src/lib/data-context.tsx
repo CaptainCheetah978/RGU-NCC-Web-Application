@@ -36,7 +36,7 @@ interface DataContextType {
     deleteNote: (id: string) => Promise<void>;
     getStats: (userId?: string) => DashboardStats;
     messageableUsers: (Cadet | User)[];
-    markAllAsRead: (userId: string) => Promise<void>;
+    markAllAsRead: () => Promise<void>;
     getPersonalAttendance: (cadetId: string) => PersonalAttendanceEntry[];
     getAttendanceByClass: () => { className: string; present: number; absent: number; late: number; excused: number }[];
     certificates: Certificate[];
@@ -470,7 +470,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         await refreshNotes();
     };
 
-    const markAllAsRead = async (_userId: string) => {
+    const markAllAsRead = async () => {
         const { markAllAsReadAction } = await import("@/app/actions/note-actions");
         const { getAccessToken } = await import("@/lib/get-access-token");
         const token = await getAccessToken();
@@ -501,14 +501,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const addCertificate = async (cert: Certificate) => {
-        const { error } = await supabase.from('certificates').insert({
-            user_id: cert.userId,
-            name: cert.name,
-            type: cert.type,
-            file_data: cert.fileData,
-            upload_date: cert.uploadDate
-        });
-        if (error) throw error;
+        const { addCertificateAction } = await import("@/app/actions/certificate-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await addCertificateAction(
+            {
+                userId: cert.userId,
+                name: cert.name,
+                type: cert.type,
+                fileData: cert.fileData,
+                uploadDate: cert.uploadDate
+            },
+            token || ""
+        );
+        if (!result.success) throw new Error(result.error || "Failed to add certificate");
         await refreshCertificates();
     };
 

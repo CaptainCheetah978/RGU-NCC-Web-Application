@@ -2,9 +2,41 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
-import { Role } from "@/types";
+import { Certificate, Role } from "@/types";
 
 type ActionResult = { success: boolean; error?: string };
+
+export async function addCertificateAction(
+    data: Pick<Certificate, "userId" | "name" | "type" | "fileData" | "uploadDate">,
+    accessToken: string
+): Promise<ActionResult> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    const allowedTypes: Certificate["type"][] = ["A", "B", "C", "Camp", "Award", "Other"];
+    if (!data.name?.trim()) return { success: false, error: "Certificate name is required." };
+    if (!allowedTypes.includes(data.type)) return { success: false, error: "Invalid certificate type." };
+    if (session.role !== Role.ANO && data.userId !== session.userId) {
+        return { success: false, error: "Forbidden: you can only upload your own certificates." };
+    }
+
+    try {
+        const { error } = await supabaseAdmin.from("certificates").insert({
+            user_id: data.userId,
+            name: data.name.trim(),
+            type: data.type,
+            file_data: data.fileData,
+            upload_date: data.uploadDate,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}
 
 export async function deleteCertificateAction(
     certificateId: string,

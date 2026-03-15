@@ -199,14 +199,19 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
 
     const addCertificateMutation = useMutation({
         mutationFn: async (cert: Certificate) => {
-            const { error } = await supabase.from("certificates").insert({
-                user_id: cert.userId,
-                name: cert.name,
-                type: cert.type,
-                file_data: cert.fileData,
-                upload_date: cert.uploadDate,
-            });
-            if (error) throw error;
+            const { addCertificateAction } = await import("@/app/actions/certificate-actions");
+            const token = await getAccessToken();
+            const result = await addCertificateAction(
+                {
+                    userId: cert.userId,
+                    name: cert.name,
+                    type: cert.type,
+                    fileData: cert.fileData,
+                    uploadDate: cert.uploadDate,
+                },
+                token || ""
+            );
+            if (!result.success) throw new Error(result.error || "Failed to add certificate");
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["certificates"] });

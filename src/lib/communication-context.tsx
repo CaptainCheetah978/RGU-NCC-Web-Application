@@ -4,7 +4,6 @@ import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Announcement, Note } from "@/types";
 import { supabase } from "@/lib/supabase-client";
-import { useAuth } from "@/lib/auth-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import { useCadetData } from "./cadet-context";
 
@@ -39,7 +38,7 @@ interface CommunicationContextType {
     announcements: Announcement[];
     sendNote: (note: Note) => Promise<void>;
     markNoteAsRead: (id: string) => Promise<void>;
-    markAllAsRead: (userId: string) => Promise<void>;
+    markAllAsRead: () => Promise<void>;
     forwardNoteToANO: (noteId: string, anoId: string) => Promise<void>;
     deleteNote: (id: string) => Promise<void>;
     addAnnouncement: (announcement: Announcement) => Promise<void>;
@@ -52,7 +51,6 @@ interface CommunicationContextType {
 const CommunicationContext = createContext<CommunicationContextType | undefined>(undefined);
 
 export function CommunicationProvider({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
     const { allProfiles } = useCadetData();
     const queryClient = useQueryClient();
 
@@ -108,14 +106,13 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const sendNoteMutation = useMutation({
         mutationFn: async (note: Note) => {
-            const { error } = await supabase.from("notes").insert({
-                sender_id: user?.id,
-                recipient_id: note.recipientId,
-                subject: note.subject,
-                content: note.content,
-                is_read: false,
-            });
-            if (error) throw error;
+            const { sendNoteAction } = await import("@/app/actions/note-actions");
+            const token = await getAccessToken();
+            const result = await sendNoteAction(
+                { recipientId: note.recipientId, subject: note.subject, content: note.content },
+                token || ""
+            );
+            if (!result.success) throw new Error(result.error || "Failed to send note");
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["notes"] });
@@ -124,8 +121,10 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const markNoteAsReadMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await supabase.from("notes").update({ is_read: true }).eq("id", id);
-            if (error) throw error;
+            const { markNoteAsReadAction } = await import("@/app/actions/note-actions");
+            const token = await getAccessToken();
+            const result = await markNoteAsReadAction(id, token || "");
+            if (!result.success) throw new Error(result.error || "Failed to mark note as read");
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["notes"] });
@@ -133,9 +132,11 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
     });
 
     const markAllAsReadMutation = useMutation({
-        mutationFn: async (userId: string) => {
-            const { error } = await supabase.from("notes").update({ is_read: true }).eq("recipient_id", userId);
-            if (error) throw error;
+        mutationFn: async () => {
+            const { markAllAsReadAction } = await import("@/app/actions/note-actions");
+            const token = await getAccessToken();
+            const result = await markAllAsReadAction(token || "");
+            if (!result.success) throw new Error(result.error || "Failed to mark all notes as read");
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["notes"] });
@@ -156,23 +157,10 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const forwardNoteMutation = useMutation({
         mutationFn: async ({ noteId, anoId }: { noteId: string; anoId: string }) => {
-            const originalNote = (notesQuery.data || []).find((n) => n.id === noteId);
-            if (!originalNote) throw new Error("Note not found");
-
-            const { error: insertError } = await supabase.from("notes").insert({
-                sender_id: user?.id,
-                recipient_id: anoId,
-                subject: `[Forwarded] ${originalNote.subject}`,
-                content: `[Forwarded from ${originalNote.senderName}]\n\n${originalNote.content}`,
-                is_read: false,
-                forwarded_to_ano: true,
-                original_sender_id: originalNote.senderId,
-                original_sender_name: originalNote.senderName,
-            });
-            if (insertError) throw insertError;
-
-            const { error: updateError } = await supabase.from("notes").update({ forwarded_to_ano: true }).eq("id", noteId);
-            if (updateError) throw updateError;
+            const { forwardNoteToANOAction } = await import("@/app/actions/note-actions");
+            const token = await getAccessToken();
+            const result = await forwardNoteToANOAction(noteId, anoId, token || "");
+            if (!result.success) throw new Error(result.error || "Failed to forward note");
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["notes"] });
@@ -216,7 +204,7 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
             announcements: announcementsQuery.data || [],
             sendNote: (note) => sendNoteMutation.mutateAsync(note),
             markNoteAsRead: (id) => markNoteAsReadMutation.mutateAsync(id),
-            markAllAsRead: (userId) => markAllAsReadMutation.mutateAsync(userId),
+            markAllAsRead: () => markAllAsReadMutation.mutateAsync(),
             forwardNoteToANO: (noteId, anoId) => forwardNoteMutation.mutateAsync({ noteId, anoId }),
             deleteNote: (id) => deleteNoteMutation.mutateAsync(id),
             addAnnouncement: (announcement) => addAnnouncementMutation.mutateAsync(announcement),

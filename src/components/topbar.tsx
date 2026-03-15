@@ -122,7 +122,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                                     </h3>
                                     {unreadCount > 0 && (
                                         <button
-                                            onClick={() => markAllAsRead(user.id)}
+                                            onClick={() => markAllAsRead()}
                                             className="text-[11px] font-bold text-primary dark:text-blue-400 hover:text-primary/80 flex items-center transition-colors px-2 py-1 rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10"
                                         >
                                             <Check className="w-3 h-3 mr-1" />
