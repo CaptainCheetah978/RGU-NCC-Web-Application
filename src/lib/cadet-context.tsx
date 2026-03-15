@@ -167,7 +167,12 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                 (old || []).filter((p) => p.id !== id)
             );
             queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) =>
-                (old || []).filter((a) => a.cadetId !== id)
+                (old || []).filter((a) => {
+                    const cadetId =
+                        (a as Partial<AttendanceRecord> & { cadet_id?: string }).cadetId ??
+                        (a as { cadet_id?: string }).cadet_id;
+                    return cadetId !== id;
+                })
             );
             queryClient.setQueryData<Certificate[]>(["certificates"], (old) =>
                 (old || []).filter((c) => c.userId !== id)

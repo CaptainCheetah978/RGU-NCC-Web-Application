@@ -31,11 +31,10 @@ const ATTENDANCE_COLUMNS = "id, class_id, cadet_id, status, created_at";
 
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
 
-let optimisticCounter = 0;
 const generateOptimisticId = (scope = "id") =>
     typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
-        : `optimistic-${scope}-${Date.now()}-${++optimisticCounter}-${Math.random().toString(16).slice(2)}`;
+        : `optimistic-${scope}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 async function fetchClasses(): Promise<ClassSession[]> {
     const { data, error } = await supabase.from("classes").select(CLASS_COLUMNS);
@@ -132,7 +131,12 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
 
             queryClient.setQueryData<ClassSession[]>(["classes"], (old) => (old || []).filter((c) => c.id !== id));
             queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) =>
-                (old || []).filter((a) => a.classId !== id)
+                (old || []).filter((a) => {
+                    const classId =
+                        (a as Partial<AttendanceRecord> & { class_id?: string }).classId ??
+                        (a as { class_id?: string }).class_id;
+                    return classId !== id;
+                })
             );
 
             return { previousClasses, previousAttendance };
