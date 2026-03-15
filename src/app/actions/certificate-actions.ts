@@ -21,14 +21,26 @@ export async function addCertificateAction(
     if (!ALLOWED_CERTIFICATE_TYPES.includes(data.type)) return { success: false, error: "Invalid certificate type." };
     if (!data.fileData?.trim()) return { success: false, error: "Certificate file data is required." };
 
+    if (!data.uploadDate) return { success: false, error: "Upload date is required." };
     const uploadDate = new Date(data.uploadDate);
-    if (Number.isNaN(uploadDate.getTime())) return { success: false, error: "Invalid upload date." };
-    if (uploadDate.getTime() > Date.now()) return { success: false, error: "Upload date cannot be in the future." };
+    const uploadTimestamp = uploadDate.getTime();
+    if (!Number.isFinite(uploadTimestamp)) return { success: false, error: "Invalid upload date." };
+    if (uploadDate.toString() === "Invalid Date") return { success: false, error: "Invalid upload date format." };
+    if (uploadTimestamp > Date.now()) return { success: false, error: "Upload date cannot be in the future." };
     if (session.role !== Role.ANO && data.userId !== session.userId) {
         return { success: false, error: "Forbidden: you can only upload your own certificates." };
     }
 
     try {
+        if (session.role === Role.ANO) {
+            const { data: profileExists, error: profileError } = await supabaseAdmin
+                .from("profiles")
+                .select("id")
+                .eq("id", data.userId)
+                .single();
+            if (profileError || !profileExists) return { success: false, error: "Target user does not exist." };
+        }
+
         const { error } = await supabaseAdmin.from("certificates").insert({
             user_id: data.userId,
             name: trimmedName,
