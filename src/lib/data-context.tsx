@@ -304,6 +304,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             const { addClassAction } = await import("@/app/actions/class-actions");
             const { getAccessToken } = await import("@/lib/get-access-token");
             const token = await getAccessToken();
+            if (!token) throw new Error("Missing access token");
             
             const result = await addClassAction(
                 { 
@@ -314,7 +315,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     instructorId: cls.instructorId, 
                     description: cls.description 
                 },
-                token || ""
+                token
             );
             
             if (!result.success) throw new Error(result.error || "Failed to schedule class");
@@ -342,7 +343,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             const { getAccessToken } = await import("@/lib/get-access-token");
             const token = await getAccessToken();
 
-            const result = await deleteClassAction(id, token || "");
+            if (!token) throw new Error("Missing access token");
+            const result = await deleteClassAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to delete class");
 
             // 3. Background Sync (No 'await' here to keep UI snappy)

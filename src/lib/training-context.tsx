@@ -91,6 +91,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
         mutationFn: async (cls: ClassSession) => {
             const { addClassAction } = await import("@/app/actions/class-actions");
             const token = await getAccessToken();
+            if (!token) throw new Error("Missing access token");
             const result = await addClassAction(
                 {
                     id: cls.id,
@@ -100,7 +101,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                     instructorId: cls.instructorId,
                     description: cls.description,
                 },
-                token || ""
+                token
             );
             if (!result.success) throw new Error(result.error || "Failed to schedule class");
         },
@@ -128,7 +129,8 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
         mutationFn: async (id: string) => {
             const { deleteClassAction } = await import("@/app/actions/class-actions");
             const token = await getAccessToken();
-            const result = await deleteClassAction(id, token || "");
+            if (!token) throw new Error("Missing access token");
+            const result = await deleteClassAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to delete class");
         },
         onMutate: async (id: string) => {

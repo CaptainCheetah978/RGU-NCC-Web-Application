@@ -59,7 +59,7 @@ export default function PerformanceDashboard() {
         [performanceData]
     );
     const atRiskCadets = useMemo(
-        () => [...performanceData].reverse().filter(c => c.percentage <= 50).slice(0, 5),
+        () => [...performanceData].reverse().filter(c => c.percentage <= 50),
         [performanceData]
     );
     const avgAttendance = useMemo(
