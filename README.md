@@ -29,39 +29,23 @@ A role-based Cadet Management System built with Next.js 16 and Supabase. Feature
 
 ## Application Walkthrough & Features
 
-### 1. Secure Login & Authentication
-> Username + PIN authentication mapped to Supabase Auth under the hood with strict role-based access control.
-![Login Screen](public/screenshots/login.png)
+The following sections provide a brief overview of the system capabilities. For a comprehensive visual gallery, including workflow demonstrations and mobile views, please refer to the project Wiki.
 
-### 2. Comprehensive Dashboard
-> Real-time statistics aggregation and asynchronous activity logging.
+> [!TIP]
+> **[Visit the Feature Gallery →](https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/wiki/Feature-Gallery)**
+
+### System Overview
+The Dashboard provides real-time statistics aggregation and asynchronous activity logging across the unit.
+
 ![Dashboard Overview](public/screenshots/dashboard.png)
 
-### 3. Attendance Management
-> Batch status updates and relational database joins connecting cadets to training classes.
-![Attendance Tracking](public/screenshots/attendance.png)
-
-### 4. Cadet Registry
-> Full text search, client-side filtering, and automated profile state hydration.
-![Cadet Registry](public/screenshots/registry.png)
-
-### 5. Personal Profiles
-> Detailed views of cadet progression, ranks, and uploaded certificates.
-![Cadet Profile](public/screenshots/profile.png)
-
-### 6. Digital Identity (QR)
-> High-resolution image snapshots with drop-shadows and rounded borders. Features a robust printing engine that bypasses mobile browser layout issues.
-![Digital ID Card](public/screenshots/id-card.png)
-
-### 7. Secure Communications
-> Hierarchical note passing with read-receipt real-time listeners between Cadets and Officers.
-![Messaging Interface](public/screenshots/messages.png)
-
-### 8. Offline Attendance Synchronization
-> Built with an asynchronous IndexedDB queueing engine. Allows marking attendance in zero-connectivity environments (e.g., parade grounds). Data is automatically synced to the server with optimistic UI updates once a connection is restored.
-
-### 9. Alumni Lifecycle Management
-> Systematic transition pipeline for graduating cadets. Archives service history and performance scores to a specialized alumni vault without data loss, ensuring clean active rosters.
+### Key Capabilities
+1.  **Secure Authentication**: Username + PIN authentication mapped to Supabase Auth with role-based access control.
+2.  **Attendance Management**: Batch status updates and relational database joins connecting cadets to training classes.
+3.  **Cadet Registry**: Virtualized lists supporting full-text search, client-side filtering, and profile state hydration.
+4.  **Digital Identity (QR)**: High-resolution identity snapshots with a specialized mobile-safe printing engine.
+5.  **Offline Synchronization**: Asynchronous IndexedDB queueing for marking attendance in zero-connectivity environments.
+6.  **Alumni Records**: Systematic transition pipeline for graduating cadets, preserving service history post-graduation.
 
 ## Core Modules Overview
 
