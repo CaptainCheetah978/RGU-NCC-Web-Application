@@ -161,9 +161,10 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             if (!user) throw new Error("Unauthorized");
             const { markAttendanceAction } = await import("@/app/actions/attendance-actions");
             const token = await getAccessToken();
+            if (!token) throw new Error("Unauthorized");
             const result = await markAttendanceAction(
                 { classId: record.classId, cadetId: record.cadetId, status: record.status },
-                token || ""
+                token
             );
             if (!result.success) throw new Error(result.error || "Failed to mark attendance");
         },
