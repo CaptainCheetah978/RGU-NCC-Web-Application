@@ -1,6 +1,6 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
+import { useTrainingData } from "@/lib/training-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarCheck, CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 
@@ -12,7 +12,7 @@ const STATUS_CONFIG = {
 };
 
 export function AttendanceHistory({ cadetId }: { cadetId: string }) {
-    const { getPersonalAttendance } = useData();
+    const { getPersonalAttendance } = useTrainingData();
     const records = getPersonalAttendance(cadetId);
 
     return (

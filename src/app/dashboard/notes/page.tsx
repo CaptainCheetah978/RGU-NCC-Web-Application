@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useData } from "@/lib/data-context";
+import { useCadetData } from "@/lib/cadet-context";
+import { useCommunicationData } from "@/lib/communication-context";
+import { useActivityData } from "@/lib/activity-context";
 import { useAuth } from "@/lib/auth-context";
 import { Role, Note } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -24,15 +26,9 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/lib/toast-context";
 
 export default function NotesPage() {
-    const {
-        notes,
-        sendNote,
-        markNoteAsRead,
-        forwardNoteToANO,
-        deleteNote,
-        messageableUsers,
-        logActivity
-    } = useData();
+    const { messageableUsers } = useCadetData();
+    const { notes, sendNote, markNoteAsRead, forwardNoteToANO, deleteNote } = useCommunicationData();
+    const { logActivity } = useActivityData();
     const { user } = useAuth();
     const { showToast } = useToast();
 

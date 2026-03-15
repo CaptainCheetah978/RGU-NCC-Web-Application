@@ -1,6 +1,7 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
+import { useTrainingData } from "@/lib/training-context";
+import { useActivityData } from "@/lib/activity-context";
 import { useAuth } from "@/lib/auth-context";
 import { Role } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -14,11 +15,12 @@ import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
 
 export default function ClassesPage() {
-    const { classes, addClass, deleteClass, logActivity } = useData();
+    const { classes, addClass, deleteClass } = useTrainingData();
+    const { logActivity } = useActivityData();
     const { user } = useAuth();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
-    const [isPending, startTransition] = useTransition();
+    const [, startTransition] = useTransition();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 

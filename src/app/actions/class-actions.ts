@@ -8,6 +8,14 @@ import { Role } from "@/types";
 const MANAGE_ROLES: Role[] = [Role.ANO, Role.SUO, Role.UO];
 
 type ActionResult = { success: boolean; error?: string };
+type ClassInsertPayload = {
+    id?: string;
+    title: string;
+    date: string;
+    time: string;
+    instructor_id: string;
+    description?: string;
+};
 
 // ── Add Class ────────────────────────────────────────────────────────────────
 
@@ -28,7 +36,7 @@ export async function addClassAction(
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     try {
-        const payload: any = {
+        const payload: ClassInsertPayload = {
             title: classData.title,
             date: classData.date,
             time: classData.time,
@@ -38,6 +46,34 @@ export async function addClassAction(
         if (classData.id) payload.id = classData.id;
 
         const { error } = await supabaseAdmin.from("classes").insert(payload);
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}
+
+// ── Delete Class ─────────────────────────────────────────────────────────────
+
+export async function deleteClassAction(
+    classId: string,
+    accessToken: string
+): Promise<ActionResult> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+    if (!MANAGE_ROLES.includes(session.role))
+        return { success: false, error: "Forbidden: insufficient permissions." };
+
+    try {
+        // Cascade: delete attendance records for this class first
+        await supabaseAdmin.from("attendance").delete().eq("class_id", classId);
+        const { error } = await supabaseAdmin
+            .from("classes")
+            .delete()
+            .eq("id", classId);
         if (error) return { success: false, error: error.message };
         return { success: true };
     } catch (e: unknown) {

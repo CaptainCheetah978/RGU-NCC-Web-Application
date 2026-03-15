@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useData } from "@/lib/data-context";
+import { useCommunicationData } from "@/lib/communication-context";
+import { useActivityData } from "@/lib/activity-context";
 import { Role, Announcement } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +15,8 @@ import { useToast } from "@/lib/toast-context";
 
 export default function AnnouncementsPage() {
     const { user } = useAuth();
-    const { announcements, addAnnouncement, deleteAnnouncement, logActivity } = useData();
+    const { announcements, addAnnouncement, deleteAnnouncement } = useCommunicationData();
+    const { logActivity } = useActivityData();
     const { showToast } = useToast();
 
     const [isModalOpen, setIsModalOpen] = useState(false);

@@ -1,10 +1,10 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
+import { useTrainingData } from "@/lib/training-context";
 import { Calendar } from "lucide-react";
 
 export function UpcomingClasses() {
-    const { classes } = useData();
+    const { classes } = useTrainingData();
 
     return (
         <div className="lg:col-span-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/60">

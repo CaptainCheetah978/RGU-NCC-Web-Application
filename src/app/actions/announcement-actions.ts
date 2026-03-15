@@ -34,3 +34,27 @@ export async function addAnnouncementAction(
         };
     }
 }
+
+export async function deleteAnnouncementAction(
+    announcementId: string,
+    accessToken: string
+): Promise<ActionResult> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+    if (!ANNOUNCEMENT_ROLES.includes(session.role))
+        return { success: false, error: "Forbidden: insufficient permissions." };
+
+    try {
+        const { error } = await supabaseAdmin
+            .from("announcements")
+            .delete()
+            .eq("id", announcementId);
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}

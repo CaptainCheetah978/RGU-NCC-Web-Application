@@ -339,7 +339,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setAttendance(prev => prev.filter(a => a.classId !== id));
 
         try {
-            const { deleteClassAction } = await import("@/app/actions/delete-actions");
+            const { deleteClassAction } = await import("@/app/actions/class-actions");
             const { getAccessToken } = await import("@/lib/get-access-token");
             const token = await getAccessToken();
             
@@ -405,7 +405,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteCadet = async (id: string) => {
-        const { deleteCadetAction } = await import("@/app/actions/delete-actions");
+        const { deleteCadetAction } = await import("@/app/actions/cadet-actions");
         const { getAccessToken } = await import("@/lib/get-access-token");
         const token = await getAccessToken();
         const result = await deleteCadetAction(id, token || "");
@@ -511,7 +511,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteAnnouncement = async (id: string) => {
-        const { deleteAnnouncementAction } = await import("@/app/actions/delete-actions");
+        const { deleteAnnouncementAction } = await import("@/app/actions/announcement-actions");
         const { getAccessToken } = await import("@/lib/get-access-token");
         const token = await getAccessToken();
         const result = await deleteAnnouncementAction(id, token || "");
@@ -532,7 +532,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteCertificate = async (id: string) => {
-        const { deleteCertificateAction } = await import("@/app/actions/delete-actions");
+        const { deleteCertificateAction } = await import("@/app/actions/certificate-actions");
         const { getAccessToken } = await import("@/lib/get-access-token");
         const token = await getAccessToken();
         const result = await deleteCertificateAction(id, token || "");

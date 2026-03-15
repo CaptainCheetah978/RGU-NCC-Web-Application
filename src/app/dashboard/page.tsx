@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useData } from "@/lib/data-context";
+import { useCadetData } from "@/lib/cadet-context";
+import { useDashboardStats } from "@/lib/dashboard-stats";
 import { Users, Calendar, CheckCircle, MessageSquare } from "lucide-react";
 import { InfoCard } from "@/components/dashboard/info-card";
 import { UpcomingClasses } from "@/components/dashboard/upcoming-classes";
@@ -12,7 +13,8 @@ import Image from "next/image";
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const { getStats, messageableUsers } = useData();
+    const { messageableUsers } = useCadetData();
+    const getStats = useDashboardStats();
 
     if (!user) return null;
 

@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { useData } from "@/lib/data-context";
+import { useTrainingData } from "@/lib/training-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
 
 export function AttendanceChart() {
-    const { getAttendanceByClass } = useData();
+    const { getAttendanceByClass } = useTrainingData();
 
     // Memoize the data fetch so the array is only re-built when attendance/classes change.
     const data = useMemo(() => getAttendanceByClass(), [getAttendanceByClass]);

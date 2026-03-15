@@ -175,3 +175,73 @@ export async function getCadetPin(cadetId: string, accessToken: string): Promise
         return null;
     }
 }
+
+export async function deleteCadetAction(
+    cadetId: string,
+    accessToken: string
+): Promise<{ success: boolean; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+    if (session.role !== Role.ANO)
+        return { success: false, error: "Forbidden: only ANO can remove cadets." };
+
+    try {
+        // Cascade: delete all related data first
+        await supabaseAdmin.from("attendance").delete().eq("cadet_id", cadetId);
+        await supabaseAdmin.from("notes").delete().eq("sender_id", cadetId);
+        await supabaseAdmin.from("notes").delete().eq("recipient_id", cadetId);
+        await supabaseAdmin.from("certificates").delete().eq("user_id", cadetId);
+        await supabaseAdmin.from("profiles").delete().eq("id", cadetId);
+
+        // Also delete the auth user so they can't log in anymore
+        await supabaseAdmin.auth.admin.deleteUser(cadetId);
+
+        return { success: true };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}
+
+export async function removeUserByName(
+    userName: string,
+    accessToken: string
+): Promise<{ success: boolean; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+    if (session.role !== Role.ANO)
+        return { success: false, error: "Forbidden: only ANO can remove users." };
+
+    try {
+        const { data: profiles, error: findError } = await supabaseAdmin
+            .from("profiles")
+            .select("id, full_name")
+            .ilike("full_name", userName);
+
+        if (findError) return { success: false, error: findError.message };
+        if (!profiles || profiles.length === 0)
+            return { success: false, error: `No user found with name \"${userName}\".` };
+
+        const results: string[] = [];
+        for (const profile of profiles) {
+            await supabaseAdmin.from("attendance").delete().eq("cadet_id", profile.id);
+            await supabaseAdmin.from("notes").delete().eq("sender_id", profile.id);
+            await supabaseAdmin.from("notes").delete().eq("recipient_id", profile.id);
+            await supabaseAdmin.from("certificates").delete().eq("user_id", profile.id);
+            await supabaseAdmin.from("announcements").delete().eq("author_id", profile.id);
+            await supabaseAdmin.from("activity_log").delete().eq("performed_by", profile.id);
+            await supabaseAdmin.from("profiles").delete().eq("id", profile.id);
+            await supabaseAdmin.auth.admin.deleteUser(profile.id);
+            results.push(`Removed \"${profile.full_name}\" (${profile.id})`);
+        }
+
+        return { success: true, error: results.join("; ") };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}

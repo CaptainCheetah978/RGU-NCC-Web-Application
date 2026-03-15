@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useData } from "@/lib/data-context";
+import { useCadetData } from "@/lib/cadet-context";
+import { useCommunicationData } from "@/lib/communication-context";
 import { Role } from "@/types";
 import { Bell, Check, Inbox, MessageSquare, ExternalLink } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -17,7 +18,8 @@ interface TopbarProps {
 
 export function Topbar({ onMenuClick }: TopbarProps) {
     const { user } = useAuth();
-    const { messageableUsers, notes, markNoteAsRead, markAllAsRead } = useData();
+    const { messageableUsers } = useCadetData();
+    const { notes, markNoteAsRead, markAllAsRead } = useCommunicationData();
     const [showNotifications, setShowNotifications] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();

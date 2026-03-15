@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useData } from "@/lib/data-context";
+import { useCadetData } from "@/lib/cadet-context";
+import { useDashboardStats } from "@/lib/dashboard-stats";
 import { supabase } from "@/lib/supabase-client";
 import { Role, Wing, Cadet, User } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,8 @@ import Image from "next/image";
 
 export default function ProfilePage() {
     const { user, updatePin } = useAuth();
-    const { updateCadet, getStats, currentUserProfile } = useData();
+    const { updateCadet, currentUserProfile } = useCadetData();
+    const getStats = useDashboardStats();
     const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [uploadError, setUploadError] = useState("");
     const [isUploading, setIsUploading] = useState(false);

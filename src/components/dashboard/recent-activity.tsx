@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useData } from "@/lib/data-context";
+import { useActivityData } from "@/lib/activity-context";
 
 function timeAgo(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -16,7 +16,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export function RecentActivity() {
-    const { getRecentActivities } = useData();
+    const { getRecentActivities } = useActivityData();
 
     // Memoize the slice so it doesn't produce a new array reference every render.
     const activities = useMemo(() => getRecentActivities(5), [getRecentActivities]);

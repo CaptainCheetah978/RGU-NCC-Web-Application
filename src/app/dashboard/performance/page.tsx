@@ -1,13 +1,15 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
+import { useTrainingData } from "@/lib/training-context";
+import { useCadetData } from "@/lib/cadet-context";
 import { useAuth } from "@/lib/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, AlertTriangle, UserCheck, Shield } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export default function PerformanceDashboard() {
-    const { classes, cadets, attendance } = useData();
+    const { classes, attendance } = useTrainingData();
+    const { cadets } = useCadetData();
     const { user } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
 
