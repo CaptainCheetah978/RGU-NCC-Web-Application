@@ -31,6 +31,11 @@ const ATTENDANCE_COLUMNS = "id, class_id, cadet_id, status, created_at";
 
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
 
+const generateOptimisticId = () =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `optimistic-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
 async function fetchClasses(): Promise<ClassSession[]> {
     const { data, error } = await supabase.from("classes").select(CLASS_COLUMNS);
     if (error) throw error;
@@ -95,7 +100,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
         onMutate: async (cls: ClassSession) => {
             await queryClient.cancelQueries({ queryKey: ["classes"] });
             const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]) || [];
-            const optimisticClass: ClassSession = { ...cls, id: cls.id ?? `optimistic-class-${Date.now()}` };
+            const optimisticClass: ClassSession = { ...cls, id: cls.id ?? `optimistic-class-${generateOptimisticId()}` };
             queryClient.setQueryData<ClassSession[]>(["classes"], (old) => [...(old || []), optimisticClass]);
             return { previousClasses };
         },
@@ -176,7 +181,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                     (a) => a.classId === record.classId && a.cadetId === record.cadetId
                 );
                 const optimisticEntry: AttendanceRecord = {
-                    id: record.id || `optimistic-${record.classId}-${record.cadetId}-${Date.now()}`,
+                    id: record.id || `optimistic-${record.classId}-${record.cadetId}-${generateOptimisticId()}`,
                     classId: record.classId,
                     cadetId: record.cadetId,
                     status: record.status,
