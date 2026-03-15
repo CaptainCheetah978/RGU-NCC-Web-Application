@@ -12,6 +12,28 @@ const NOTE_COLUMNS =
     "id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name";
 const ANNOUNCEMENT_COLUMNS = "id, title, content, author_id, priority, created_at";
 
+type NoteRow = {
+    id: string;
+    sender_id: string;
+    recipient_id: string;
+    subject: string | null;
+    content: string;
+    is_read: boolean;
+    created_at: string;
+    forwarded_to_ano: boolean | null;
+    original_sender_id: string | null;
+    original_sender_name: string | null;
+};
+
+type AnnouncementRow = {
+    id: string;
+    title: string;
+    content: string;
+    author_id: string;
+    priority: string | null;
+    created_at: string;
+};
+
 interface CommunicationContextType {
     notes: Note[];
     announcements: Announcement[];
@@ -34,15 +56,16 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
     const { allProfiles } = useCadetData();
     const queryClient = useQueryClient();
 
-    const notesQuery = useQuery({
+    const notesQuery = useQuery<Note[]>({
         queryKey: ["notes", allProfiles.length],
-        queryFn: async () => {
+        queryFn: async (): Promise<Note[]> => {
             const { data, error } = await supabase.from("notes").select(NOTE_COLUMNS);
             if (error) throw error;
+            const rows = (data ?? []) as NoteRow[];
             const profileMap = new Map<string, string>();
             allProfiles.forEach((p) => profileMap.set(p.id, p.name));
             return (
-                data?.map((n) => ({
+                rows.map((n) => ({
                     id: n.id,
                     senderId: n.sender_id,
                     senderName: profileMap.get(n.sender_id) || "Unknown",
@@ -53,28 +76,30 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
                     timestamp: n.created_at,
                     subject: n.subject || "Note",
                     forwardedToANO: n.forwarded_to_ano || false,
-                    originalSenderId: n.original_sender_id,
-                    originalSenderName: n.original_sender_name,
+                    originalSenderId: n.original_sender_id || undefined,
+                    originalSenderName: n.original_sender_name || undefined,
                 })) || []
             );
         },
     });
 
-    const announcementsQuery = useQuery({
+    const announcementsQuery = useQuery<Announcement[]>({
         queryKey: ["announcements", allProfiles.length],
-        queryFn: async () => {
+        queryFn: async (): Promise<Announcement[]> => {
             const { data, error } = await supabase.from("announcements").select(ANNOUNCEMENT_COLUMNS);
             if (error) throw error;
+            const rows = (data ?? []) as AnnouncementRow[];
             const profileMap = new Map<string, string>();
             allProfiles.forEach((p) => profileMap.set(p.id, p.name));
             return (
-                data?.map((a) => ({
+                rows.map((a) => ({
                     id: a.id,
                     title: a.title,
                     content: a.content,
                     authorId: a.author_id,
                     authorName: profileMap.get(a.author_id) || "Unknown",
-                    priority: a.priority?.toLowerCase() === "urgent" ? "urgent" : "normal",
+                    priority:
+                        (a.priority?.toLowerCase() === "urgent" ? "urgent" : "normal") satisfies Announcement["priority"],
                     createdAt: a.created_at,
                 })) || []
             );
