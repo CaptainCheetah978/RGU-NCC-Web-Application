@@ -95,7 +95,8 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
         onMutate: async (cls: ClassSession) => {
             await queryClient.cancelQueries({ queryKey: ["classes"] });
             const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]) || [];
-            queryClient.setQueryData<ClassSession[]>(["classes"], (old) => [...(old || []), cls]);
+            const optimisticClass: ClassSession = { ...cls, id: cls.id ?? `optimistic-class-${Date.now()}` };
+            queryClient.setQueryData<ClassSession[]>(["classes"], (old) => [...(old || []), optimisticClass]);
             return { previousClasses };
         },
         onError: (_error, _variables, context) => {

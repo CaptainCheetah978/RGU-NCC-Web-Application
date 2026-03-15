@@ -173,7 +173,7 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                 (old || []).filter((c) => c.userId !== id)
             );
             queryClient.setQueryData<Note[]>(["notes"], (old) =>
-                (old || []).filter((n) => n.senderId !== id && n.recipientId !== id)
+                (old || []).filter((n) => !(n.senderId === id || n.recipientId === id))
             );
 
             return { previousProfiles, previousAttendance, previousCertificates, previousNotes };
