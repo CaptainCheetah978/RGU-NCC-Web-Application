@@ -137,8 +137,23 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             const result = await deleteCadetAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete cadet");
         },
-        onSuccess: () => {
+        // Optimistic Update
+        onMutate: async (id) => {
+            await queryClient.cancelQueries({ queryKey: ["profiles"] });
+            const previousProfiles = queryClient.getQueryData<any[]>(["profiles"]);
+            if (previousProfiles) {
+                queryClient.setQueryData<any[]>(["profiles"], previousProfiles.filter(p => p.id !== id));
+            }
+            return { previousProfiles };
+        },
+        onError: (err, id, context) => {
+            if (context?.previousProfiles) {
+                queryClient.setQueryData(["profiles"], context.previousProfiles);
+            }
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["profiles"] });
+            // Associated data also needs refresh
             queryClient.invalidateQueries({ queryKey: ["attendance"] });
             queryClient.invalidateQueries({ queryKey: ["certificates"] });
             queryClient.invalidateQueries({ queryKey: ["notes"] });

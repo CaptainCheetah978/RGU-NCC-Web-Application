@@ -298,7 +298,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const previousClasses = [...classes];
 
         // 2. Optimistic Update
-        // Note: The UI might need the ID immediately, so we ensure it's in the cls object.
         setClasses(prev => [...prev, cls]);
 
         try {
@@ -336,16 +335,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
         // 2. Optimistic Update: Remove from local state immediately
         setClasses(prev => prev.filter(c => c.id !== id));
-        setAttendance(prev => prev.filter(a => a.classId !== id));
+        setAttendance(prev => prev.filter((a: AttendanceRecord) => a.classId !== id));
 
         try {
             const { deleteClassAction } = await import("@/app/actions/class-actions");
             const { getAccessToken } = await import("@/lib/get-access-token");
             const token = await getAccessToken();
-            
+
             const result = await deleteClassAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete class");
-            
+
             // 3. Background Sync (No 'await' here to keep UI snappy)
             // We only refresh classes to ensure any server-side computed fields are sync'd
             // but we skip the massive attendance refresh because we filtered it locally.
@@ -399,8 +398,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         if (updates.status !== undefined) payload.status = updates.status;
 
         if (Object.keys(payload).length === 0) return; // Nothing to update
-        const { error } = await supabase.from('profiles').update(payload).eq('id', id);
-        if (error) throw error;
+
+        const { updateProfileAction } = await import("@/app/actions/profile-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await updateProfileAction(id, payload, token || "");
+        if (!result.success) throw new Error(result.error || "Failed to update profile");
         await refreshProfiles();
     };
 
@@ -417,46 +420,35 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const markAttendance = async (record: AttendanceRecord) => {
-        const { data: existing, error: fetchError } = await supabase.from('attendance')
-            .select('id')
-            .eq('class_id', record.classId)
-            .eq('cadet_id', record.cadetId)
-            .single();
-
-        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
-
-        if (existing) {
-            const { error } = await supabase.from('attendance')
-                .update({ status: record.status })
-                .eq('id', existing.id);
-            if (error) throw error;
-        } else {
-            const { error } = await supabase.from('attendance').insert({
-                class_id: record.classId,
-                cadet_id: record.cadetId,
-                status: record.status,
-                marked_by: user?.id
-            });
-            if (error) throw error;
-        }
+        const { markAttendanceAction } = await import("@/app/actions/attendance-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await markAttendanceAction(
+            { classId: record.classId, cadetId: record.cadetId, status: record.status },
+            token || ""
+        );
+        if (!result.success) throw new Error(result.error || "Failed to mark attendance");
         await refreshAttendance();
     };
 
     const sendNote = async (note: Note) => {
-        const { error } = await supabase.from('notes').insert({
-            sender_id: user?.id,
-            recipient_id: note.recipientId,
-            subject: note.subject,
-            content: note.content,
-            is_read: false
-        });
-        if (error) throw error;
+        const { sendNoteAction } = await import("@/app/actions/note-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await sendNoteAction(
+            { recipientId: note.recipientId, subject: note.subject, content: note.content },
+            token || ""
+        );
+        if (!result.success) throw new Error(result.error || "Failed to send note");
         await refreshNotes();
     };
 
     const markNoteAsRead = async (id: string) => {
-        const { error } = await supabase.from('notes').update({ is_read: true }).eq('id', id);
-        if (error) throw error;
+        const { markNoteAsReadAction } = await import("@/app/actions/note-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await markNoteAsReadAction(id, token || "");
+        if (!result.success) throw new Error(result.error || "Failed to mark note as read");
         await refreshNotes();
     };
 
@@ -470,43 +462,32 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const forwardNoteToANO = async (noteId: string, anoId: string) => {
-        const originalNote = notes.find(n => n.id === noteId);
-        if (!originalNote) throw new Error("Note not found");
-
-        const { error: insertError } = await supabase.from('notes').insert({
-            sender_id: user?.id,
-            recipient_id: anoId,
-            subject: `[Forwarded] ${originalNote.subject}`,
-            content: `[Forwarded from ${originalNote.senderName}]\n\n${originalNote.content}`,
-            is_read: false,
-            forwarded_to_ano: true,
-            original_sender_id: originalNote.senderId,
-            original_sender_name: originalNote.senderName
-        });
-        if (insertError) throw insertError;
-
-        const { error: updateError } = await supabase.from('notes')
-            .update({ forwarded_to_ano: true })
-            .eq('id', noteId);
-        if (updateError) throw updateError;
-
+        const { forwardNoteToANOAction } = await import("@/app/actions/note-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await forwardNoteToANOAction(noteId, anoId, token || "");
+        if (!result.success) throw new Error(result.error || "Failed to forward note");
         await refreshNotes();
     };
 
-    const markAllAsRead = async (userId: string) => {
-        const { error } = await supabase.from('notes').update({ is_read: true }).eq('recipient_id', userId);
-        if (error) throw error;
+    const markAllAsRead = async (_userId: string) => {
+        const { markAllAsReadAction } = await import("@/app/actions/note-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await markAllAsReadAction(token || "");
+        if (!result.success) throw new Error(result.error || "Failed to mark all as read");
         await refreshNotes();
     };
 
     const addAnnouncement = async (announcement: Announcement) => {
-        const { error } = await supabase.from('announcements').insert({
-            title: announcement.title,
-            content: announcement.content,
-            author_id: user?.id,
-            priority: announcement.priority.toUpperCase()
-        });
-        if (error) throw error;
+        const { addAnnouncementAction } = await import("@/app/actions/announcement-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        const result = await addAnnouncementAction(
+            { title: announcement.title, content: announcement.content, priority: announcement.priority },
+            token || ""
+        );
+        if (!result.success) throw new Error(result.error || "Failed to post announcement");
         await refreshAnnouncements();
     };
 
