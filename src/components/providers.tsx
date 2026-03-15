@@ -8,10 +8,11 @@ import { ActivityProvider } from "@/lib/activity-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { ToastProvider } from "@/lib/toast-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-const queryClient = new QueryClient();
+import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+    const [queryClient] = useState(() => new QueryClient());
+
     return (
         <ThemeProvider>
             <ToastProvider>

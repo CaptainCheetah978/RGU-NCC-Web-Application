@@ -110,8 +110,8 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
         },
     });
 
-    const markAttendance = useCallback(
-        async (record: AttendanceRecord) => {
+    const markAttendanceMutation = useMutation({
+        mutationFn: async (record: AttendanceRecord) => {
             if (!user) throw new Error("Unauthorized");
             const { data: existing, error: fetchError } = await supabase
                 .from("attendance")
@@ -134,10 +134,11 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                 });
                 if (error) throw error;
             }
-            await queryClient.invalidateQueries({ queryKey: ["attendance"] });
         },
-        [queryClient, user]
-    );
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["attendance"] });
+        },
+    });
 
     const getPersonalAttendance = useCallback(
         (cadetId: string): PersonalAttendanceEntry[] => {
@@ -182,7 +183,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             attendance: attendanceQuery.data || [],
             addClass: (cls) => addClassMutation.mutateAsync(cls),
             deleteClass: (id) => deleteClassMutation.mutateAsync(id),
-            markAttendance,
+            markAttendance: (record) => markAttendanceMutation.mutateAsync(record),
             getAttendanceByClass,
             getPersonalAttendance,
             refreshAttendance: () => queryClient.invalidateQueries({ queryKey: ["attendance"] }),
@@ -197,7 +198,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             queryClient,
             classesQuery.isLoading,
             attendanceQuery.isLoading,
-            markAttendance,
+            markAttendanceMutation,
             getAttendanceByClass,
             getPersonalAttendance,
         ]

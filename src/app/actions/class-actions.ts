@@ -8,6 +8,14 @@ import { Role } from "@/types";
 const MANAGE_ROLES: Role[] = [Role.ANO, Role.SUO, Role.UO];
 
 type ActionResult = { success: boolean; error?: string };
+type ClassInsertPayload = {
+    id?: string;
+    title: string;
+    date: string;
+    time: string;
+    instructor_id: string;
+    description?: string;
+};
 
 // ── Add Class ────────────────────────────────────────────────────────────────
 
@@ -28,7 +36,7 @@ export async function addClassAction(
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     try {
-        const payload: Record<string, string | undefined> = {
+        const payload: ClassInsertPayload = {
             title: classData.title,
             date: classData.date,
             time: classData.time,
