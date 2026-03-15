@@ -29,7 +29,7 @@ Row-Level Security (RLS) and server-side logic dictate operations based on the u
 ```mermaid
 graph TD
     A[Incoming Request] --> B{Valid Session?}
-    B -- No --> C[Redirect to Gatekeeper / Login]
+    B -- No --> C[Redirect to Login]
     B -- Yes --> D{Evaluate Role Profile}
     
     D -- "ANO" --> E[SuperAdmin]
@@ -102,5 +102,49 @@ sequenceDiagram
     else is Printing
         DOM->>Output: Overlays high-res <img> on screen with max z-index
         Output->>User: Invokes `window.print()` automatically
+    end
+```
+
+### 4. Privileged Access vs Public Client
+The system utilizes two distinct Supabase clients to enforce the security boundary between standard user operations and administrative tasks.
+
+*   **Public Client (`src/lib/supabase-client.ts`)**: Used in client-side components. Every request is filtered by the user's JWT and must satisfy PostgreSQL Row Level Security (RLS) policies.
+*   **Admin Client (`src/lib/supabase-admin.ts`)**: Used exclusively in Server Actions. It utilizes the `SERVICE_ROLE_KEY` to bypass RLS. This is required for operations that affect multiple users or systems where standard user credentials lack the necessary scope (e.g., bulk attendance updates by an ANO).
+
+### 5. Offline Data Synchronization
+To support environments with limited connectivity, the system implements a queue-based synchronization mechanism using a Service Worker and IndexedDB.
+
+```mermaid
+flowchart LR
+    A[User UI] --> B{Network State}
+    B -- Online --> C[Immediate Server Action]
+    B -- Offline --> D[IndexedDB Queue]
+    
+    D --> E[Service Worker Listener]
+    E -- On Connection --> F[Batch Processing]
+    F --> G[Supabase Backend]
+    
+    G -- Success --> H[Clear Queue]
+    G -- Failure --> I[Retry Logic / Conflict Resolution]
+```
+
+### 6. QR Code Generation and Lifecycle
+Our application uses `html-to-image` for generating pristine digital snapshots, effectively skipping standard CSS scaling issues that frequently break on diverse mobile devices.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Component as Identity UI
+    participant HTML2Img as Snapshot Engine
+    participant Output as Binary / Print Spooler
+
+    User->>Component: Triggers Export
+    Component->>HTML2Img: Processes DOM element
+    HTML2Img->>Component: Returns PNG Data
+    
+    alt Download
+        Component->>Output: Triggers File Download
+    else Print
+        Component->>Output: Overlays high-res <img> for window.print()
     end
 ```

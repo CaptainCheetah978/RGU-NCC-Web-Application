@@ -34,7 +34,7 @@ A role-based Cadet Management System built with Next.js 16 and Supabase. Feature
 ![Login Screen](public/screenshots/login.png)
 
 ### 2. Comprehensive Dashboard
-> Real-time statistics aggregation and asynchronous activity logging across the unit.
+> Real-time statistics aggregation and asynchronous activity logging.
 ![Dashboard Overview](public/screenshots/dashboard.png)
 
 ### 3. Attendance Management
@@ -72,7 +72,7 @@ A role-based Cadet Management System built with Next.js 16 and Supabase. Feature
 | **Digital ID** | High-resolution snapshot engine with mobile-safe print/download pipeline. | All Ranks |
 | **Attendance** | Offline-first queueing with incremental resync alerts. | SUO, UO |
 | **Private Notes** | Hierarchical note passing with read-receipts and ANO escalation. | All Ranks |
-| **Alumni Vault** | Permanent archiving of service history post-graduation. | ANO, SUO |
+| **Alumni Records**| Archiving of service history post-graduation. | ANO, SUO |
 
 ## Role-Based Access Control (RLS)
 Security is rigidly enforced at the PostgreSQL database level using Supabase Row Level Security (RLS). UI conditional rendering provides a fallback, but DB policies dictate true access.
@@ -83,6 +83,24 @@ Security is rigidly enforced at the PostgreSQL database level using Supabase Row
 | **SUO** | Senior Under Officer | Admin (Read/Write class, attendance, registry schemas) |
 | **UO/SGT**| Junior Officers | Moderator (Write attendance, Read registry) |
 | **Cadet** | Standard User | User (Read/Write personal `profiles`, read scoped `notes`) |
+
+## System Maintainer Guide
+
+For developers and maintainers interacting with the core codebase, the following files contain the primary logic for security, authentication, and data synchronization:
+
+### Technical Navigation Map
+
+| System Component | Primary Source File | Functional Responsibility |
+| :--- | :--- | :--- |
+| **Authentication Flow** | `src/lib/auth-context.tsx` | Manages login, registration, and profile state hydration. |
+| **Action Authorization**| `src/lib/server-auth.ts` | Validates user sessions and roles within Server Actions. |
+| **Database Access** | `src/lib/supabase-client.ts` | Standard client used for data fetching with Row Level Security. |
+| **Administrative Access**| `src/lib/supabase-admin.ts`| Privileged client for operations requiring RLS bypass (ANO/SUO only). |
+| **Offline Performance** | `src/lib/offline-sync.ts` | Implements the IndexedDB queue and synchronization logic. |
+| **Service Worker** | `public/sw.js` | Manages asset caching and offline page availability. |
+| **Data Constraints** | `supabase/migrations/` | Defines the database schema, foreign keys, and RLS policies. |
+
+For detailed documentation regarding data flow and security models, refer to [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## File Architecture
 
