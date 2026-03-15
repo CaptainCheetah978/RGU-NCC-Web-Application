@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cadet, Certificate, Role, User } from "@/types";
+import { Cadet, Certificate, Role, User, AttendanceRecord, Note } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessToken } from "@/lib/get-access-token";
@@ -125,7 +125,20 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             const { error } = await supabase.from("profiles").update(payload).eq("id", id);
             if (error) throw error;
         },
-        onSuccess: () => {
+        onMutate: async ({ id, updates }) => {
+            await queryClient.cancelQueries({ queryKey: ["profiles"] });
+            const previousProfiles = queryClient.getQueryData<(User & Partial<Cadet>)[]>(["profiles"]) || [];
+            queryClient.setQueryData<(User & Partial<Cadet>)[]>(["profiles"], (old) =>
+                (old || []).map((p) => (p.id === id ? { ...p, ...updates } : p))
+            );
+            return { previousProfiles };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousProfiles) {
+                queryClient.setQueryData(["profiles"], context.previousProfiles);
+            }
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["profiles"] });
         },
     });
@@ -137,7 +150,41 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             const result = await deleteCadetAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete cadet");
         },
-        onSuccess: () => {
+        onMutate: async (id: string) => {
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: ["profiles"] }),
+                queryClient.cancelQueries({ queryKey: ["attendance"] }),
+                queryClient.cancelQueries({ queryKey: ["certificates"] }),
+                queryClient.cancelQueries({ queryKey: ["notes"] }),
+            ]);
+
+            const previousProfiles = queryClient.getQueryData<(User & Partial<Cadet>)[]>(["profiles"]) || [];
+            const previousAttendance = queryClient.getQueryData<AttendanceRecord[]>(["attendance"]) || [];
+            const previousCertificates = queryClient.getQueryData<Certificate[]>(["certificates"]) || [];
+            const previousNotes = queryClient.getQueryData<Note[]>(["notes"]) || [];
+
+            queryClient.setQueryData<(User & Partial<Cadet>)[]>(["profiles"], (old) =>
+                (old || []).filter((p) => p.id !== id)
+            );
+            queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) =>
+                (old || []).filter((a) => a.cadetId !== id)
+            );
+            queryClient.setQueryData<Certificate[]>(["certificates"], (old) =>
+                (old || []).filter((c) => c.userId !== id)
+            );
+            queryClient.setQueryData<Note[]>(["notes"], (old) =>
+                (old || []).filter((n) => n.senderId !== id && n.recipientId !== id)
+            );
+
+            return { previousProfiles, previousAttendance, previousCertificates, previousNotes };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousProfiles) queryClient.setQueryData(["profiles"], context.previousProfiles);
+            if (context?.previousAttendance) queryClient.setQueryData(["attendance"], context.previousAttendance);
+            if (context?.previousCertificates) queryClient.setQueryData(["certificates"], context.previousCertificates);
+            if (context?.previousNotes) queryClient.setQueryData(["notes"], context.previousNotes);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["profiles"] });
             queryClient.invalidateQueries({ queryKey: ["attendance"] });
             queryClient.invalidateQueries({ queryKey: ["certificates"] });

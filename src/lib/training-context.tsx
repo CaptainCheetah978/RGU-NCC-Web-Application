@@ -92,7 +92,18 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             );
             if (!result.success) throw new Error(result.error || "Failed to schedule class");
         },
-        onSuccess: () => {
+        onMutate: async (cls: ClassSession) => {
+            await queryClient.cancelQueries({ queryKey: ["classes"] });
+            const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]) || [];
+            queryClient.setQueryData<ClassSession[]>(["classes"], (old) => [...(old || []), cls]);
+            return { previousClasses };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousClasses) {
+                queryClient.setQueryData(["classes"], context.previousClasses);
+            }
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["classes"] });
         },
     });
@@ -104,7 +115,26 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             const result = await deleteClassAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete class");
         },
-        onSuccess: () => {
+        onMutate: async (id: string) => {
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: ["classes"] }),
+                queryClient.cancelQueries({ queryKey: ["attendance"] }),
+            ]);
+            const previousClasses = queryClient.getQueryData<ClassSession[]>(["classes"]) || [];
+            const previousAttendance = queryClient.getQueryData<AttendanceRecord[]>(["attendance"]) || [];
+
+            queryClient.setQueryData<ClassSession[]>(["classes"], (old) => (old || []).filter((c) => c.id !== id));
+            queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) =>
+                (old || []).filter((a) => a.classId !== id)
+            );
+
+            return { previousClasses, previousAttendance };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousClasses) queryClient.setQueryData(["classes"], context.previousClasses);
+            if (context?.previousAttendance) queryClient.setQueryData(["attendance"], context.previousAttendance);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["classes"] });
             queryClient.invalidateQueries({ queryKey: ["attendance"] });
         },
@@ -135,7 +165,38 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                 if (error) throw error;
             }
         },
-        onSuccess: () => {
+        onMutate: async (record: AttendanceRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["attendance"] });
+            const previousAttendance = queryClient.getQueryData<AttendanceRecord[]>(["attendance"]) || [];
+
+            queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) => {
+                const list = [...(old || [])];
+                const idx = list.findIndex(
+                    (a) => a.classId === record.classId && a.cadetId === record.cadetId
+                );
+                const optimisticEntry: AttendanceRecord = {
+                    id: record.id || `optimistic-${record.classId}-${record.cadetId}`,
+                    classId: record.classId,
+                    cadetId: record.cadetId,
+                    status: record.status,
+                    timestamp: record.timestamp || new Date().toISOString(),
+                };
+                if (idx >= 0) {
+                    list[idx] = { ...list[idx], ...optimisticEntry };
+                } else {
+                    list.push(optimisticEntry);
+                }
+                return list;
+            });
+
+            return { previousAttendance };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousAttendance) {
+                queryClient.setQueryData(["attendance"], context.previousAttendance);
+            }
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["attendance"] });
         },
     });
