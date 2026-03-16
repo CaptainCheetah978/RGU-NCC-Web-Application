@@ -1,8 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const viewport: Viewport = {
   themeColor: "#0f172a",
@@ -30,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans bg-background text-primary overflow-x-hidden`}>
+      <body className="font-sans bg-background text-primary overflow-x-hidden">
         <Providers>{children}</Providers>
         <PWARegistration />
         <Analytics />
