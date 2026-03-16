@@ -58,6 +58,7 @@ export default function PerformanceDashboard() {
         () => performanceData.filter(c => c.percentage >= 90).slice(0, 5),
         [performanceData]
     );
+    // Show *all* cadets below the 50% threshold (no top-5 cap) so ANO can see every at-risk cadet.
     const atRiskCadets = useMemo(
         () => [...performanceData].reverse().filter(c => c.percentage <= 50),
         [performanceData]
