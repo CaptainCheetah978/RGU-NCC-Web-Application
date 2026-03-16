@@ -1,19 +1,34 @@
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 // Note: access to the service role key is RESTRICTED to server-side code only.
 // Never expose this client to the browser.
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+let cachedAdmin: SupabaseClient | null = null;
 
-if (!serviceRoleKey) {
-    throw new Error('Supabase Service Role Key is missing. Please add SUPABASE_SERVICE_ROLE_KEY to .env.local');
+function createAdminClient() {
+    if (cachedAdmin) return cachedAdmin;
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+        throw new Error('Supabase configuration missing. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+    }
+
+    cachedAdmin = createClient(supabaseUrl, serviceRoleKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    });
+    return cachedAdmin;
 }
 
-export const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-        autoRefreshToken: false,
-        persistSession: false
-    }
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+    get(_target, prop) {
+        const client = createAdminClient();
+        const value = Reflect.get(client, prop);
+        return typeof value === "function" ? value.bind(client) : value;
+    },
 });
