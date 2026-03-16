@@ -36,7 +36,7 @@ interface DataContextType {
     deleteNote: (id: string) => Promise<void>;
     getStats: (userId?: string) => DashboardStats;
     messageableUsers: (Cadet | User)[];
-    markAllAsRead: (userId: string) => Promise<void>;
+    markAllAsRead: () => Promise<void>;
     getPersonalAttendance: (cadetId: string) => PersonalAttendanceEntry[];
     getAttendanceByClass: () => { className: string; present: number; absent: number; late: number; excused: number }[];
     certificates: Certificate[];
@@ -304,6 +304,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             const { addClassAction } = await import("@/app/actions/class-actions");
             const { getAccessToken } = await import("@/lib/get-access-token");
             const token = await getAccessToken();
+            if (!token) throw new Error("Missing access token");
             
             const result = await addClassAction(
                 { 
@@ -314,7 +315,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     instructorId: cls.instructorId, 
                     description: cls.description 
                 },
-                token || ""
+                token
             );
             
             if (!result.success) throw new Error(result.error || "Failed to schedule class");
@@ -342,7 +343,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             const { getAccessToken } = await import("@/lib/get-access-token");
             const token = await getAccessToken();
 
-            const result = await deleteClassAction(id, token || "");
+            if (!token) throw new Error("Missing access token");
+            const result = await deleteClassAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to delete class");
 
             // 3. Background Sync (No 'await' here to keep UI snappy)
@@ -470,11 +472,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         await refreshNotes();
     };
 
-    const markAllAsRead = async (_userId: string) => {
+    const markAllAsRead = async () => {
         const { markAllAsReadAction } = await import("@/app/actions/note-actions");
         const { getAccessToken } = await import("@/lib/get-access-token");
         const token = await getAccessToken();
-        const result = await markAllAsReadAction(token || "");
+        if (!token) throw new Error("Missing access token");
+        const result = await markAllAsReadAction(token);
         if (!result.success) throw new Error(result.error || "Failed to mark all as read");
         await refreshNotes();
     };
@@ -501,14 +504,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const addCertificate = async (cert: Certificate) => {
-        const { error } = await supabase.from('certificates').insert({
-            user_id: cert.userId,
-            name: cert.name,
-            type: cert.type,
-            file_data: cert.fileData,
-            upload_date: cert.uploadDate
-        });
-        if (error) throw error;
+        const { addCertificateAction } = await import("@/app/actions/certificate-actions");
+        const { getAccessToken } = await import("@/lib/get-access-token");
+        const token = await getAccessToken();
+        if (!token) throw new Error("Missing access token");
+        const result = await addCertificateAction(
+            {
+                userId: cert.userId,
+                name: cert.name,
+                type: cert.type,
+                fileData: cert.fileData,
+                uploadDate: cert.uploadDate
+            },
+            token
+        );
+        if (!result.success) throw new Error(result.error || "Failed to add certificate");
         await refreshCertificates();
     };
 

@@ -13,6 +13,7 @@ import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
+import { generateUuid } from "@/lib/utils";
 
 export default function ClassesPage() {
     const { classes, addClass, deleteClass } = useTrainingData();
@@ -42,7 +43,7 @@ export default function ClassesPage() {
         setIsLoading(true);
 
         const newClass = {
-            id: `cls-${Date.now()}`,
+            id: generateUuid(),
             title: formData.title,
             date: formData.date,
             time: formData.time,

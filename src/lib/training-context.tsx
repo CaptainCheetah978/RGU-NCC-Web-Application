@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ClassSession, AttendanceRecord } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useAuth } from "@/lib/auth-context";
-import { getAccessToken } from "@/lib/get-access-token";
+import { requireAccessToken } from "@/lib/require-access-token";
 
 interface PersonalAttendanceEntry {
     date: string;
@@ -90,7 +90,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
     const addClassMutation = useMutation({
         mutationFn: async (cls: ClassSession) => {
             const { addClassAction } = await import("@/app/actions/class-actions");
-            const token = await getAccessToken();
+            const token = await requireAccessToken();
             const result = await addClassAction(
                 {
                     id: cls.id,
@@ -100,7 +100,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                     instructorId: cls.instructorId,
                     description: cls.description,
                 },
-                token || ""
+                token
             );
             if (!result.success) throw new Error(result.error || "Failed to schedule class");
         },
@@ -127,8 +127,8 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
     const deleteClassMutation = useMutation({
         mutationFn: async (id: string) => {
             const { deleteClassAction } = await import("@/app/actions/class-actions");
-            const token = await getAccessToken();
-            const result = await deleteClassAction(id, token || "");
+            const token = await requireAccessToken();
+            const result = await deleteClassAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to delete class");
         },
         onMutate: async (id: string) => {
@@ -160,8 +160,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
         mutationFn: async (record: AttendanceRecord) => {
             if (!user) throw new Error("Unauthorized");
             const { markAttendanceAction } = await import("@/app/actions/attendance-actions");
-            const token = await getAccessToken();
-            if (!token) throw new Error("Unauthorized");
+            const token = await requireAccessToken();
             const result = await markAttendanceAction(
                 { classId: record.classId, cadetId: record.cadetId, status: record.status },
                 token

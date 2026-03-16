@@ -32,6 +32,9 @@
     "tailwindcss-animate": "^1.0.7",
     "zod": "^4.3.6"
   },
+  "overrides": {
+    "dompurify": "3.3.2"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
