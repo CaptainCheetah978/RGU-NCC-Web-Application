@@ -19,7 +19,7 @@ export function getSupabaseClient(): SupabaseClient {
 export const supabase = new Proxy({} as SupabaseClient, {
   get(_target, prop) {
     const client = getSupabaseClient();
-    // @ts-expect-error dynamic access pass-through
-    return client[prop];
+    const value = Reflect.get(client, prop);
+    return typeof value === "function" ? value.bind(client) : value;
   },
 });

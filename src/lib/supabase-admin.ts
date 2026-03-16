@@ -28,7 +28,7 @@ function createAdminClient() {
 export const supabaseAdmin = new Proxy({} as SupabaseClient, {
     get(_target, prop) {
         const client = createAdminClient();
-        // @ts-expect-error pass-through proxy
-        return client[prop];
+        const value = Reflect.get(client, prop);
+        return typeof value === "function" ? value.bind(client) : value;
     },
 });
