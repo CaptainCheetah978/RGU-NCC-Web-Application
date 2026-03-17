@@ -19,7 +19,7 @@ vi.mock('@/lib/supabase-client', () => ({
     from: vi.fn(() => ({
       select: vi.fn().mockImplementation(() => ({
         // Return empty array by default
-        then: (cb: any) => cb({ data: [], error: null })
+        then: (cb: (val: { data: unknown[]; error: null }) => void) => cb({ data: [], error: null })
       })),
       insert: vi.fn().mockReturnValue({ data: null, error: null }),
       delete: vi.fn().mockReturnValue({ data: null, error: null })
@@ -47,9 +47,11 @@ vi.mock('@/app/actions/attendance-actions', () => attendanceActions)
 
 // Mock crypto for optimistic IDs
 if (typeof global.crypto === 'undefined') {
-  (global as any).crypto = {
-    randomUUID: () => 'test-uuid-' + Math.random().toString(36).substring(7)
-  }
+  Object.defineProperty(global, 'crypto', {
+    value: {
+      randomUUID: () => 'test-uuid-' + Math.random().toString(36).substring(7)
+    }
+  });
 }
 
 // --- TEST SETUP ---
@@ -63,11 +65,13 @@ const createWrapper = () => {
       },
     },
   })
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <TrainingProvider>{children}</TrainingProvider>
     </QueryClientProvider>
-  )
+  );
+  Wrapper.displayName = 'TestQueryWrapper';
+  return Wrapper;
 }
 
 describe('TrainingContext Optimistic Updates', () => {
@@ -147,7 +151,7 @@ describe('TrainingContext Optimistic Updates', () => {
 
     try {
       await result.current.addClass(newClass)
-    } catch (e) {
+    } catch {
       // Expected
     }
 

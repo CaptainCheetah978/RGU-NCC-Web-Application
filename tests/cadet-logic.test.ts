@@ -18,7 +18,7 @@ vi.mock('../src/lib/supabase-client', () => ({
     from: vi.fn(() => ({
       select: vi.fn().mockImplementation(() => ({
         // Return a promise that takes a little long to resolve
-        then: (cb: any) => new Promise((resolve) => {
+        then: (cb: (val: { data: unknown[]; error: null }) => void) => new Promise((resolve) => {
             setTimeout(() => {
                 resolve(cb({ 
                     data: [{
@@ -33,11 +33,11 @@ vi.mock('../src/lib/supabase-client', () => ({
             }, 50)
         })
       })),
-      insert: vi.fn().mockReturnValue({ then: (cb: any) => Promise.resolve({ data: null, error: null }).then(cb) }),
+      insert: vi.fn().mockReturnValue({ then: (cb: (val: { data: null; error: null }) => void) => Promise.resolve({ data: null, error: null }).then(cb) }),
       update: vi.fn().mockImplementation(() => ({
-        eq: vi.fn().mockReturnValue({ then: (cb: any) => Promise.resolve({ data: null, error: null }).then(cb) })
+        eq: vi.fn().mockReturnValue({ then: (cb: (val: { data: null; error: null }) => void) => Promise.resolve({ data: null, error: null }).then(cb) })
       })),
-      delete: vi.fn().mockReturnValue({ then: (cb: any) => cb({ data: null, error: null }) })
+      delete: vi.fn().mockReturnValue({ then: (cb: (val: { data: null; error: null }) => void) => cb({ data: null, error: null }) })
     }))
   }
 }))
@@ -61,10 +61,12 @@ const createWrapper = () => {
       },
     },
   })
-  return ({ children }: { children: React.ReactNode }) => 
+  const Wrapper = ({ children }: { children: React.ReactNode }) => 
     React.createElement(QueryClientProvider, { client: queryClient }, 
       React.createElement(CadetProvider, null, children)
     )
+  Wrapper.displayName = 'CadetTestWrapper'
+  return Wrapper
 }
 
 describe('CadetContext Optimistic Updates', () => {
@@ -85,7 +87,7 @@ describe('CadetContext Optimistic Updates', () => {
     const updates = { name: 'Updated Name' }
 
     // Call update (don't await promise immediately)
-    const promise = result.current.updateCadet(cadetId, updates as any)
+    const promise = result.current.updateCadet(cadetId, updates as Record<string, string>)
 
     // Verify optimistic state
     await waitFor(() => {

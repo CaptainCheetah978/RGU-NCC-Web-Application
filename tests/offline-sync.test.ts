@@ -1,13 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { queueAttendanceOffline, getOfflineAttendanceQueue, clearOfflineQueue } from '../src/lib/offline-sync'
-import { get, update, clear } from 'idb-keyval'
-
 // Mock idb-keyval
 vi.mock('idb-keyval', () => {
-    let store: Record<string, any> = {}
+    let store: Record<string, unknown> = {}
     return {
-        get: vi.fn((key) => Promise.resolve(store[key])),
-        update: vi.fn((key, cb) => {
+        get: vi.fn((key: string) => Promise.resolve(store[key])),
+        update: vi.fn((key: string, cb: (val: unknown) => unknown) => {
             store[key] = cb(store[key])
             return Promise.resolve()
         }),
