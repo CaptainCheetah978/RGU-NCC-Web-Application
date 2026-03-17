@@ -7,6 +7,8 @@
 # NCC RGU Cadet Management System
 
 <p align="center">
+  <img src="https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
+  <img src="https://img.shields.io/badge/Vitest-Tested-729B1B?style=for-the-badge&logo=vitest" alt="Vitest" />
   <img src="https://img.shields.io/badge/Vercel-Deployed-success?style=for-the-badge&logo=vercel" alt="Vercel Deployed" />
   <img src="https://img.shields.io/badge/Next.js%2016-Black?style=for-the-badge&logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/Supabase-Database-3FC68D?style=for-the-badge&logo=supabase" alt="Supabase" />
@@ -25,7 +27,7 @@ A role-based Cadet Management System built with Next.js 16 and Supabase. Feature
 - **UI & Animations**: [Framer Motion](https://www.framer.com/motion/) for transitions, Shadcn UI base components
 - **PWA & Offline**: Service Worker with cache-first strategy; IndexedDB-backed offline queueing for zero-connectivity areas.
 - **Performance**: High-speed list virtualization via `@tanstack/react-virtual` for large datasets.
-- **CI/CD**: GitHub Actions for automated linting and build verification.
+- **CI/CD & Testing**: [Vitest](https://vitest.dev/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) integrated with GitHub Actions for automated quality gates.
 
 ## Application Walkthrough & Features
 
@@ -92,6 +94,7 @@ A mental model of the source code for new contributors:
 
 ```text
 ├── public/                 # Static assets (logos, PWA manifest, service worker)
+├── tests/                  # Automated Vitest suites (Context logic, Schemas, Offline sync)
 ├── src/
 │   ├── app/                # Next.js App Router root
 │   │   ├── actions/        # Server Actions (Zod validated, role-guarded DB mutations)
@@ -120,6 +123,7 @@ A mental model of the source code for new contributors:
 ├── supabase/
 │   └── migrations/         # SQL migrations (schema, RLS policies, constraints)
 ├── package.json            # Dependencies and scripts (Tailwind 4)
+├── vitest.config.ts        # Vitest configuration for unit/integration tests
 └── postcss.config.mjs      # PostCSS config (Tailwind 4 plugin)
 ```
 
@@ -165,6 +169,12 @@ NEXT_PUBLIC_INSTITUTION_NAME="Royal Global University"
 ```bash
 npm run dev
 # App is ready at http://localhost:3000
+
+**5. Run Automated Tests**
+```bash
+npm test          # Run all tests once
+npm run test:watch # Run tests in interactive watch mode
+```
 ```
 
 ## Documentation & Governance
@@ -188,7 +198,6 @@ This repository is built to be unit-agnostic ("white-labeled"). To fork this for
 If you are planning to contribute, we are looking at:
 - **Multilingual Support**: Abstracting strings for i18n routing (Hindi/Regional languages).
 - **Camp Management**: High-volume parallel data ingestion logic.
-- **Unit Tests**: Jest/Vitest + React Testing Library for Server Actions and components.
 - **Analytics Dashboard**: Attendance trends, cadet performance scoring.
 - **Export Features**: Integrated `jspdf` and `jspdf-autotable` for attendance reports and cadet summaries.
 
