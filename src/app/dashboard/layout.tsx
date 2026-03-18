@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function DashboardLayout({
     children,
@@ -14,9 +14,21 @@ export default function DashboardLayout({
     const { user, isLoading } = useAuth();
     const router = useRouter();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    // Once the user loads successfully at least once, don't redirect on
+    // transient null states caused by background token refreshes.
+    const hasEverLoaded = useRef(false);
 
     useEffect(() => {
-        if (!isLoading && !user) {
+        if (user) {
+            hasEverLoaded.current = true;
+        }
+    }, [user]);
+
+    useEffect(() => {
+        // Only redirect if auth has finished loading AND user is null AND
+        // we never had a user in this session (prevents flash redirects
+        // during Supabase token refresh cycles).
+        if (!isLoading && !user && !hasEverLoaded.current) {
             router.replace("/");
         }
     }, [user, isLoading, router]);

@@ -1,8 +1,9 @@
-const CACHE_NAME = 'ncc-pwa-v3';
+const CACHE_NAME = 'ncc-pwa-v4';
 
 // App shell: pages and static assets to pre-cache on install
 const PRECACHE_URLS = [
     '/',
+    '/dashboard',
     '/manifest.json',
     '/ncc-logo.png',
     '/rgu-logo.png',

@@ -23,6 +23,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+    // Track whether user has been loaded at least once — prevents transient
+    // null states during token refreshes from triggering login redirects.
+    const userLoadedRef = React.useRef(false);
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -40,30 +43,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_OUT') {
+                userLoadedRef.current = false;
                 setUser(null);
                 setIsLoading(false);
                 // Hard redirect — clears all React state and re-renders from scratch
                 window.location.replace('/');
                 return;
             }
+
+            // Skip redundant profile fetch if user is already loaded and this
+            // is just a background token refresh or initial echo.
+            if (userLoadedRef.current && (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+                return;
+            }
+
             if (session?.user) {
+                // Don't flash loading spinner for background auth events —
+                // only the initial load should show the spinner.
                 await fetchProfile(session.user.id);
             } else {
                 setUser(null);
             }
-            setIsLoading(false);
         });
 
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchProfile = async (userId: string, timeoutMs = 6000) => {
+    const fetchProfile = async (userId: string, timeoutMs = 12000, retries = 1): Promise<void> => {
         // Race against a timeout so login never spins forever on a slow connection
-        const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Profile fetch timed out')), timeoutMs)
-        );
-        try {
-            let { data, error } = await Promise.race([
+        const attemptFetch = async () => {
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Profile fetch timed out')), timeoutMs)
+            );
+            return Promise.race([
                 supabase
                     .from('profiles')
                     .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email')
@@ -71,6 +83,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     .single(),
                 timeoutPromise
             ]);
+        };
+
+        try {
+            let result;
+            try {
+                result = await attemptFetch();
+            } catch (firstError) {
+                // First attempt failed (likely timeout on slow connection) — retry once
+                if (retries > 0) {
+                    console.warn('Profile fetch timed out, retrying...', firstError);
+                    await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
+                    result = await attemptFetch();
+                } else {
+                    throw firstError;
+                }
+            }
+
+            let { data, error } = result;
 
             if (error && error.code === 'PGRST116') {
                 // Profile not found, but user is authenticated.
@@ -116,6 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     avatarUrl: data.avatar_url,
                 };
                 setUser(appUser);
+                userLoadedRef.current = true;
             }
         } catch (error) {
             console.error('Unexpected error fetching profile:', error);

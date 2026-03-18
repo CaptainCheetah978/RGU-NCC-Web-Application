@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, Clock, Search, Shield } from "lucide-react";
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { AttendanceExport } from "@/components/attendance/export-button";
 import { PdfExportButton } from "@/components/attendance/pdf-export-button";
@@ -269,9 +268,10 @@ function AttendanceContent() {
                 </div>
 
                 <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
-                    <table className="w-full">
+                    {/* Desktop table header — hidden on mobile */}
+                    <table className="w-full hidden md:table">
                         <thead className="bg-gray-50 dark:bg-slate-900/60 sticky top-0 z-10 shadow-sm">
-                            <tr className="text-left text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider block w-full table-fixed">
+                            <tr className="text-left text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">
                                 <th className="px-6 py-4 w-[40%]">Cadet Name</th>
                                 <th className="px-6 py-4 w-[20%]">Regimental Given ID</th>
                                 <th className="px-6 py-4 w-[15%]">Rank</th>
@@ -289,102 +289,154 @@ function AttendanceContent() {
                                 position: 'relative',
                             }}
                         >
-                            <table className="w-full absolute top-0 left-0">
-                                <tbody className="w-full">
-                                    {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-                                        const cadet = filteredCadets[virtualItem.index];
-                                        const status = getStatus(cadet.id);
-                                        return (
-                                            <motion.tr
-                                                key={cadet.id}
-                                                // Adjust visual row translation based on virtual array
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    width: '100%',
-                                                    height: `${virtualItem.size}px`,
-                                                    transform: `translateY(${virtualItem.start}px)`,
-                                                }}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                className="hover:bg-gray-50/80 dark:hover:bg-slate-700/30 transition-colors group flex table-fixed w-full items-center border-b border-gray-100 dark:border-slate-700/50"
-                                            >
-                                                <td className="px-6 py-3 w-[40%] text-sm">
-                                                    <div className="flex items-center">
-                                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-xs font-bold text-primary mr-3 border border-primary/10 shrink-0">
-                                                            {cadet.name.charAt(0)}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <div className="font-bold text-gray-900 dark:text-white truncate">{cadet.name}</div>
-                                                            <div className="text-xs text-gray-600 md:hidden font-medium truncate">{cadet.regimentalNumber}</div>
-                                                        </div>
+                            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                                const cadet = filteredCadets[virtualItem.index];
+                                const status = getStatus(cadet.id);
+                                return (
+                                    <div
+                                        key={cadet.id}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: `${virtualItem.size}px`,
+                                            transform: `translateY(${virtualItem.start}px)`,
+                                        }}
+                                        className="border-b border-gray-100 dark:border-slate-700/50"
+                                    >
+                                        {/* Mobile layout: compact card with name left, buttons right */}
+                                        <div className="flex md:hidden items-center justify-between px-3 py-2 h-full gap-2">
+                                            <div className="flex items-center min-w-0 flex-1">
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-xs font-bold text-primary mr-2 border border-primary/10 shrink-0">
+                                                    {cadet.name.charAt(0)}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="font-bold text-sm text-gray-900 dark:text-white truncate">{cadet.name}</div>
+                                                    <div className="text-[10px] text-gray-500 dark:text-slate-500 truncate">{cadet.regimentalNumber || cadet.role}</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <button
+                                                    disabled={!canMark}
+                                                    onClick={() => handleStatusChange(cadet.id, "PRESENT")}
+                                                    aria-label={`Mark ${cadet.name} Present`}
+                                                    className={cn(
+                                                        "min-w-[44px] min-h-[44px] w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95",
+                                                        status === "PRESENT"
+                                                            ? "bg-green-500 text-white shadow-md shadow-green-500/20"
+                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-600 dark:text-gray-400"
+                                                    )}
+                                                    title="Present"
+                                                >
+                                                    <Check className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    disabled={!canMark}
+                                                    onClick={() => handleStatusChange(cadet.id, "ABSENT")}
+                                                    aria-label={`Mark ${cadet.name} Absent`}
+                                                    className={cn(
+                                                        "min-w-[44px] min-h-[44px] w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95",
+                                                        status === "ABSENT"
+                                                            ? "bg-red-500 text-white shadow-md shadow-red-500/20"
+                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-600 dark:text-gray-400"
+                                                    )}
+                                                    title="Absent"
+                                                >
+                                                    <X className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    disabled={!canMark}
+                                                    onClick={() => handleStatusChange(cadet.id, "LATE")}
+                                                    aria-label={`Mark ${cadet.name} Late`}
+                                                    className={cn(
+                                                        "min-w-[44px] min-h-[44px] w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95",
+                                                        status === "LATE"
+                                                            ? "bg-yellow-500 text-white shadow-md shadow-yellow-500/20"
+                                                            : "bg-gray-100 dark:bg-slate-700/50 text-gray-600 dark:text-gray-400"
+                                                    )}
+                                                    title="Late"
+                                                >
+                                                    <Clock className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Desktop layout: full table row */}
+                                        <div className="hidden md:flex items-center w-full h-full hover:bg-gray-50/80 dark:hover:bg-slate-700/30 transition-colors group">
+                                            <div className="px-6 py-3 w-[40%] text-sm">
+                                                <div className="flex items-center">
+                                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-xs font-bold text-primary mr-3 border border-primary/10 shrink-0">
+                                                        {cadet.name.charAt(0)}
                                                     </div>
-                                                </td>
-                                                <td className="px-6 py-3 text-sm text-gray-800 dark:text-slate-400 font-bold tracking-wide hidden md:block w-[20%] truncate">
-                                                    {cadet.regimentalNumber || "-"}
-                                                </td>
-                                                <td className="px-6 py-3 text-sm w-[15%]">
-                                                    <span className={cn(
-                                                        "px-2.5 py-1 rounded-md text-xs font-semibold border inline-block whitespace-nowrap",
-                                                        cadet.role === Role.SUO ? "bg-amber-50 text-amber-700 border-amber-100 ring-1 ring-amber-500/10" :
-                                                            cadet.role === Role.UO ? "bg-gray-100 text-gray-700 border-gray-200 ring-1 ring-gray-500/10" :
-                                                                "bg-primary/5 text-primary border-primary/10"
-                                                    )}>
-                                                        {cadet.role}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-3 w-[25%] flex justify-center h-full items-center">
-                                                    <div className="flex items-center justify-center space-x-1 sm:space-x-2">
-                                                        <button
-                                                            disabled={!canMark}
-                                                            onClick={() => handleStatusChange(cadet.id, "PRESENT")}
-                                                            aria-label={`Mark ${cadet.name} Present`}
-                                                            className={cn(
-                                                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                                                                status === "PRESENT"
-                                                                    ? "bg-green-500 text-white shadow-md shadow-green-500/20 scale-105"
-                                                                    : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-green-50 hover:text-green-700"
-                                                            )}
-                                                            title="Mark Present"
-                                                        >
-                                                            <Check className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            disabled={!canMark}
-                                                            onClick={() => handleStatusChange(cadet.id, "ABSENT")}
-                                                            aria-label={`Mark ${cadet.name} Absent`}
-                                                            className={cn(
-                                                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                                                                status === "ABSENT"
-                                                                    ? "bg-red-500 text-white shadow-md shadow-red-500/20 scale-105"
-                                                                    : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-red-50 hover:text-red-700"
-                                                            )}
-                                                            title="Mark Absent"
-                                                        >
-                                                            <X className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            disabled={!canMark}
-                                                            onClick={() => handleStatusChange(cadet.id, "LATE")}
-                                                            aria-label={`Mark ${cadet.name} Late`}
-                                                            className={cn(
-                                                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                                                                status === "LATE"
-                                                                    ? "bg-yellow-500 text-white shadow-md shadow-yellow-500/20 scale-105"
-                                                                    : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700"
-                                                            )}
-                                                            title="Mark Late"
-                                                        >
-                                                            <Clock className="w-4 h-4" />
-                                                        </button>
+                                                    <div className="min-w-0">
+                                                        <div className="font-bold text-gray-900 dark:text-white truncate">{cadet.name}</div>
                                                     </div>
-                                                </td>
-                                            </motion.tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                                </div>
+                                            </div>
+                                            <div className="px-6 py-3 text-sm text-gray-800 dark:text-slate-400 font-bold tracking-wide w-[20%] truncate">
+                                                {cadet.regimentalNumber || "-"}
+                                            </div>
+                                            <div className="px-6 py-3 text-sm w-[15%]">
+                                                <span className={cn(
+                                                    "px-2.5 py-1 rounded-md text-xs font-semibold border inline-block whitespace-nowrap",
+                                                    cadet.role === Role.SUO ? "bg-amber-50 text-amber-700 border-amber-100 ring-1 ring-amber-500/10" :
+                                                        cadet.role === Role.UO ? "bg-gray-100 text-gray-700 border-gray-200 ring-1 ring-gray-500/10" :
+                                                            "bg-primary/5 text-primary border-primary/10"
+                                                )}>
+                                                    {cadet.role}
+                                                </span>
+                                            </div>
+                                            <div className="px-6 py-3 w-[25%] flex justify-center items-center">
+                                                <div className="flex items-center justify-center space-x-2">
+                                                    <button
+                                                        disabled={!canMark}
+                                                        onClick={() => handleStatusChange(cadet.id, "PRESENT")}
+                                                        aria-label={`Mark ${cadet.name} Present`}
+                                                        className={cn(
+                                                            "w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200",
+                                                            status === "PRESENT"
+                                                                ? "bg-green-500 text-white shadow-md shadow-green-500/20 scale-105"
+                                                                : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                                        )}
+                                                        title="Mark Present"
+                                                    >
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        disabled={!canMark}
+                                                        onClick={() => handleStatusChange(cadet.id, "ABSENT")}
+                                                        aria-label={`Mark ${cadet.name} Absent`}
+                                                        className={cn(
+                                                            "w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200",
+                                                            status === "ABSENT"
+                                                                ? "bg-red-500 text-white shadow-md shadow-red-500/20 scale-105"
+                                                                : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-red-50 hover:text-red-700"
+                                                        )}
+                                                        title="Mark Absent"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        disabled={!canMark}
+                                                        onClick={() => handleStatusChange(cadet.id, "LATE")}
+                                                        aria-label={`Mark ${cadet.name} Late`}
+                                                        className={cn(
+                                                            "w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200",
+                                                            status === "LATE"
+                                                                ? "bg-yellow-500 text-white shadow-md shadow-yellow-500/20 scale-105"
+                                                                : "bg-gray-100 dark:bg-slate-700/50 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700"
+                                                        )}
+                                                        title="Mark Late"
+                                                    >
+                                                        <Clock className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </CardContent>

@@ -2,6 +2,7 @@
 
 import { useTrainingData } from "@/lib/training-context";
 import { Calendar } from "lucide-react";
+import Link from "next/link";
 
 export function UpcomingClasses() {
     const { classes } = useTrainingData();
@@ -31,9 +32,11 @@ export function UpcomingClasses() {
                                     <h4 className="font-bold text-gray-900 dark:text-white">{cls.title}</h4>
                                     <p className="text-sm text-gray-600 dark:text-slate-400">{cls.time}</p>
                                 </div>
-                                <button className="px-4 py-2 text-sm font-medium text-primary bg-primary/5 dark:bg-primary/10 rounded-lg hover:bg-primary hover:text-white transition-all">
-                                    View
-                                </button>
+                                <Link href={`/dashboard/attendance?classId=${cls.id}`}>
+                                    <button className="px-4 py-2 text-sm font-medium text-primary bg-primary/5 dark:bg-primary/10 rounded-lg hover:bg-primary hover:text-white transition-all">
+                                        View
+                                    </button>
+                                </Link>
                             </div>
                         );
                     })}
