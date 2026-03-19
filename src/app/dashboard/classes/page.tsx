@@ -37,6 +37,7 @@ export default function ClassesPage() {
     if (!user) return null;
 
     const canEdit = user && [Role.ANO, Role.SUO, Role.UO].includes(user.role);
+    const canDelete = user && [Role.ANO, Role.SUO].includes(user.role);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -127,7 +128,7 @@ export default function ClassesPage() {
                                             </span>
                                             <CardTitle className="text-xl mb-1 group-hover:text-primary transition-colors">{cls.title}</CardTitle>
                                         </div>
-                                        {canEdit && (
+                                        {canDelete && (
                                             <button
                                                 onClick={() => handleDelete(cls.id, cls.title)}
                                                 className="text-gray-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full"
