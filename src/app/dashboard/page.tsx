@@ -74,7 +74,7 @@ export default function DashboardPage() {
                     delay={0.3}
                 />
                 <InfoCard
-                    title="Notes Received"
+                    title="Unread Notes"
                     value={stats.unreadNotes}
                     icon={MessageSquare}
                     color="red"

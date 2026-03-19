@@ -1,4 +1,4 @@
-import { get, update, clear } from 'idb-keyval';
+import { get, update, del } from 'idb-keyval';
 import { AttendanceRecord } from '@/types';
 
 // The key we use in IndexedDB to store pending attendance mutations
@@ -51,10 +51,9 @@ export async function getOfflineAttendanceQueue(): Promise<QueuedAttendancePaylo
  */
 export async function clearOfflineQueue(): Promise<void> {
     try {
-        await clear();
-        // Alternative: we could just delete the specific key if we use IDB for other things
-        // await set(IDB_ATTENDANCE_QUEUE_KEY, []);
+        await del(IDB_ATTENDANCE_QUEUE_KEY);
     } catch (error) {
         console.error("Failed to clear offline queue:", error);
     }
 }
+

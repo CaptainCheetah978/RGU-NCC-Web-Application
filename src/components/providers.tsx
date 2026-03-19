@@ -11,7 +11,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    const [queryClient] = useState(() => new QueryClient());
+    const [queryClient] = useState(() => new QueryClient({
+        defaultOptions: {
+            queries: {
+                staleTime: 30_000, // 30s — avoid redundant refetches on mount
+                refetchOnWindowFocus: false, // Don't refetch when user switches tabs
+            },
+        },
+    }));
 
     return (
         <ThemeProvider>

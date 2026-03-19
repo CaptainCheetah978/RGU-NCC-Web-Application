@@ -18,9 +18,9 @@ export function AttendanceChart() {
     );
 
     return (
-        <Card className="border-gray-100 shadow-sm">
+        <Card className="bg-white/80 dark:bg-slate-800/80 blur-backdrop border-gray-100 dark:border-slate-700/60 shadow-sm">
             <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center">
+                <CardTitle className="text-lg flex items-center text-gray-900 dark:text-white">
                     <BarChart3 className="w-5 h-5 mr-2 text-primary" />
                     Attendance Analytics
                 </CardTitle>
@@ -28,15 +28,15 @@ export function AttendanceChart() {
             </CardHeader>
             <CardContent>
                 {data.length === 0 ? (
-                    <div className="py-8 text-center text-gray-600 font-medium">
-                        <BarChart3 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm font-bold">No class data yet.</p>
+                    <div className="py-12 text-center text-gray-500 dark:text-slate-500 font-medium">
+                        <BarChart3 className="w-10 h-10 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">No class data yet.</p>
                         <p className="text-xs mt-1">Create classes and mark attendance to see analytics.</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {/* Legend */}
-                        <div className="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-wider">
+                        <div className="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-slate-400">
                             <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-sm bg-green-500 mr-1.5" />Present</span>
                             <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 mr-1.5" />Absent</span>
                             <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-sm bg-amber-500 mr-1.5" />Late</span>

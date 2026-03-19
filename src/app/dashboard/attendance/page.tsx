@@ -14,6 +14,7 @@ import { AttendanceExport } from "@/components/attendance/export-button";
 import { PdfExportButton } from "@/components/attendance/pdf-export-button";
 import { queueAttendanceOffline, getOfflineAttendanceQueue, clearOfflineQueue } from "@/lib/offline-sync";
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from "react";
 
 // Helper hook to manage online/offline state
@@ -48,6 +49,7 @@ function AttendanceContent() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const isOnline = useNetworkStatus();
+    const queryClient = useQueryClient();
 
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");
@@ -166,8 +168,26 @@ function AttendanceContent() {
             // Offline mode: queue it
             await queueAttendanceOffline(payload);
 
-            // We need to optimistically update the UI since the server refresh won't happen
-            await getOfflineAttendanceQueue();
+            // Optimistically update the local cache so buttons flip instantly
+            queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) => {
+                const records = old || [];
+                const existingIdx = records.findIndex(
+                    (r) => r.classId === effectiveClassId && r.cadetId === cadetId
+                );
+                const newRecord: AttendanceRecord = {
+                    id: payload.id,
+                    classId: effectiveClassId,
+                    cadetId,
+                    status,
+                    timestamp: payload.timestamp,
+                };
+                if (existingIdx !== -1) {
+                    const updated = [...records];
+                    updated[existingIdx] = newRecord;
+                    return updated;
+                }
+                return [...records, newRecord];
+            });
 
             showToast("Saved offline. Will sync when reconnected.");
             return;

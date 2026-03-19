@@ -214,7 +214,19 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             );
             if (!result.success) throw new Error(result.error || "Failed to add certificate");
         },
-        onSuccess: () => {
+        onMutate: async (cert: Certificate) => {
+            await queryClient.cancelQueries({ queryKey: ["certificates"] });
+            const previous = queryClient.getQueryData<Certificate[]>(["certificates"]) || [];
+            queryClient.setQueryData<Certificate[]>(["certificates"], (old) => [
+                ...(old || []),
+                cert,
+            ]);
+            return { previous };
+        },
+        onError: (_err: unknown, _vars: Certificate, context: { previous?: Certificate[] } | undefined) => {
+            if (context?.previous) queryClient.setQueryData(["certificates"], context.previous);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["certificates"] });
         },
     });
@@ -226,7 +238,18 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             const result = await deleteCertificateAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete certificate");
         },
-        onSuccess: () => {
+        onMutate: async (id: string) => {
+            await queryClient.cancelQueries({ queryKey: ["certificates"] });
+            const previous = queryClient.getQueryData<Certificate[]>(["certificates"]) || [];
+            queryClient.setQueryData<Certificate[]>(["certificates"], (old) =>
+                (old || []).filter((c) => c.id !== id)
+            );
+            return { previous };
+        },
+        onError: (_err: unknown, _vars: string, context: { previous?: Certificate[] } | undefined) => {
+            if (context?.previous) queryClient.setQueryData(["certificates"], context.previous);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["certificates"] });
         },
     });

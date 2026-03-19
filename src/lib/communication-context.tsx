@@ -114,7 +114,19 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
             );
             if (!result.success) throw new Error(result.error || "Failed to send note");
         },
-        onSuccess: () => {
+        onMutate: async (note: Note) => {
+            await queryClient.cancelQueries({ queryKey: ["notes"] });
+            const previous = queryClient.getQueryData<Note[]>(["notes", allProfiles.length]) || [];
+            queryClient.setQueryData<Note[]>(["notes", allProfiles.length], (old) => [
+                ...(old || []),
+                note,
+            ]);
+            return { previous };
+        },
+        onError: (_err: unknown, _vars: Note, context: { previous?: Note[] } | undefined) => {
+            if (context?.previous) queryClient.setQueryData(["notes", allProfiles.length], context.previous);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["notes"] });
         },
     });
@@ -150,7 +162,18 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
             const result = await deleteNoteAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to delete note");
         },
-        onSuccess: () => {
+        onMutate: async (id: string) => {
+            await queryClient.cancelQueries({ queryKey: ["notes"] });
+            const previous = queryClient.getQueryData<Note[]>(["notes", allProfiles.length]) || [];
+            queryClient.setQueryData<Note[]>(["notes", allProfiles.length], (old) =>
+                (old || []).filter((n) => n.id !== id)
+            );
+            return { previous };
+        },
+        onError: (_err: unknown, _vars: string, context: { previous?: Note[] } | undefined) => {
+            if (context?.previous) queryClient.setQueryData(["notes", allProfiles.length], context.previous);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["notes"] });
         },
     });
@@ -162,7 +185,18 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
             const result = await forwardNoteToANOAction(noteId, anoId, token);
             if (!result.success) throw new Error(result.error || "Failed to forward note");
         },
-        onSuccess: () => {
+        onMutate: async ({ noteId }: { noteId: string; anoId: string }) => {
+            await queryClient.cancelQueries({ queryKey: ["notes"] });
+            const previous = queryClient.getQueryData<Note[]>(["notes", allProfiles.length]) || [];
+            queryClient.setQueryData<Note[]>(["notes", allProfiles.length], (old) =>
+                (old || []).map((n) => n.id === noteId ? { ...n, forwardedToANO: true } : n)
+            );
+            return { previous };
+        },
+        onError: (_err: unknown, _vars: { noteId: string; anoId: string }, context: { previous?: Note[] } | undefined) => {
+            if (context?.previous) queryClient.setQueryData(["notes", allProfiles.length], context.previous);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["notes"] });
         },
     });
@@ -181,7 +215,19 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
             );
             if (!result.success) throw new Error(result.error || "Failed to add announcement");
         },
-        onSuccess: () => {
+        onMutate: async (announcement: Announcement) => {
+            await queryClient.cancelQueries({ queryKey: ["announcements"] });
+            const previous = queryClient.getQueryData<Announcement[]>(["announcements", allProfiles.length]) || [];
+            queryClient.setQueryData<Announcement[]>(["announcements", allProfiles.length], (old) => [
+                ...(old || []),
+                announcement,
+            ]);
+            return { previous };
+        },
+        onError: (_err: unknown, _vars: Announcement, context: { previous?: Announcement[] } | undefined) => {
+            if (context?.previous) queryClient.setQueryData(["announcements", allProfiles.length], context.previous);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["announcements"] });
         },
     });
@@ -193,7 +239,18 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
             const result = await deleteAnnouncementAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to delete announcement");
         },
-        onSuccess: () => {
+        onMutate: async (id: string) => {
+            await queryClient.cancelQueries({ queryKey: ["announcements"] });
+            const previous = queryClient.getQueryData<Announcement[]>(["announcements", allProfiles.length]) || [];
+            queryClient.setQueryData<Announcement[]>(["announcements", allProfiles.length], (old) =>
+                (old || []).filter((a) => a.id !== id)
+            );
+            return { previous };
+        },
+        onError: (_err: unknown, _vars: string, context: { previous?: Announcement[] } | undefined) => {
+            if (context?.previous) queryClient.setQueryData(["announcements", allProfiles.length], context.previous);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["announcements"] });
         },
     });

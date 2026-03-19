@@ -14,8 +14,6 @@ import { createCadetAccount, updateCadetPin, getCadetPin } from "@/app/actions/c
 import { useToast } from "@/lib/toast-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import Image from "next/image";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef } from "react";
 import { AddCadetModal, CadetFormState } from "@/components/cadets/add-cadet-modal";
 import { EditCadetModal } from "@/components/cadets/edit-cadet-modal";
 import { CadetsTable } from "@/components/cadets/cadets-table";
@@ -106,16 +104,6 @@ export default function CadetsPage() {
             setFormData(prev => ({ ...prev, unitName: "Assam Naval Unit NCC", unitNumber: "48" }));
         }
     }, [formData.wing]);
-
-    const parentRef = useRef<HTMLDivElement>(null);
-
-    // Grid virtualizer
-    const gridVirtualizer = useVirtualizer({
-        count: Math.ceil(filteredCadets.length / 3), // Estimating 3 items per row max for simplicity
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => 320, // Estimate height of grid card
-        overscan: 2,
-    });
 
     if (!user) return null;
 
@@ -333,112 +321,80 @@ export default function CadetsPage() {
             ) : (
                 <>
                     {viewMode === "grid" ? (
-                        <div ref={parentRef} className="h-[800px] overflow-auto">
-                            <div
-                                style={{
-                                    height: `${gridVirtualizer.getTotalSize()}px`,
-                                    width: '100%',
-                                    position: 'relative',
-                                }}
-                            >
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 absolute top-0 left-0 w-full">
-                                    {gridVirtualizer.getVirtualItems().map((virtualRow) => {
-                                        // A virtualRow represents one chunk of 3 items (or 1/2 items depending on viewport size, simplify for demo)
-                                        // To implement true masonry/CSS Grid Virtualization involves window width tracking (`useWindowSize`). 
-                                        // Let's use simple list virtualization as a stand-in since `@tanstack/react-virtual` natively supports simple 1D lists best out of the box.
-                                        // Note: True 2D virtualization is very complex and brittle unless using fixed cell dimensions.
-                                        const startIndex = virtualRow.index * 3;
-                                        const rowItems = filteredCadets.slice(startIndex, startIndex + 3);
-
-                                        return (
-                                            <div
-                                                key={virtualRow.index}
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    width: '100%',
-                                                    height: `${virtualRow.size}px`,
-                                                    transform: `translateY(${virtualRow.start}px)`,
-                                                }}
-                                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full"
-                                            >
-                                                {rowItems.map((cadet, i) => (
-                                                    <motion.div
-                                                        key={cadet.id}
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ delay: Math.min(i * 0.05, 0.5) }}
-                                                    >
-                                                        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
-                                                            <div className="p-6 flex-1 flex flex-col">
-                                                                <div className="flex items-start justify-between mb-4">
-                                                                    <div className="flex items-center space-x-4">
-                                                                        <div className="relative shrink-0">
-                                                                            <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center">
-                                                                                {cadet.avatarUrl ? (
-                                                                                    <Image src={cadet.avatarUrl} alt={cadet.name} width={64} height={64} className="object-cover" />
-                                                                                ) : (
-                                                                                    <span className="text-xl font-bold text-gray-400 dark:text-slate-500">{cadet.name.charAt(0)}</span>
-                                                                                )}
-                                                                            </div>
-                                                                            <span className="absolute -bottom-2 -right-2 text-lg">
-                                                                                {cadet.gender === Gender.MALE ? "👮‍♂️" : "👮‍♀️"}
-                                                                            </span>
-                                                                        </div>
-                                                                        <div>
-                                                                            <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-blue-400 transition-colors text-lg flex items-center gap-2">
-                                                                                {cadet.rank} {cadet.name}
-                                                                                {cadet.status === 'alumni' && (
-                                                                                    <span className="text-[10px] uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
-                                                                                )}
-                                                                            </h3>
-                                                                            <p className="text-sm text-gray-700 dark:text-slate-400 font-bold decoration-primary/20 underline underline-offset-4">
-                                                                                {cadet.regimentalNumber || "N/A"}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="space-y-2 mb-4">
-                                                                    <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
-                                                                        <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Unit</span>
-                                                                        <span className="font-bold truncate">{cadet.unitNumber} {cadet.unitName}</span>
-                                                                    </div>
-                                                                    <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
-                                                                        <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Batches</span>
-                                                                        <span className="font-bold bg-primary/5 dark:bg-slate-700 px-2 py-0.5 rounded text-xs text-primary dark:text-slate-300">{cadet.enrollmentYear}</span>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="flex gap-2 border-t border-gray-100 dark:border-slate-700/60 pt-4 mt-2 mt-auto">
-                                                                    <Button variant="ghost" size="sm" className="flex-1 text-xs" onClick={() => handleView(cadet)}>
-                                                                        View Profile
-                                                                    </Button>
-                                                                    {canEdit && (
-                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => handleEdit(cadet)} aria-label={`Edit ${cadet.name}`}>
-                                                                            <Edit2 className="w-4 h-4" />
-                                                                        </Button>
-                                                                    )}
-                                                                    {isANO && (
-                                                                        <>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-500" onClick={() => handlePinEdit(cadet)} aria-label={`Update PIN for ${cadet.name}`}>
-                                                                                <Key className="w-4 h-4" />
-                                                                            </Button>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(cadet)} aria-label={`Delete ${cadet.name}`}>
-                                                                                <Trash2 className="w-4 h-4" />
-                                                                            </Button>
-                                                                        </>
-                                                                    )}
-                                                                </div>
+                        <div className="max-h-[800px] overflow-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {filteredCadets.map((cadet, i) => (
+                                    <motion.div
+                                        key={cadet.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                                    >
+                                        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
+                                            <div className="p-6 flex-1 flex flex-col">
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="flex items-center space-x-4">
+                                                        <div className="relative shrink-0">
+                                                            <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center">
+                                                                {cadet.avatarUrl ? (
+                                                                    <Image src={cadet.avatarUrl} alt={cadet.name} width={64} height={64} className="object-cover" />
+                                                                ) : (
+                                                                    <span className="text-xl font-bold text-gray-400 dark:text-slate-500">{cadet.name.charAt(0)}</span>
+                                                                )}
                                                             </div>
+                                                            <span className="absolute -bottom-2 -right-2 text-lg">
+                                                                {cadet.gender === Gender.MALE ? "👮‍♂️" : "👮‍♀️"}
+                                                            </span>
                                                         </div>
-                                                    </motion.div>
-                                                ))}
+                                                        <div>
+                                                            <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-blue-400 transition-colors text-lg flex items-center gap-2">
+                                                                {cadet.rank} {cadet.name}
+                                                                {cadet.status === 'alumni' && (
+                                                                    <span className="text-[10px] uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
+                                                                )}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-700 dark:text-slate-400 font-bold decoration-primary/20 underline underline-offset-4">
+                                                                {cadet.regimentalNumber || "N/A"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2 mb-4">
+                                                    <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
+                                                        <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Unit</span>
+                                                        <span className="font-bold truncate">{cadet.unitNumber} {cadet.unitName}</span>
+                                                    </div>
+                                                    <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
+                                                        <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Batches</span>
+                                                        <span className="font-bold bg-primary/5 dark:bg-slate-700 px-2 py-0.5 rounded text-xs text-primary dark:text-slate-300">{cadet.enrollmentYear}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex gap-2 border-t border-gray-100 dark:border-slate-700/60 pt-4 mt-2 mt-auto">
+                                                    <Button variant="ghost" size="sm" className="flex-1 text-xs" onClick={() => handleView(cadet)}>
+                                                        View Profile
+                                                    </Button>
+                                                    {canEdit && (
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => handleEdit(cadet)} aria-label={`Edit ${cadet.name}`}>
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </Button>
+                                                    )}
+                                                    {isANO && (
+                                                        <>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-500" onClick={() => handlePinEdit(cadet)} aria-label={`Update PIN for ${cadet.name}`}>
+                                                                <Key className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(cadet)} aria-label={`Delete ${cadet.name}`}>
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
                             </div>
                         </div>
                     ) : (

@@ -49,6 +49,7 @@ export interface ClassSession {
     instructorId: string;
     attendees: string[]; // Cadet IDs
     description?: string;
+    tag?: string;
 }
 
 export interface AttendanceRecord {

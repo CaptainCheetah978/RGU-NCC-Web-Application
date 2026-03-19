@@ -280,7 +280,6 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        {uploadError && <p className="text-red-500 text-xs mt-4 font-medium">{uploadError}</p>}
                     </CardContent>
                 </Card>
 

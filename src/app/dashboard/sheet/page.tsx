@@ -14,7 +14,6 @@ export default function SheetPage() {
     const { classes, attendance } = useTrainingData();
     const { cadets } = useCadetData();
     const { showToast } = useToast();
-    const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || "");
 
     // Pre-build a composite-key Map so every cell lookup (in the table and in both
     // export functions) is O(1) instead of O(attendance) per cadet+class pair.
@@ -123,20 +122,11 @@ export default function SheetPage() {
         <div className="space-y-6 max-w-full mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Master Roll Sheet</h2>
-                    <p className="text-gray-500 mt-1">Consolidated view of attendance records.</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Master Roll Sheet</h2>
+                    <p className="text-gray-500 dark:text-slate-400 mt-1">Consolidated view of attendance records.</p>
                 </div>
 
                 <div className="flex items-center space-x-3">
-                    <select
-                        value={selectedClassId}
-                        onChange={(e) => setSelectedClassId(e.target.value)}
-                        className="h-10 rounded-lg border border-gray-200 bg-white px-3 py-1 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                    >
-                        {classes.map(c => (
-                            <option key={c.id} value={c.id}>{c.title}</option>
-                        ))}
-                    </select>
                     <Button variant="outline" size="sm" onClick={handleShare}>
                         <Share2 className="w-4 h-4 mr-2" />
                         Share
@@ -161,28 +151,28 @@ export default function SheetPage() {
                 </CardHeader>
                 <CardContent className="p-0 overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-100/50">
+                        <thead className="text-xs text-gray-700 dark:text-slate-400 uppercase bg-gray-100/50 dark:bg-slate-800/50">
                             <tr>
-                                <th className="px-6 py-4 font-bold border-b">Regimental No</th>
-                                <th className="px-6 py-4 font-bold border-b">Rank</th>
-                                <th className="px-6 py-4 font-bold border-b">Name</th>
-                                {classes.slice(0, 5).map(c => (
-                                    <th key={c.id} className="px-6 py-4 font-bold border-b whitespace-nowrap">
+                                <th className="px-6 py-4 font-bold border-b dark:border-slate-700">Regimental No</th>
+                                <th className="px-6 py-4 font-bold border-b dark:border-slate-700">Rank</th>
+                                <th className="px-6 py-4 font-bold border-b dark:border-slate-700">Name</th>
+                                {classes.map(c => (
+                                    <th key={c.id} className="px-6 py-4 font-bold border-b dark:border-slate-700 whitespace-nowrap">
                                         <div className="flex flex-col">
                                             <span>{c.date}</span>
-                                            <span className="text-[10px] text-gray-500 font-normal">{c.title.split(' ')[0]}...</span>
+                                            <span className="text-[10px] text-gray-500 dark:text-slate-500 font-normal">{c.title.split(' ')[0]}...</span>
                                         </div>
                                     </th>
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                             {cadets.map((cadet) => (
-                                <tr key={cadet.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-3 font-mono text-gray-500">{cadet.regimentalNumber}</td>
-                                    <td className="px-6 py-3 font-medium text-gray-900">{cadet.role}</td>
-                                    <td className="px-6 py-3 text-gray-800">{cadet.name}</td>
-                                    {classes.slice(0, 5).map(c => {
+                                <tr key={cadet.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <td className="px-6 py-3 font-mono text-gray-500 dark:text-slate-400">{cadet.regimentalNumber}</td>
+                                    <td className="px-6 py-3 font-medium text-gray-900 dark:text-white">{cadet.role}</td>
+                                    <td className="px-6 py-3 text-gray-800 dark:text-slate-300">{cadet.name}</td>
+                                    {classes.map(c => {
                                         const status = attendanceMap.get(`${c.id}-${cadet.id}`);
                                         return (
                                             <td key={c.id} className="px-6 py-3 text-center">

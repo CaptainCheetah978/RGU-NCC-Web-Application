@@ -26,7 +26,7 @@ interface TrainingContextType {
     isLoading: boolean;
 }
 
-const CLASS_COLUMNS = "id, title, date, time, instructor_id, description";
+const CLASS_COLUMNS = "id, title, date, time, instructor_id, description, tag";
 const ATTENDANCE_COLUMNS = "id, class_id, cadet_id, status, created_at";
 
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
@@ -54,6 +54,7 @@ async function fetchClasses(): Promise<ClassSession[]> {
             time: c.time,
             instructorId: c.instructor_id,
             description: c.description,
+            tag: c.tag || "Training",
             attendees: [],
         })) || []
     );
@@ -80,11 +81,13 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
     const classesQuery = useQuery({
         queryKey: ["classes"],
         queryFn: fetchClasses,
+        refetchOnMount: 'always' as const,
     });
 
     const attendanceQuery = useQuery({
         queryKey: ["attendance"],
         queryFn: fetchAttendance,
+        refetchOnMount: 'always' as const,
     });
 
     const addClassMutation = useMutation({
@@ -99,6 +102,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                     time: cls.time,
                     instructorId: cls.instructorId,
                     description: cls.description,
+                    tag: cls.tag,
                 },
                 token
             );
@@ -199,7 +203,11 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["attendance"] });
+            // Delay refetch slightly to let the DB write propagate —
+            // prevents the optimistic update from being overwritten by stale data.
+            setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: ["attendance"] });
+            }, 600);
         },
     });
 

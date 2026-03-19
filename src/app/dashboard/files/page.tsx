@@ -142,15 +142,26 @@ export default function FilesPage() {
                 .upload(storagePath, uploadFile, { upsert: false });
 
             if (uploadError) {
-                setModalError(`Upload failed: ${uploadError.message}`);
+                const msg = uploadError.message || "";
+                if (msg.includes("fetch") || msg.includes("NetworkError") || msg.includes("404") || msg.includes("Bucket not found")) {
+                    setModalError("Storage bucket not configured. Ensure a Private bucket named 'files' exists in Supabase Storage with proper RLS policies.");
+                } else {
+                    setModalError(`Upload failed: ${msg}`);
+                }
             } else {
                 setIsUploadModalOpen(false);
                 setUploadFile(null);
                 setModalError(null);
+                showToast("File uploaded successfully!", "success");
                 await fetchFiles();
             }
         } catch (err: unknown) {
-            setModalError(err instanceof Error ? err.message : "Upload failed unexpectedly.");
+            const errMsg = err instanceof Error ? err.message : "Upload failed unexpectedly.";
+            if (errMsg.includes("fetch") || errMsg.includes("NetworkError")) {
+                setModalError("Network error — check that the 'files' storage bucket exists in Supabase and has INSERT policies for authenticated users.");
+            } else {
+                setModalError(errMsg);
+            }
         } finally {
             setIsUploading(false);
         }

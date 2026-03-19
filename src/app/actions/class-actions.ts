@@ -15,6 +15,7 @@ type ClassInsertPayload = {
     time: string;
     instructor_id: string;
     description?: string;
+    tag?: string;
 };
 
 // ── Add Class ────────────────────────────────────────────────────────────────
@@ -27,6 +28,7 @@ export async function addClassAction(
         time: string;
         instructorId: string;
         description?: string;
+        tag?: string;
     },
     accessToken: string
 ): Promise<ActionResult> {
@@ -42,6 +44,7 @@ export async function addClassAction(
             time: classData.time,
             instructor_id: classData.instructorId,
             description: classData.description,
+            tag: classData.tag || 'Training',
         };
         if (classData.id) payload.id = classData.id;
 

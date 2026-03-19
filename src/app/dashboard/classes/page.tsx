@@ -30,6 +30,7 @@ export default function ClassesPage() {
         title: "",
         date: "",
         time: "",
+        tag: "Training",
         description: "",
     });
 
@@ -47,6 +48,7 @@ export default function ClassesPage() {
             title: formData.title,
             date: formData.date,
             time: formData.time,
+            tag: formData.tag,
             instructorId: user.id,
             attendees: [],
             description: formData.description
@@ -57,7 +59,7 @@ export default function ClassesPage() {
             showToast(`"${formData.title}" scheduled successfully.`, "success");
             if (logActivity) logActivity("Scheduled class", user.id, user.name, formData.title);
             setIsModalOpen(false);
-            setFormData({ title: "", date: "", time: "", description: "" });
+            setFormData({ title: "", date: "", time: "", tag: "Training", description: "" });
         } catch (error) {
             console.error("Failed to schedule class", error);
             showToast("Failed to schedule class. Please try again.");
@@ -114,8 +116,14 @@ export default function ClassesPage() {
                                 <CardHeader>
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold mb-2 border border-primary/20">
-                                                TRAINING
+                                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 border ${
+                                                cls.tag === 'Drill' ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800' :
+                                                cls.tag === 'Theory' ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800' :
+                                                cls.tag === 'Assmt' || cls.tag === 'Assessment' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800' :
+                                                cls.tag === 'Camp' ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800' :
+                                                'bg-primary/10 text-primary border-primary/20'
+                                            }`}>
+                                                {cls.tag?.toUpperCase() || 'TRAINING'}
                                             </span>
                                             <CardTitle className="text-xl mb-1 group-hover:text-primary transition-colors">{cls.title}</CardTitle>
                                         </div>
@@ -186,6 +194,23 @@ export default function ClassesPage() {
                             onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                             required
                         />
+                    </div>
+                    <div className="space-y-2">
+                        <label htmlFor="class-tag" className="text-sm font-medium text-primary/80 ml-1">Session Category</label>
+                        <select
+                            id="class-tag"
+                            className="flex h-11 w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 py-2 text-sm text-gray-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all appearance-none cursor-pointer"
+                            value={formData.tag}
+                            onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                        >
+                            <option value="Training">Training</option>
+                            <option value="Drill">Drill</option>
+                            <option value="Theory">Theory</option>
+                            <option value="Camp">Camp</option>
+                            <option value="Parade">Parade</option>
+                            <option value="Assessment">Assessment</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                     <div className="space-y-2">
                         <label htmlFor="class-description" className="text-sm font-medium text-primary/80 ml-1">Description</label>

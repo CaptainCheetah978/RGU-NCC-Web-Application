@@ -273,7 +273,7 @@ export default function NotesPage() {
                                         </div>
                                     </div>
                                     <div className="flex space-x-2">
-                                        {(user.role === Role.SUO || user.role === Role.ANO) && activeTab === "inbox" && (
+                                        {activeTab === "inbox" && (
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -361,7 +361,7 @@ export default function NotesPage() {
                         >
                             <option value="">Select Recipient...</option>
                             {messageableUsers
-                                .filter(u => (u.role === Role.ANO || u.role === Role.SUO || u.id === formData.recipientId) && u.id !== user.id)
+                                .filter(u => u.id !== user.id)
                                 .map(u => (
                                     <option key={u.id} value={u.id}>
                                         {u.name}{u.name !== u.role ? ` (${u.role})` : ""} {u.regimentalNumber ? ` - ${u.regimentalNumber}` : ""}
