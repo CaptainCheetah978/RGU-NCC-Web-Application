@@ -72,7 +72,22 @@ export default function NotesPage() {
         );
     }, [activeTab, inboxNotes, sentNotes, searchQuery]);
 
+    // ANO/SUO can message anyone; other ranks can only message ANO and SUO.
+    const recipientList = useMemo(
+        () => {
+            if (!user) return [];
+            const isOfficer = user.role === Role.ANO || user.role === Role.SUO;
+            return messageableUsers.filter(u =>
+                u.id !== user.id &&
+                (isOfficer || u.role === Role.ANO || u.role === Role.SUO)
+            );
+        },
+        [messageableUsers, user]
+    );
+
     if (!user) return null;
+
+    const isOfficer = user.role === Role.ANO || user.role === Role.SUO;
 
     const handleSendNote = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -360,15 +375,18 @@ export default function NotesPage() {
                             required
                         >
                             <option value="">Select Recipient...</option>
-                            {messageableUsers
-                                .filter(u => u.id !== user.id)
+                            {recipientList
                                 .map(u => (
                                     <option key={u.id} value={u.id}>
                                         {u.name}{u.name !== u.role ? ` (${u.role})` : ""} {u.regimentalNumber ? ` - ${u.regimentalNumber}` : ""}
                                     </option>
                                 ))}
                         </select>
-                        <p className="text-[10px] text-gray-600 dark:text-gray-400 ml-1 font-bold italic">You can send notes directly to the ANO or SUO.</p>
+                        <p className="text-[10px] text-gray-600 dark:text-gray-400 ml-1 font-bold italic">
+                            {isOfficer
+                                ? "As an officer you can message any member of the unit."
+                                : "You can send notes directly to the ANO or SUO."}
+                        </p>
                     </div>
 
                     <Input
