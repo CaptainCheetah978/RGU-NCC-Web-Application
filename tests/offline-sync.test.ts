@@ -9,6 +9,10 @@ vi.mock('idb-keyval', () => {
             store[key] = cb(store[key])
             return Promise.resolve()
         }),
+        del: vi.fn((key: string) => {
+            delete store[key]
+            return Promise.resolve()
+        }),
         clear: vi.fn(() => {
             store = {}
             return Promise.resolve()

@@ -5,7 +5,7 @@ import { useCadetData } from "@/lib/cadet-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Download, Share2, Grid, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useToast } from "@/lib/toast-context";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
