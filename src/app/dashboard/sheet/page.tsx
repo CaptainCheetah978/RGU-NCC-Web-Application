@@ -5,7 +5,8 @@ import { useCadetData } from "@/lib/cadet-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Download, Share2, Grid, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useToast } from "@/lib/toast-context";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -24,6 +25,18 @@ export default function SheetPage() {
         }
         return map;
     }, [attendance]);
+
+    const parentRef = useRef<HTMLDivElement>(null);
+
+    const rowVirtualizer = useVirtualizer({
+        count: cadets.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 49, // Approx row height
+        overscan: 10,
+    });
+
+    const virtualRows = rowVirtualizer.getVirtualItems();
+    const totalHeight = rowVirtualizer.getTotalSize();
 
     const handleExport = () => {
         if (cadets.length === 0) {
@@ -122,8 +135,8 @@ export default function SheetPage() {
         <div className="space-y-6 max-w-full mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Master Roll Sheet</h2>
-                    <p className="text-gray-500 dark:text-slate-400 mt-1">Consolidated view of attendance records.</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Master Training Records</h2>
+                    <p className="text-gray-500 dark:text-slate-400 mt-1">Consolidated view of unit training records.</p>
                 </div>
 
                 <div className="flex items-center space-x-3">
@@ -149,44 +162,59 @@ export default function SheetPage() {
                         <span>Attendance Grid</span>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-gray-700 dark:text-slate-400 uppercase bg-gray-100/50 dark:bg-slate-800/50">
-                            <tr>
-                                <th className="px-6 py-4 font-bold border-b dark:border-slate-700">Regimental No</th>
-                                <th className="px-6 py-4 font-bold border-b dark:border-slate-700">Rank</th>
-                                <th className="px-6 py-4 font-bold border-b dark:border-slate-700">Name</th>
-                                {classes.map(c => (
-                                    <th key={c.id} className="px-6 py-4 font-bold border-b dark:border-slate-700 whitespace-nowrap">
-                                        <div className="flex flex-col">
-                                            <span>{c.date}</span>
-                                            <span className="text-[10px] text-gray-500 dark:text-slate-500 font-normal">{c.title.split(' ')[0]}...</span>
-                                        </div>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-                            {cadets.map((cadet) => (
-                                <tr key={cadet.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-6 py-3 font-mono text-gray-500 dark:text-slate-400">{cadet.regimentalNumber}</td>
-                                    <td className="px-6 py-3 font-medium text-gray-900 dark:text-white">{cadet.role}</td>
-                                    <td className="px-6 py-3 text-gray-800 dark:text-slate-300">{cadet.name}</td>
-                                    {classes.map(c => {
-                                        const status = attendanceMap.get(`${c.id}-${cadet.id}`);
-                                        return (
-                                            <td key={c.id} className="px-6 py-3 text-center">
-                                                {status === "PRESENT" && <span className="text-green-600 font-bold">P</span>}
-                                                {status === "ABSENT" && <span className="text-red-500 font-bold">A</span>}
-                                                {status === "LATE" && <span className="text-yellow-600 font-bold">L</span>}
-                                                {!status && <span className="text-gray-300">-</span>}
-                                            </td>
-                                        );
-                                    })}
+                <CardContent className="p-0 overflow-hidden">
+                    <div
+                        ref={parentRef}
+                        className="overflow-auto max-h-[calc(100vh-320px)] w-full"
+                    >
+                        <table className="w-full text-sm text-left border-collapse">
+                            <thead className="sticky top-0 z-20 text-xs text-gray-700 dark:text-slate-400 uppercase bg-gray-100/90 dark:bg-slate-800/90 backdrop-blur-sm">
+                                <tr className="flex">
+                                    <th className="px-6 py-4 font-bold border-b dark:border-slate-700 sticky left-0 z-30 bg-gray-100 dark:bg-slate-800 min-w-[162px] max-w-[162px]">Regimental No</th>
+                                    <th className="px-6 py-4 font-bold border-b dark:border-slate-700 sticky left-[162px] z-30 bg-gray-100 dark:bg-slate-800 min-w-[100px] max-w-[100px]">Rank</th>
+                                    <th className="px-6 py-4 font-bold border-b dark:border-slate-700 sticky left-[262px] z-30 bg-gray-100 dark:bg-slate-800 min-w-[200px] max-w-[200px]">Name</th>
+                                    {classes.map(c => (
+                                        <th key={c.id} className="px-6 py-4 font-bold border-b dark:border-slate-700 whitespace-nowrap min-w-[100px] flex-1">
+                                            <div className="flex flex-col">
+                                                <span>{c.date}</span>
+                                                <span className="text-[10px] text-gray-500 dark:text-slate-500 font-normal">{c.title.split(' ')[0]}...</span>
+                                            </div>
+                                        </th>
+                                    ))}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody style={{ height: `${totalHeight}px`, position: 'relative' }}>
+                                {virtualRows.map((virtualRow) => {
+                                    const cadet = cadets[virtualRow.index];
+                                    return (
+                                        <tr
+                                            key={cadet.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors absolute top-0 left-0 w-full flex"
+                                            style={{
+                                                height: `${virtualRow.size}px`,
+                                                transform: `translateY(${virtualRow.start}px)`,
+                                            }}
+                                        >
+                                            <td className="px-6 py-3 font-mono text-gray-500 dark:text-slate-400 min-w-[162px] max-w-[162px] sticky left-0 z-10 bg-white dark:bg-slate-900 border-b dark:border-slate-700">{cadet.regimentalNumber}</td>
+                                            <td className="px-6 py-3 font-medium text-gray-900 dark:text-white min-w-[100px] max-w-[100px] sticky left-[162px] z-10 bg-white dark:bg-slate-900 border-b dark:border-slate-700">{cadet.role}</td>
+                                            <td className="px-6 py-3 text-gray-800 dark:text-slate-300 min-w-[200px] max-w-[200px] sticky left-[262px] z-10 bg-white dark:bg-slate-900 border-b dark:border-slate-700 truncate">{cadet.name}</td>
+                                            {classes.map(c => {
+                                                const status = attendanceMap.get(`${c.id}-${cadet.id}`);
+                                                return (
+                                                    <td key={c.id} className="px-6 py-3 text-center border-b dark:border-slate-700 min-w-[100px] flex-1">
+                                                        {status === "PRESENT" && <span className="text-green-600 font-bold">P</span>}
+                                                        {status === "ABSENT" && <span className="text-red-500 font-bold">A</span>}
+                                                        {status === "LATE" && <span className="text-yellow-600 font-bold">L</span>}
+                                                        {!status && <span className="text-gray-300">-</span>}
+                                                    </td>
+                                                );
+                                            })}
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </CardContent>
             </Card>
         </div>

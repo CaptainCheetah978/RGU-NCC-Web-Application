@@ -207,8 +207,8 @@ function AttendanceContent() {
                 <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-full mb-4">
                     <Shield className="w-12 h-12 text-gray-400 dark:text-slate-600" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">No Classes Scheduled</h3>
-                <p className="text-gray-700 dark:text-slate-400 mt-2 max-w-sm text-center font-medium">There are no classes scheduled to take attendance for. Please ask an administrator to schedule a class.</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">No Training Sessions Scheduled</h3>
+                <p className="text-gray-700 dark:text-slate-400 mt-2 max-w-sm text-center font-medium">There are no training sessions scheduled to take attendance for. Please ask an administrator to schedule a session.</p>
             </div>
         )
     }
@@ -220,7 +220,7 @@ function AttendanceContent() {
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
                         Attendance Register
                     </h2>
-                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Mark and track attendance for scheduled classes.</p>
+                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Mark and track attendance for training sessions.</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">

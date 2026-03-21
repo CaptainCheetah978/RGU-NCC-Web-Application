@@ -88,7 +88,7 @@ export default function ClassesPage() {
         <div className="space-y-8 max-w-7xl mx-auto">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Training Schedule</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Training Sessions</h2>
                     <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium">Manage drill sessions and theory classes.</p>
                 </div>
                 {canEdit && (
