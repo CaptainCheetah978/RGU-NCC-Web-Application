@@ -311,6 +311,7 @@ export default function NotesPage() {
                                             </Button>
                                         )}
                                         <button
+                                            aria-label="Delete note"
                                             onClick={async () => {
                                                 if (confirm("Are you sure you want to delete this note?")) {
                                                     try {

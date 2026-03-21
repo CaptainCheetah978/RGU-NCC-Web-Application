@@ -269,7 +269,7 @@ export default function LoginPage() {
               <motion.div key="forgot-email" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-8 space-y-6">
                   <div className="flex items-center space-x-3 mb-2">
-                    <button onClick={resetForgotFlow} className="text-gray-500 hover:text-white transition-colors">
+                    <button aria-label="Go back to login" onClick={resetForgotFlow} className="text-gray-500 hover:text-white transition-colors">
                       <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
@@ -302,7 +302,7 @@ export default function LoginPage() {
               <motion.div key="forgot-otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-8 space-y-6">
                   <div className="flex items-center space-x-3 mb-2">
-                    <button onClick={() => setStep("forgot-email")} className="text-gray-500 hover:text-white transition-colors">
+                    <button aria-label="Go back to email entry" onClick={() => setStep("forgot-email")} className="text-gray-500 hover:text-white transition-colors">
                       <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>

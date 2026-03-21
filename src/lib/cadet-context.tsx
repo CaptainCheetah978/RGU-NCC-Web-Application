@@ -30,6 +30,7 @@ interface CadetContextType {
     refreshProfiles: () => Promise<void>;
     refreshCertificates: () => Promise<void>;
     isLoading: boolean;
+    error: any;
 }
 
 const CadetContext = createContext<CadetContextType | undefined>(undefined);
@@ -283,6 +284,7 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             refreshProfiles: () => queryClient.invalidateQueries({ queryKey: ["profiles"] }),
             refreshCertificates: () => queryClient.invalidateQueries({ queryKey: ["certificates"] }),
             isLoading: profilesQuery.isLoading || certificatesQuery.isLoading,
+            error: profilesQuery.error || certificatesQuery.error,
         }),
         [
             cadets,
@@ -297,6 +299,8 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             queryClient,
             profilesQuery.isLoading,
             certificatesQuery.isLoading,
+            profilesQuery.error,
+            certificatesQuery.error,
             currentUserProfile,
         ]
     );

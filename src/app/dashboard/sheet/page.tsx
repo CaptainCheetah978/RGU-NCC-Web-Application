@@ -10,11 +10,21 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useToast } from "@/lib/toast-context";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import { PageLoader } from "@/components/ui/page-loader";
+import { ErrorState } from "@/components/ui/error-state";
 
 export default function SheetPage() {
-    const { classes, attendance } = useTrainingData();
-    const { cadets } = useCadetData();
+    const { classes, attendance, isLoading: trainingLoading, error: trainingError, refreshAttendance } = useTrainingData();
+    const { cadets, isLoading: cadetLoading, error: cadetError, refreshProfiles } = useCadetData();
     const { showToast } = useToast();
+
+    const isLoading = trainingLoading || cadetLoading;
+    const error = trainingError || cadetError;
+
+    const handleRetry = () => {
+        refreshAttendance();
+        refreshProfiles();
+    };
 
     // Pre-build a composite-key Map so every cell lookup (in the table and in both
     // export functions) is O(1) instead of O(attendance) per cadet+class pair.
@@ -130,6 +140,14 @@ export default function SheetPage() {
         navigator.clipboard.writeText(window.location.href);
         showToast("Link copied to clipboard!", "success");
     };
+
+    if (error) {
+        return <ErrorState onRetry={handleRetry} />;
+    }
+
+    if (isLoading) {
+        return <PageLoader />;
+    }
 
     return (
         <div className="space-y-6 max-w-full mx-auto">

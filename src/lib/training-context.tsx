@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { createContext, useCallback, useContext, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ClassSession, AttendanceRecord } from "@/types";
 import { supabase } from "@/lib/supabase-client";
@@ -24,6 +24,7 @@ interface TrainingContextType {
     refreshAttendance: () => Promise<void>;
     refreshClasses: () => Promise<void>;
     isLoading: boolean;
+    error: any;
 }
 
 const CLASS_COLUMNS = "id, title, date, time, instructor_id, description, tag";
@@ -63,20 +64,69 @@ async function fetchClasses(): Promise<ClassSession[]> {
 async function fetchAttendance(): Promise<AttendanceRecord[]> {
     const { data, error } = await supabase.from("attendance").select(ATTENDANCE_COLUMNS);
     if (error) throw error;
-    return (
-        data?.map((a) => ({
-            id: a.id,
-            classId: a.class_id,
-            cadetId: a.cadet_id,
-            status: a.status,
-            timestamp: a.created_at,
-        })) || []
-    );
+    
+    let serverData = data?.map((a) => ({
+        id: a.id,
+        classId: a.class_id,
+        cadetId: a.cadet_id,
+        status: a.status,
+        timestamp: a.created_at,
+    })) || [];
+
+    if (typeof window !== "undefined") {
+        const { getOfflineAttendanceQueue } = await import("@/lib/offline-sync");
+        const queue = await getOfflineAttendanceQueue();
+        queue.forEach(q => {
+            const idx = serverData.findIndex(a => a.classId === q.classId && a.cadetId === q.cadetId);
+            const record = { id: q.id, classId: q.classId, cadetId: q.cadetId, status: q.status, timestamp: q.timestamp };
+            if (idx >= 0) serverData[idx] = record;
+            else serverData.push(record);
+        });
+    }
+
+    return serverData;
 }
 
 export function TrainingProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
     const queryClient = useQueryClient();
+    
+    // Background sync when back online
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        
+        const syncOfflineQueue = async () => {
+            if (!navigator.onLine) return;
+            const { getOfflineAttendanceQueue, clearOfflineQueue } = await import("@/lib/offline-sync");
+            const queue = await getOfflineAttendanceQueue();
+            if (queue.length === 0) return;
+
+            try {
+                const { markAttendanceAction } = await import("@/app/actions/attendance-actions");
+                const token = await requireAccessToken();
+                let allSuccess = true;
+                for (const record of queue) {
+                    const result = await markAttendanceAction(
+                        { classId: record.classId, cadetId: record.cadetId, status: record.status },
+                        token
+                    );
+                    if (!result.success) allSuccess = false;
+                }
+                
+                if (allSuccess) {
+                    await clearOfflineQueue();
+                    queryClient.invalidateQueries({ queryKey: ["attendance"] });
+                }
+            } catch (e) {
+                console.error("Failed to sync offline queue:", e);
+            }
+        };
+
+        window.addEventListener('online', syncOfflineQueue);
+        syncOfflineQueue(); // Try to sync on mount if online
+        
+        return () => window.removeEventListener('online', syncOfflineQueue);
+    }, [queryClient]);
 
     const classesQuery = useQuery({
         queryKey: ["classes"],
@@ -163,13 +213,36 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
     const markAttendanceMutation = useMutation({
         mutationFn: async (record: AttendanceRecord) => {
             if (!user) throw new Error("Unauthorized");
-            const { markAttendanceAction } = await import("@/app/actions/attendance-actions");
-            const token = await requireAccessToken();
-            const result = await markAttendanceAction(
-                { classId: record.classId, cadetId: record.cadetId, status: record.status },
-                token
-            );
-            if (!result.success) throw new Error(result.error || "Failed to mark attendance");
+            try {
+                // If explicitly offline, bypass network
+                if (typeof window !== "undefined" && !navigator.onLine) {
+                    throw new Error("Failed to fetch");
+                }
+                const { markAttendanceAction } = await import("@/app/actions/attendance-actions");
+                const token = await requireAccessToken();
+                const result = await markAttendanceAction(
+                    { classId: record.classId, cadetId: record.cadetId, status: record.status },
+                    token
+                );
+                if (!result.success) throw new Error(result.error || "Failed to mark attendance");
+            } catch (err: any) {
+                const isNetworkError = err.message?.includes("fetch") || 
+                                     err.message?.includes("network") || 
+                                     (typeof window !== "undefined" && !navigator.onLine);
+                
+                if (isNetworkError) {
+                    const { queueAttendanceOffline } = await import("@/lib/offline-sync");
+                    await queueAttendanceOffline({
+                        id: `${record.classId}-${record.cadetId}`,
+                        classId: record.classId,
+                        cadetId: record.cadetId,
+                        status: record.status,
+                        timestamp: record.timestamp || new Date().toISOString()
+                    });
+                    return; // Fail gracefully by queuing locally
+                }
+                throw err;
+            }
         },
         onMutate: async (record: AttendanceRecord) => {
             await queryClient.cancelQueries({ queryKey: ["attendance"] });
@@ -260,6 +333,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             refreshAttendance: () => queryClient.invalidateQueries({ queryKey: ["attendance"] }),
             refreshClasses: () => queryClient.invalidateQueries({ queryKey: ["classes"] }),
             isLoading: classesQuery.isLoading || attendanceQuery.isLoading,
+            error: classesQuery.error || attendanceQuery.error,
         }),
         [
             classesQuery.data,
@@ -269,6 +343,8 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             queryClient,
             classesQuery.isLoading,
             attendanceQuery.isLoading,
+            classesQuery.error,
+            attendanceQuery.error,
             markAttendanceMutation,
             getAttendanceByClass,
             getPersonalAttendance,

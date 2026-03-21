@@ -14,9 +14,11 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
 import { generateUuid } from "@/lib/utils";
+import { PageLoader } from "@/components/ui/page-loader";
+import { ErrorState } from "@/components/ui/error-state";
 
 export default function ClassesPage() {
-    const { classes, addClass, deleteClass } = useTrainingData();
+    const { classes, addClass, deleteClass, isLoading: trainingLoading, error: trainingError, refreshClasses } = useTrainingData();
     const { logActivity } = useActivityData();
     const { user } = useAuth();
     const { showToast } = useToast();
@@ -33,6 +35,14 @@ export default function ClassesPage() {
         tag: "Training",
         description: "",
     });
+
+    if (trainingError) {
+        return <ErrorState onRetry={refreshClasses} />;
+    }
+
+    if (trainingLoading) {
+        return <PageLoader />;
+    }
 
     if (!user) return null;
 
@@ -63,7 +73,7 @@ export default function ClassesPage() {
             setFormData({ title: "", date: "", time: "", tag: "Training", description: "" });
         } catch (error) {
             console.error("Failed to schedule class", error);
-            showToast("Failed to schedule class. Please try again.");
+            showToast("Failed to schedule class. Please check your internet connection and try again.");
         } finally {
             setIsLoading(false);
         }
@@ -79,7 +89,7 @@ export default function ClassesPage() {
                 if (logActivity) logActivity("Deleted class", user.id, user.name, title);
             } catch (error) {
                 console.error("Failed to delete class", error);
-                showToast("Failed to delete class. Please try again.");
+                showToast("Failed to delete class. Please check your network and try again.");
             }
         });
     };

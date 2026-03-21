@@ -15,6 +15,8 @@ import { PdfExportButton } from "@/components/attendance/pdf-export-button";
 import { queueAttendanceOffline, getOfflineAttendanceQueue, clearOfflineQueue } from "@/lib/offline-sync";
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useQueryClient } from '@tanstack/react-query';
+import { PageLoader } from "@/components/ui/page-loader";
+import { ErrorState } from "@/components/ui/error-state";
 import { useRef } from "react";
 
 // Helper hook to manage online/offline state
@@ -44,8 +46,8 @@ function useNetworkStatus() {
 }
 
 function AttendanceContent() {
-    const { classes, attendance, markAttendance, refreshAttendance } = useTrainingData();
-    const { cadets } = useCadetData();
+    const { classes, attendance, markAttendance, refreshAttendance, isLoading: trainingLoading, error: trainingError } = useTrainingData();
+    const { cadets, isLoading: cadetLoading, error: cadetError, refreshProfiles } = useCadetData();
     const { user } = useAuth();
     const { showToast } = useToast();
     const isOnline = useNetworkStatus();
@@ -53,6 +55,14 @@ function AttendanceContent() {
 
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");
+
+    const isLoading = trainingLoading || cadetLoading;
+    const error = trainingError || cadetError;
+
+    const handleRetry = () => {
+        refreshAttendance();
+        refreshProfiles();
+    };
 
     // Track user's explicit class selection; null means "not yet chosen by user"
     const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
@@ -149,6 +159,14 @@ function AttendanceContent() {
         [attendance, effectiveClassId]
     );
 
+    if (error) {
+        return <ErrorState onRetry={handleRetry} />;
+    }
+
+    if (isLoading) {
+        return <PageLoader />;
+    }
+
     if (!user) return null;
 
     const getStatus = (cadetId: string) => classAttendanceMap.get(cadetId) ?? null;
@@ -197,7 +215,7 @@ function AttendanceContent() {
             await markAttendance(payload);
         } catch (error) {
             console.error("Failed to mark attendance", error);
-            showToast("Failed to mark attendance. Please try again.");
+            showToast("Failed to save attendance. Please check your internet connection or try again.");
         }
     };
 
