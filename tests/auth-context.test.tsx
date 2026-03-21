@@ -24,13 +24,13 @@ const mockSupabaseFrom = vi.fn()
 vi.mock('@/lib/supabase-client', () => ({
   supabase: {
     auth: {
-      getSession: (...args: any[]) => mockGetSession(...args),
-      getUser: (...args: any[]) => mockGetUser(...args),
-      onAuthStateChange: (...args: any[]) => mockOnAuthStateChange(...args),
-      signInWithPassword: (...args: any[]) => mockSignInWithPassword(...args),
-      signOut: (...args: any[]) => mockSignOut(...args),
+      getSession: (...args: unknown[]) => mockGetSession(...args),
+      getUser: (...args: unknown[]) => mockGetUser(...args),
+      onAuthStateChange: (...args: unknown[]) => mockOnAuthStateChange(...args),
+      signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
+      signOut: (...args: unknown[]) => mockSignOut(...args),
     },
-    from: (...args: any[]) => mockSupabaseFrom(...args)
+    from: (...args: unknown[]) => mockSupabaseFrom(...args)
   }
 }))
 

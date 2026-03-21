@@ -1,0 +1,17 @@
+﻿
+C:\Users\docad\Desktop\Antigravity\ncc-rgu-app\src\app\dashboard\sheet\page.tsx
+  41:28  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+C:\Users\docad\Desktop\Antigravity\ncc-rgu-app\src\app\dashboard\sheet\page.tsx:41:28
+  39 |     const parentRef = useRef<HTMLDivElement>(null);
+  40 |
+> 41 |     const rowVirtualizer = useVirtualizer({
+     |                            ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  42 |         count: cadets.length,
+  43 |         getScrollElement: () => parentRef.current,
+  44 |         estimateSize: () => 49, // Approx row height  react-hooks/incompatible-library
+
+Γ£û 1 problem (0 errors, 1 warning)
+

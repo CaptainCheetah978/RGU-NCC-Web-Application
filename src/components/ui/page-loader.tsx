@@ -9,7 +9,9 @@ export function PageLoader() {
   const [content, setContent] = useState<ReturnType<typeof getRandomLoadingContent> | null>(null);
 
   useEffect(() => {
-    setContent(getRandomLoadingContent());
+    setTimeout(() => {
+        setContent(getRandomLoadingContent());
+    }, 0);
   }, []);
 
   return (
@@ -38,7 +40,7 @@ export function PageLoader() {
                 {content.type === 'quote' ? (
                     <>
                     <p className="text-xl md:text-2xl font-medium text-gray-800 dark:text-gray-200 italic leading-snug">
-                        "{content.text}"
+                        &quot;{content.text}&quot;
                     </p>
                     <p className="text-sm md:text-base font-bold text-gray-600 dark:text-gray-400">
                         — {content.author} <span className="font-normal italic text-gray-500 dark:text-gray-500">({content.source})</span>

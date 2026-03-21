@@ -30,7 +30,7 @@ interface CadetContextType {
     refreshProfiles: () => Promise<void>;
     refreshCertificates: () => Promise<void>;
     isLoading: boolean;
-    error: any;
+    error: unknown;
 }
 
 const CadetContext = createContext<CadetContextType | undefined>(undefined);

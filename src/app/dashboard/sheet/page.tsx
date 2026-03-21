@@ -38,6 +38,7 @@ export default function SheetPage() {
 
     const parentRef = useRef<HTMLDivElement>(null);
 
+    // eslint-disable-next-line
     const rowVirtualizer = useVirtualizer({
         count: cadets.length,
         getScrollElement: () => parentRef.current,

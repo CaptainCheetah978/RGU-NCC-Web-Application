@@ -24,7 +24,7 @@ interface TrainingContextType {
     refreshAttendance: () => Promise<void>;
     refreshClasses: () => Promise<void>;
     isLoading: boolean;
-    error: any;
+    error: unknown;
 }
 
 const CLASS_COLUMNS = "id, title, date, time, instructor_id, description, tag";
@@ -65,7 +65,7 @@ async function fetchAttendance(): Promise<AttendanceRecord[]> {
     const { data, error } = await supabase.from("attendance").select(ATTENDANCE_COLUMNS);
     if (error) throw error;
     
-    let serverData = data?.map((a) => ({
+    const serverData = data?.map((a) => ({
         id: a.id,
         classId: a.class_id,
         cadetId: a.cadet_id,
@@ -225,9 +225,10 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                     token
                 );
                 if (!result.success) throw new Error(result.error || "Failed to mark attendance");
-            } catch (err: any) {
-                const isNetworkError = err.message?.includes("fetch") || 
-                                     err.message?.includes("network") || 
+            } catch (err: unknown) {
+                const errorObj = err instanceof Error ? err : new Error(String(err));
+                const isNetworkError = errorObj.message?.includes("fetch") || 
+                                     errorObj.message?.includes("network") || 
                                      (typeof window !== "undefined" && !navigator.onLine);
                 
                 if (isNetworkError) {
