@@ -123,7 +123,7 @@ export default function ProfilePage() {
         if (!idCardRef.current) return;
         setIsDownloading(true);
         try {
-            // Because idCardRef is firmly set to 500x312 physically, it will capture unscaled and pristine always!
+            // TODO: Sometimes this clips on older Android devices. Need to test on more phones.
             const dataUrl = await toPng(idCardRef.current, { cacheBust: true, pixelRatio: 3 });
             const link = document.createElement("a");
             link.download = `NCC_ID_${currentUser.name.replace(/\s+/g, "_")}.png`;
@@ -140,7 +140,7 @@ export default function ProfilePage() {
         if (!idCardRef.current) return;
         setIsPrinting(true);
         try {
-            // Snapshot the brilliantly white-padded wrapper perfectly to keep shadows & rounded corners!
+            // Snapshot the wrapper to keep the white background and rounded corners
             const dataUrl = await toPng(idCardRef.current, { cacheBust: true, pixelRatio: 3, backgroundColor: '#ffffff' });
 
             const printRoot = document.createElement("div");
@@ -161,7 +161,7 @@ export default function ProfilePage() {
             img.src = dataUrl;
             img.style.maxWidth = "100%";
             img.onload = () => {
-                // Now that image is completely decoded and repainted on DOM, it's 100% safe to print!
+                // Wait for image render before printing
                 setTimeout(() => {
                     window.print();
                     document.body.removeChild(printRoot);

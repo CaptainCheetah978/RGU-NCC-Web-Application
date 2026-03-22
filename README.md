@@ -17,48 +17,30 @@
 
 A role-based Cadet Management System built with Next.js 16 and Supabase. Features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
 
-## Tech Stack Overview
-- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Actions for DB mutations)
-- **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode enabled)
-- **Database Backend**: [PostgreSQL](https://www.postgresql.org/) (Managed via Supabase)
-- **Authentication**: Username + PIN authentication (mapped to Supabase Auth email/password)
-- **Validation**: [Zod](https://zod.dev/) shared schemas for client + server
-- **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/) with custom Glassmorphism/Dark Mode support
-- **UI & Animations**: [Framer Motion](https://www.framer.com/motion/) for transitions, Shadcn UI base components
-- **PWA & Offline**: Service Worker with cache-first strategy; IndexedDB-backed offline queueing for zero-connectivity areas.
-- **Performance**: High-speed list virtualization via `@tanstack/react-virtual` for large datasets.
-- **CI/CD & Testing**: [Vitest](https://vitest.dev/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) integrated with GitHub Actions for automated quality gates.
+## Tech Stack
+- **Framework**: Next.js 16 (App Router, Server Actions)
+- **Database**: PostgreSQL via Supabase
+- **Auth**: Username + PIN login mapped to Supabase Auth
+- **Styling**: Tailwind CSS
+- **Offline Mode**: IndexedDB queueing via a Service Worker for parade ground usage without mobile data.
+- **Testing**: Vitest + React Testing Library
 
-## Application Walkthrough & Features
+### Use Cases & Features
 
-The following sections provide a brief overview of the system capabilities. For a comprehensive visual gallery, including workflow demonstrations and mobile views, please refer to the project Wiki.
-
-> [!TIP]
-> **[Visit the Feature Gallery →](https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/wiki/Feature-Gallery)**
-
-### System Overview
-The Dashboard provides real-time statistics aggregation and asynchronous activity logging across the unit.
-
-![Dashboard Overview](public/screenshots/dashboard.png)
-
-### Key Capabilities
-1.  **Secure Authentication**: Username + PIN authentication mapped to Supabase Auth with role-based access control.
-2.  **Attendance Management**: Batch status updates and relational database joins connecting cadets to training classes.
-3.  **Cadet Registry**: Virtualized lists supporting full-text search, client-side filtering, and profile state hydration.
-4.  **Digital Identity (QR)**: High-resolution identity snapshots with a specialized mobile-safe printing engine.
-5.  **Offline Synchronization**: Asynchronous IndexedDB queueing for marking attendance in zero-connectivity environments.
-6.  **Alumni Records**: Systematic transition pipeline for graduating cadets, preserving service history post-graduation.
+1.  **Role-Based Security**: Different views for ANO, SUO, UO/SGT, and Cadets. Security is enforced at the database level using Supabase Row Level Security (RLS).
+2.  **Attendance Logging**: Select class records, mark attendance, and it syncs to the database. Works offline too (it queues changes locally and pushes them when connected).
+3.  **Digital ID Cards**: Cadets get a digital ID card page that can be printed or scanned. 
+4.  **Alumni Records**: When cadets graduate, we move them to an alumni state to preserve their historical attendance and records.
 
 ## Core Modules Overview
 
-| Module | Description | Target User |
+| Module | What it does | Access Level |
 | :--- | :--- | :--- |
-| **Dashboard** | Real-time stats aggregation and unit telemetry analytics. | ANO, SUO |
-| **Registry** | Virtualized high-performance lists with multi-state (Active/Alumni) filtering. | ANO, SUO, UO |
-| **Digital ID** | High-resolution snapshot engine with mobile-safe print/download pipeline. | All Ranks |
-| **Attendance** | Offline-first queueing with incremental resync alerts. | SUO, UO |
-| **Private Notes** | Hierarchical note passing with read-receipts and ANO escalation. | All Ranks |
-| **Alumni Records**| Archiving of service history post-graduation. | ANO, SUO |
+| **Dashboard** | General stats and recent activity logs. | ANO, SUO |
+| **Registry** | Full list of active and alumni cadets. | ANO, SUO, UO |
+| **Digital ID** | ID card generator with a functional QR code for scanning. | All Ranks |
+| **Attendance** | Roll sheet for marking present/absent. Supports offline mode. | SUO, UO |
+| **Private Notes** | Messaging system between ranks. | All Ranks |
 
 ## Role-Based Access Control (RLS)
 Security is rigidly enforced at the PostgreSQL database level using Supabase Row Level Security (RLS). UI conditional rendering provides a fallback, but DB policies dictate true access.
@@ -177,15 +159,12 @@ npm run test:watch # Run tests in interactive watch mode
 ```
 ```
 
-## Documentation & Governance
+## Documentation & Project State
 
-To ensure consistency and high-quality contributions across all units, please review the following technical and community documents:
-
-- **[Architecture Overview](ARCHITECTURE.md)**: Detailed diagrams covering authentication flows, the PWA QR pipeline, and Permission Trees.
-- **[Contributing Guidelines](CONTRIBUTING.md)**: Standards for bug reporting, PR workflow, and code styling.
-- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Our expectations for community behavior and enforcement details.
-- **[Project Wiki](https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/wiki)**: Comprehensive deployment guides, white-labeling instructions, and troubleshooting.
-- **[Security Policy](SECURITY.md)**: Guidelines for reporting vulnerabilities.
+This repo tracks its own issues and design choices:
+- **[Architecture Overview](ARCHITECTURE.md)**: Basic overview of how everything connects.
+- **[Known Issues](KNOWN_ISSUES.md)**: A list of current bugs, technical debt, and missing features.
+- **[Security Policy](SECURITY.md)**: Basic guidelines for vulnerabilities.
 
 ## Multi-Unit Deployment
 This repository is built to be unit-agnostic ("white-labeled"). To fork this for a different battalion or institution:

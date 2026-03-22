@@ -49,7 +49,7 @@ graph TD
 ```
 
 ### 3. Data Flow Between Client & Server
-We utilize both direct Supabase standard clients for realtime/READ access, and Next.js Server Actions with the `supabaseAdmin` client directly for WRITE mutations, providing a robust, fast, and secure workflow.
+We use the standard Supabase client for safe client-side reads, and Next.js Server Actions with the \`supabaseAdmin\` client for writes that need to bypass RLS.
 
 ```mermaid
 flowchart TD
@@ -82,7 +82,7 @@ flowchart TD
 ```
 
 ### 4. QR Code Generation Pipeline
-Our application uses `html-to-image` for generating pristine digital snapshots, effectively skipping standard CSS scaling issues that frequently break on diverse mobile devices.
+We use `html-to-image` to export the ID card as a PNG so it prints consistently across different mobile devices without CSS layout breaks.
 
 ```mermaid
 sequenceDiagram
@@ -128,23 +128,4 @@ flowchart LR
     G -- Failure --> I[Retry Logic / Conflict Resolution]
 ```
 
-### 6. QR Code Generation and Lifecycle
-Our application uses `html-to-image` for generating pristine digital snapshots, effectively skipping standard CSS scaling issues that frequently break on diverse mobile devices.
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Component as Identity UI
-    participant HTML2Img as Snapshot Engine
-    participant Output as Binary / Print Spooler
-
-    User->>Component: Triggers Export
-    Component->>HTML2Img: Processes DOM element
-    HTML2Img->>Component: Returns PNG Data
-    
-    alt Download
-        Component->>Output: Triggers File Download
-    else Print
-        Component->>Output: Overlays high-res <img> for window.print()
-    end
-```
