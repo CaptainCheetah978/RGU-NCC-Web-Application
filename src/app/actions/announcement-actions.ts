@@ -24,6 +24,7 @@ export async function addAnnouncementAction(
             content: data.content,
             author_id: session.userId,
             priority: data.priority.toUpperCase(),
+            unit_id: session.unitId,
         });
         if (error) return { success: false, error: error.message };
         return { success: true };

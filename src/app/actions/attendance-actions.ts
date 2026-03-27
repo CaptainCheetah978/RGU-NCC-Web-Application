@@ -11,7 +11,7 @@ const ATTENDANCE_ROLES: Role[] = [Role.ANO, Role.SUO, Role.UO, Role.SGT];
 type ActionResult = { success: boolean; error?: string };
 
 export async function markAttendanceAction(
-    data: { classId: string; cadetId: string; status: string },
+    data: { classId: string; cadetId: string; status: string; timestamp?: string },
     accessToken: string
 ): Promise<ActionResult> {
     const session = await getCallerSession(accessToken);
@@ -29,7 +29,7 @@ export async function markAttendanceAction(
         // Check if attendance record already exists
         const { data: existing, error: fetchError } = await supabaseAdmin
             .from("attendance")
-            .select("id")
+            .select("id, updated_at")
             .eq("class_id", parsed.data.classId)
             .eq("cadet_id", parsed.data.cadetId)
             .single();
@@ -39,9 +39,25 @@ export async function markAttendanceAction(
         }
 
         if (existing) {
+            // Conflict Resolution: Only update if incoming timestamp is missing (immediate online update)
+            // or if it's newer than the server's last update.
+            if (parsed.data.timestamp) {
+                const incomingDate = new Date(parsed.data.timestamp);
+                const serverDate = new Date(existing.updated_at);
+
+                if (incomingDate <= serverDate) {
+                    // This is an old offline record trying to overwrite a newer online record.
+                    // Silent success to prevent error toasts for stale data.
+                    return { success: true };
+                }
+            }
+
             const { error } = await supabaseAdmin
                 .from("attendance")
-                .update({ status: parsed.data.status })
+                .update({
+                    status: parsed.data.status,
+                    updated_at: new Date().toISOString()
+                })
                 .eq("id", existing.id);
             if (error) return { success: false, error: error.message };
         } else {
@@ -50,6 +66,7 @@ export async function markAttendanceAction(
                 cadet_id: parsed.data.cadetId,
                 status: parsed.data.status,
                 marked_by: session.userId,
+                unit_id: session.unitId,
             });
             if (error) return { success: false, error: error.message };
         }

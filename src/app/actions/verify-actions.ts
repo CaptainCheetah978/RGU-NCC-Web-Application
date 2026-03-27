@@ -2,7 +2,7 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-interface VerifyResult {
+export interface VerifyResult {
     found: boolean;
     person?: {
         name: string;
@@ -18,6 +18,10 @@ interface VerifyResult {
 }
 
 export async function verifyCadetById(id: string): Promise<VerifyResult> {
+    if (!id || typeof id !== 'string' || id.length < 10) {
+        return { found: false };
+    }
+
     try {
         const { data, error } = await supabaseAdmin
             .from("profiles")

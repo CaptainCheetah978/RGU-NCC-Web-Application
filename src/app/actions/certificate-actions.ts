@@ -52,6 +52,7 @@ export async function addCertificateAction(
             type: data.type,
             file_data: data.fileData,
             upload_date: uploadDate.toISOString(),
+            unit_id: session.unitId,
         });
         if (error) return { success: false, error: error.message };
         return { success: true };

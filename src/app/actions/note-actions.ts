@@ -22,6 +22,7 @@ export async function sendNoteAction(
             subject: data.subject,
             content: data.content,
             is_read: false,
+            unit_id: session.unitId,
         });
         if (error) return { success: false, error: error.message };
         return { success: true };
@@ -134,6 +135,7 @@ export async function forwardNoteToANOAction(
             forwarded_to_ano: true,
             original_sender_id: originalNote.sender_id,
             original_sender_name: senderName,
+            unit_id: session.unitId,
         });
         if (insertError) return { success: false, error: insertError.message };
 

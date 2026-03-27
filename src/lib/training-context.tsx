@@ -65,11 +65,11 @@ async function fetchAttendance(): Promise<AttendanceRecord[]> {
     const { data, error } = await supabase.from("attendance").select(ATTENDANCE_COLUMNS);
     if (error) throw error;
     
-    const serverData = data?.map((a) => ({
+    const serverData = data?.map((a: { id: string; class_id: string; cadet_id: string; status: string; created_at: string }) => ({
         id: a.id,
         classId: a.class_id,
         cadetId: a.cadet_id,
-        status: a.status,
+        status: a.status as AttendanceRecord["status"],
         timestamp: a.created_at,
     })) || [];
 
@@ -107,7 +107,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                 let allSuccess = true;
                 for (const record of queue) {
                     const result = await markAttendanceAction(
-                        { classId: record.classId, cadetId: record.cadetId, status: record.status },
+                        { classId: record.classId, cadetId: record.cadetId, status: record.status, timestamp: record.timestamp },
                         token
                     );
                     if (!result.success) allSuccess = false;
@@ -221,7 +221,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                 const { markAttendanceAction } = await import("@/app/actions/attendance-actions");
                 const token = await requireAccessToken();
                 const result = await markAttendanceAction(
-                    { classId: record.classId, cadetId: record.cadetId, status: record.status },
+                    { classId: record.classId, cadetId: record.cadetId, status: record.status, timestamp: record.timestamp },
                     token
                 );
                 if (!result.success) throw new Error(result.error || "Failed to mark attendance");

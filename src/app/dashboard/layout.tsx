@@ -49,7 +49,7 @@ export default function DashboardLayout({
             <Sidebar isOpen={isMobileMenuOpen} setIsOpen={setIsMobileMenuOpen} />
             <div className="flex-1 flex flex-col md:ml-64 bg-white dark:bg-slate-900 transition-all duration-300 relative max-w-full">
                 <Topbar onMenuClick={() => setIsMobileMenuOpen(true)} />
-                <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 relative">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 relative pb-[env(safe-area-inset-bottom)]">
                     {/* Subtle dot-grid background pattern */}
                     <div
                         className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.04]"

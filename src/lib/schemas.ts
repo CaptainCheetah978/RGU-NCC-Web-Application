@@ -81,6 +81,7 @@ export const MarkAttendanceSchema = z.object({
     classId: z.string().uuid("Invalid class ID"),
     cadetId: z.string().uuid("Invalid cadet ID"),
     status: AttendanceStatusEnum,
+    timestamp: z.string().datetime().optional(),
 });
 
 export type MarkAttendanceInput = z.infer<typeof MarkAttendanceSchema>;

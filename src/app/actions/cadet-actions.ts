@@ -94,6 +94,7 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
                 blood_group: bloodGroup || null,
                 access_pin: pin,
                 status: status || 'active',
+                unit_id: session.unitId,
                 updated_at: new Date().toISOString(),
             });
 

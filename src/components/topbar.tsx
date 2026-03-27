@@ -64,16 +64,23 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
                 </button>
-                <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-tight hidden sm:block">
-                    Welcome back,{" "}
-                    {(displayUser.role === Role.ANO)
-                        ? displayUser.role
-                        : `${displayUser.role === Role.CADET ? "Cadet" : displayUser.role} ${displayUser.name.split(" ")[0]}`
-                    }
-                </h1>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight sm:hidden">
-                    Dashboard
-                </h1>
+                <div className="flex flex-col">
+                    <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-tight hidden sm:block">
+                        Welcome back,{" "}
+                        {(displayUser.role === Role.ANO)
+                            ? displayUser.role
+                            : `${displayUser.role === Role.CADET ? "Cadet" : displayUser.role} ${displayUser.name.split(" ")[0]}`
+                        }
+                    </h1>
+                    <h1 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight sm:hidden">
+                        Dashboard
+                    </h1>
+                    {user?.unitName && (
+                        <span className="text-[10px] font-bold text-primary/70 dark:text-blue-400/70 uppercase tracking-widest -mt-0.5 hidden sm:block">
+                            {user.unitName} {user.unitNumber && `(${user.unitNumber})`}
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="flex items-center space-x-4">

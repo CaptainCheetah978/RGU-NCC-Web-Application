@@ -38,13 +38,14 @@ export async function addClassAction(
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     try {
-        const payload: ClassInsertPayload = {
+        const payload: ClassInsertPayload & { unit_id?: string } = {
             title: classData.title,
             date: classData.date,
             time: classData.time,
             instructor_id: classData.instructorId,
             description: classData.description,
             tag: classData.tag || 'Training',
+            unit_id: session.unitId,
         };
         if (classData.id) payload.id = classData.id;
 

@@ -26,6 +26,9 @@ export interface User {
     regimentalNumber?: string;
     avatarUrl?: string;
     pin?: string;
+    unitId?: string;
+    unitName?: string;
+    unitNumber?: string;
 }
 
 export interface Cadet extends User {
