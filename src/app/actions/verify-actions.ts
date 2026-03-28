@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export interface VerifyResult {
     found: boolean;
+    error?: string;
     person?: {
         name: string;
         role: string;
@@ -19,7 +20,7 @@ export interface VerifyResult {
 
 export async function verifyCadetById(id: string): Promise<VerifyResult> {
     if (!id || typeof id !== 'string' || id.length < 10) {
-        return { found: false };
+        return { found: false, error: "Invalid Cadet ID format." };
     }
 
     try {
@@ -30,7 +31,7 @@ export async function verifyCadetById(id: string): Promise<VerifyResult> {
             .single();
 
         if (error || !data) {
-            return { found: false };
+            return { found: false, error: "Identity not found in database." };
         }
 
         return {
@@ -48,6 +49,46 @@ export async function verifyCadetById(id: string): Promise<VerifyResult> {
             },
         };
     } catch {
-        return { found: false };
+        return { found: false, error: "Database connection failed." };
+    }
+}
+
+import { jwtVerify } from "jose";
+
+const getSecret = () => {
+    const secret = process.env.JWT_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "fallback_dev_secret_only";
+    return new TextEncoder().encode(secret);
+};
+
+export async function verifyCadetByToken(token: string): Promise<VerifyResult> {
+    if (!token || typeof token !== "string") {
+        return { found: false, error: "Invalid QR Token format." };
+    }
+
+    try {
+        // jwtVerify validates both the signature AND the `exp` claim automatically
+        const { payload } = await jwtVerify(token, getSecret(), {
+            algorithms: ["HS256"],
+        });
+
+        const cadetId = payload.sub;
+        if (!cadetId) {
+            return { found: false, error: "Malformed Token Identity." };
+        }
+
+        // Token is valid and fresh. Complete verification by fetching user details.
+        return await verifyCadetById(cadetId);
+    } catch (error) {
+        const err = error as Error & { code?: string };
+        console.error("JWT Verification failed:", err.code || err.message);
+        
+        if (err.code === "ERR_JWT_EXPIRED") {
+            return { 
+                found: false, 
+                error: "QR Code Expired. This code changes every 30 seconds to prevent screenshots. Please ask the cadet to show their live ID again." 
+            };
+        }
+        
+        return { found: false, error: "Invalid or Corrupted QR Security Signature." };
     }
 }

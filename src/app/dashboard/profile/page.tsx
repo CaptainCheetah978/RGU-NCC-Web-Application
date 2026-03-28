@@ -5,6 +5,7 @@ import { useCadetData } from "@/lib/cadet-context";
 import { useDashboardStats } from "@/lib/dashboard-stats";
 import { supabase } from "@/lib/supabase-client";
 import { getColorOfTheDay } from "@/lib/utils";
+import { generateVerificationToken } from "@/app/actions/jwt-actions";
 import { Role, Wing, Cadet, User } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
@@ -21,6 +22,11 @@ export default function ProfilePage() {
     const { user, updatePin } = useAuth();
     const { updateCadet, currentUserProfile } = useCadetData();
     const getStats = useDashboardStats();
+    
+    // Get the most up-to-date user data directly from context
+    const currentUser = currentUserProfile as (User & Partial<Cadet>);
+    const stats = getStats(user?.id);
+
     const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [uploadError, setUploadError] = useState("");
     const [isUploading, setIsUploading] = useState(false);
@@ -34,6 +40,34 @@ export default function ProfilePage() {
     const [changePinError, setChangePinError] = useState("");
     const [changePinSuccess, setChangePinSuccess] = useState(false);
     const [currentTime, setCurrentTime] = useState<string>("");
+    const [qrToken, setQrToken] = useState<string>("");
+
+    // Dynamic QR: Fetch a short-lived, signed JWT every 25 seconds
+    useEffect(() => {
+        if (!currentUser?.id) return;
+
+        let isMounted = true;
+        
+        const fetchQrToken = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const res = await generateVerificationToken(currentUser.id, session?.access_token);
+                if (res.token && isMounted) {
+                    setQrToken(res.token);
+                }
+            } catch (err) {
+                console.error("Failed to refresh dynamic QR", err);
+            }
+        };
+
+        fetchQrToken(); // Initial fetch
+        const tokenInterval = setInterval(fetchQrToken, 25000); // Refresh every 25s
+
+        return () => {
+            isMounted = false;
+            clearInterval(tokenInterval);
+        };
+    }, [currentUser?.id]);
 
     // Live ticking clock for visual liveness (defeats static screenshots)
     useEffect(() => {
@@ -48,11 +82,6 @@ export default function ProfilePage() {
     }, []);
 
     const dailyColor = getColorOfTheDay();
-
-    // Get the most up-to-date user data (including extras like photos) directly from context
-    // Falls back to auth user defaults if profile not fully loaded yet (though context handles loading)
-    const currentUser = currentUserProfile as (User & Partial<Cadet>);
-    const stats = getStats(user?.id);
 
     if (!currentUser) return <div className="p-8 text-center">Loading profile...</div>;
 
@@ -421,11 +450,12 @@ export default function ProfilePage() {
 
                                                 {/* QR Code + Color of the Day */}
                                                 <div className="ml-3 shrink-0 flex flex-col items-center">
+                                                    {/* Fallback to ID initially so the QR doesn't flash empty; update to JWT token when ready */}
                                                     <QRCodeSVG
-                                                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?id=${currentUser.id}`}
+                                                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?${qrToken ? `token=${qrToken}` : `id=${currentUser.id}`}`}
                                                         size={56}
                                                         level="M"
-                                                        className="rounded"
+                                                        className={`rounded transition-opacity duration-300 ${!qrToken ? 'opacity-50' : 'opacity-100'}`}
                                                     />
                                                     <div className="flex items-center gap-1 mt-0.5">
                                                         <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dailyColor.hex }} title={`Today: ${dailyColor.name}`} />

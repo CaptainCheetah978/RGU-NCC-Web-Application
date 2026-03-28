@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Shield, CheckCircle2, XCircle, User, Award } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { verifyCadetById, type VerifyResult } from "@/app/actions/verify-actions";
+import { verifyCadetById, verifyCadetByToken, type VerifyResult } from "@/app/actions/verify-actions";
 import { getColorOfTheDay } from "@/lib/utils";
 
 interface VerifiedPerson {
@@ -23,26 +23,35 @@ interface VerifiedPerson {
 function VerifyContent() {
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
+    const token = searchParams.get("token");
     const [person, setPerson] = useState<VerifiedPerson | null>(null);
-    const [loading, setLoading] = useState(() => !!id);
-    const [checked, setChecked] = useState(() => !id);
+    const [loading, setLoading] = useState(() => !!id || !!token);
+    const [checked, setChecked] = useState(() => !id && !token);
+    const [errorMsg, setErrorMsg] = useState<string>("");
     const dailyColor = getColorOfTheDay();
 
     useEffect(() => {
-        if (!id) return;
+        if (!id && !token) return;
 
         let isMounted = true;
-        verifyCadetById(id).then((result: VerifyResult) => {
+        
+        const verificationPromise = token 
+            ? verifyCadetByToken(token) 
+            : verifyCadetById(id!);
+
+        verificationPromise.then((result: VerifyResult) => {
             if (!isMounted) return;
             if (result.found && result.person) {
                 setPerson(result.person);
+            } else if (result.error) {
+                setErrorMsg(result.error);
             }
             setLoading(false);
             setChecked(true);
         });
 
         return () => { isMounted = false; };
-    }, [id]);
+    }, [id, token]);
 
     if (loading) {
         return (
@@ -161,11 +170,11 @@ function VerifyContent() {
                             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
                                 <Shield className="w-8 h-8 text-slate-300" />
                             </div>
-                            <h3 className="text-gray-900 font-bold">Record Not Found</h3>
+                            <h3 className="text-gray-900 font-bold">{errorMsg ? "Security Verification Failed" : "Record Not Found"}</h3>
                             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-                                {id 
+                                {errorMsg ? errorMsg : (id 
                                     ? "The ID provided in the scan does not match any current cadet or officer in our digital registry." 
-                                    : "No verification ID was detected. Please ensure you are scanning a valid NCC RGU digital ID card."}
+                                    : "No verification ID was detected. Please ensure you are scanning a valid NCC RGU digital ID card.")}
                             </p>
                             
                             <Link 
