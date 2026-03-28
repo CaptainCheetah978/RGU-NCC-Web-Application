@@ -29,7 +29,7 @@ A role-based Cadet Management System built with Next.js 16 and Supabase. Feature
 
 1.  **Role-Based Security**: Different views for ANO, SUO, UO/SGT, and Cadets. Security is enforced at the database level using Supabase Row Level Security (RLS).
 2.  **Attendance Logging**: Select class records, mark attendance, and it syncs to the database. Works offline too (it queues changes locally and pushes them when connected).
-3.  **Digital ID Cards**: Cadets get a digital ID card page that can be printed or scanned. 
+3.  **Digital ID Cards (Anti-Replay Security)**: Cadets get a digital ID card page that can be printed or scanned. The digital version features a **Visual Security Stack** (Ticking Clock, Holographic Shimmer, Color of the Day) and uses **Dynamic QR Codes**. The QR code generates a cryptographically signed JWT with a 30-second expiration to prevent screenshot replay attacks.
 4.  **Alumni Records**: When cadets graduate, we move them to an alumni state to preserve their historical attendance and records.
 
 ## Core Modules Overview

@@ -81,7 +81,7 @@ flowchart TD
     AuthGuard -- "Standard Update" --> API
 ```
 
-### 4. QR Code Generation Pipeline
+### 4. ID Card Export Pipeline
 We use `html-to-image` to export the ID card as a PNG so it prints consistently across different mobile devices without CSS layout breaks.
 
 ```mermaid
@@ -105,13 +105,42 @@ sequenceDiagram
     end
 ```
 
-### 4. Privileged Access vs Public Client
+### 5. Dynamic QR Security Flow
+To prevent screenshot spoofing and replay attacks, the digital ID card uses a constantly rotating, cryptographically signed JWT.
+
+```mermaid
+sequenceDiagram
+    participant Cadet
+    participant IDCard as Digital ID UI
+    participant Server as JWT Action (jose)
+    participant Scanner as Verifier (ANO/Guard)
+
+    Cadet->>IDCard: Opens Profile Page
+    loop Every 25 seconds
+        IDCard->>Server: Request Verification Token
+        Server->>Server: Verify Session & Identity
+        Server-->>IDCard: Returns JWT (exp: 30s)
+        IDCard->>IDCard: Updates QR Code Payload
+    end
+    
+    Scanner->>IDCard: Scans QR Code
+    Scanner->>Server: Requests verification with JWT
+    Server->>Server: Validates Signature & Expiration
+    
+    alt Token Valid
+        Server-->>Scanner: Returns Authentic Verified Profile
+    else Token Expired or Invalid
+        Server-->>Scanner: Returns "QR Code Expired" Error
+    end
+```
+
+### 6. Privileged Access vs Public Client
 The system utilizes two distinct Supabase clients to enforce the security boundary between standard user operations and administrative tasks.
 
 *   **Public Client (`src/lib/supabase-client.ts`)**: Used in client-side components. Every request is filtered by the user's JWT and must satisfy PostgreSQL Row Level Security (RLS) policies.
 *   **Admin Client (`src/lib/supabase-admin.ts`)**: Used exclusively in Server Actions. It utilizes the `SERVICE_ROLE_KEY` to bypass RLS. This is required for operations that affect multiple users or systems where standard user credentials lack the necessary scope (e.g., bulk attendance updates by an ANO).
 
-### 5. Offline Data Synchronization
+### 7. Offline Data Synchronization
 To support environments with limited connectivity, the system implements a queue-based synchronization mechanism using a Service Worker and IndexedDB.
 
 ```mermaid
