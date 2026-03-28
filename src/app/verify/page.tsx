@@ -6,6 +6,7 @@ import { Shield, CheckCircle2, XCircle, User, Award } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { verifyCadetById, type VerifyResult } from "@/app/actions/verify-actions";
+import { getColorOfTheDay } from "@/lib/utils";
 
 interface VerifiedPerson {
     name: string;
@@ -25,6 +26,7 @@ function VerifyContent() {
     const [person, setPerson] = useState<VerifiedPerson | null>(null);
     const [loading, setLoading] = useState(() => !!id);
     const [checked, setChecked] = useState(() => !id);
+    const dailyColor = getColorOfTheDay();
 
     useEffect(() => {
         if (!id) return;
@@ -123,6 +125,17 @@ function VerifyContent() {
                                 <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
                                     <p className="text-[10px] text-slate-500 leading-relaxed text-center italic">
                                         Sensitive medical and enrollment data is only visible to authorized ANO officers via the Unit Dashboard.
+                                    </p>
+                                </div>
+
+                                {/* Security Protocol + Color of the Day */}
+                                <div className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                                    <div className="flex items-center gap-2 justify-center mb-1">
+                                        <div className="w-3 h-3 rounded-full shrink-0 border border-amber-300" style={{ backgroundColor: dailyColor.hex }} />
+                                        <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider">Today&apos;s Color: {dailyColor.name}</p>
+                                    </div>
+                                    <p className="text-[9px] text-amber-700 leading-relaxed text-center font-semibold">
+                                        SECURITY: Match the person to the photo above. If they do not match, the ID is fraudulent.
                                     </p>
                                 </div>
                             </div>

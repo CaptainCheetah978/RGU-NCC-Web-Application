@@ -4,12 +4,13 @@ import { useAuth } from "@/lib/auth-context";
 import { useCadetData } from "@/lib/cadet-context";
 import { useDashboardStats } from "@/lib/dashboard-stats";
 import { supabase } from "@/lib/supabase-client";
+import { getColorOfTheDay } from "@/lib/utils";
 import { Role, Wing, Cadet, User } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Camera, Award, Calendar, Shield, Info, Download, Printer, Lock, CheckCircle2, Loader2 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toPng } from "html-to-image";
 import { QRCodeSVG } from "qrcode.react";
 import { AttendanceHistory } from "@/components/profile/attendance-history";
@@ -32,6 +33,21 @@ export default function ProfilePage() {
     const [changePinLoading, setChangePinLoading] = useState(false);
     const [changePinError, setChangePinError] = useState("");
     const [changePinSuccess, setChangePinSuccess] = useState(false);
+    const [currentTime, setCurrentTime] = useState<string>("");
+
+    // Live ticking clock for visual liveness (defeats static screenshots)
+    useEffect(() => {
+        const tick = () => {
+            setCurrentTime(new Date().toLocaleTimeString('en-IN', {
+                hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+            }));
+        };
+        tick();
+        const timer = setInterval(tick, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const dailyColor = getColorOfTheDay();
 
     // Get the most up-to-date user data (including extras like photos) directly from context
     // Falls back to auth user defaults if profile not fully loaded yet (though context handles loading)
@@ -328,6 +344,9 @@ export default function ProfilePage() {
                                     {/* Wrapping outer container specifically to be snapshotted with beautiful white padding, shadows, and rounded corners! */}
                                     <div ref={idCardRef} className="bg-white p-6 shrink-0 flex items-center justify-center rounded-3xl">
                                         <div className="w-[500px] h-[312px] shrink-0 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100/50 relative overflow-hidden flex flex-col p-px ring-1 ring-gray-900/5">
+                                            {/* Holographic shimmer overlay — visual liveness, defeats screenshots */}
+                                            <div className="id-shimmer absolute inset-0 z-[16] pointer-events-none rounded-2xl overflow-hidden" />
+
                                             {/* Side decorative border - Ensure it's at the absolute front with no gaps */}
                                             <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-red-600 via-white to-blue-800 z-30" />
 
@@ -340,8 +359,12 @@ export default function ProfilePage() {
                                                     <h3 className="text-[13px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">The Assam Royal Global University</h3>
                                                     <p className="text-[10px] font-bold text-red-700 tracking-[0.2em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
                                                 </div>
-                                                <div className="w-11 h-11 flex items-center justify-center pr-2">
-                                                    <Image src="/rgu-logo.png" width={44} height={44} className="object-contain" alt="RGU" />
+                                                <div className="flex items-center gap-1.5 pr-2">
+                                                    <Image src="/rgu-logo.png" width={44} height={44} className="w-11 h-11 object-contain" alt="RGU" />
+                                                    {/* Ticking clock — visual liveness proof */}
+                                                    {currentTime && (
+                                                        <span className="text-[8px] font-mono font-black text-gray-500 tracking-tight leading-none whitespace-nowrap">{currentTime}</span>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -396,7 +419,7 @@ export default function ProfilePage() {
                                                     </div>
                                                 </div>
 
-                                                {/* QR Code */}
+                                                {/* QR Code + Color of the Day */}
                                                 <div className="ml-3 shrink-0 flex flex-col items-center">
                                                     <QRCodeSVG
                                                         value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?id=${currentUser.id}`}
@@ -404,7 +427,10 @@ export default function ProfilePage() {
                                                         level="M"
                                                         className="rounded"
                                                     />
-                                                    <p className="text-[7px] text-gray-600 font-bold mt-0.5 uppercase tracking-wider">Scan to verify</p>
+                                                    <div className="flex items-center gap-1 mt-0.5">
+                                                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dailyColor.hex }} title={`Today: ${dailyColor.name}`} />
+                                                        <p className="text-[7px] text-gray-600 font-bold uppercase tracking-wider">Scan to verify</p>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -426,8 +452,12 @@ export default function ProfilePage() {
                                                 </div>
                                             </div>
 
-                                            {/* Footer decorative line - ensure it's at z-20 to be below the side border (which is z-30) */}
-                                            <div className="absolute bottom-0 left-0 right-0 h-2.5 bg-[#002147] z-20" />
+                                            {/* Instruction Block footer — tells verifiers how to authenticate */}
+                                            <div className="absolute bottom-0 left-0 right-0 h-4 bg-[#002147] z-20 flex items-center justify-center px-4">
+                                                <p className="text-[6px] text-white/80 font-bold uppercase tracking-widest text-center leading-none truncate">
+                                                    Verify: Scan QR or visit {typeof window !== 'undefined' ? window.location.host : 'ncc-rgu.app'}/verify
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -236,3 +236,27 @@
     }
   }
 }
+
+/* Holographic shimmer animation for ID card anti-screenshot visual liveness */
+@keyframes id-shimmer-sweep {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(200%) rotate(25deg); }
+}
+
+.id-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.15) 45%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.15) 55%,
+    transparent 70%
+  );
+  animation: id-shimmer-sweep 2.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 15;
+}
+
