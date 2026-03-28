@@ -2,23 +2,32 @@
 
 This is a working document tracking areas of the app that still need polish or have known edge cases. Since this was built quickly for internal 30 Assam Bn NCC operational use, some tradeoffs were made.
 
-### 1. Offline Sync Conflicts
-- **Issue**: If an ANO marks someone PRESENT while offline, and another ANO marks them ABSENT while online, the offline record will blindly overwrite the online record when the first ANO connects to the internet. 
-- **TODO**: Implement a timestamp-based conflict resolution in `offline-sync.ts` rather than just upserting.
+### ~~1. Offline Sync Conflicts~~ ✅ RESOLVED (March 27, 2026)
+- **Resolution**: Implemented timestamp-based Last-Write-Wins conflict resolution in `attendance-actions.ts`. Stale offline records are silently dropped; newer records overwrite.
 
-### 2. QR Code Scanner / Verification Bounds
-- **Issue**: The digital ID card QR code points to `/verify?id=XXX`. Right now, anyone with the link can see the verification page. It requires the viewer to be logged in as an ANO to see sensitive data, but the unauthenticated state is a bit broken (shows an ugly error instead of a clean "Please login" redirect).
-- **TODO**: Fix the redirect loop logic in `verify-actions.ts` when a non-authenticated user scans a card.
+### ~~2. QR Code Scanner / Verification Bounds~~ ✅ RESOLVED (March 27, 2026)
+- **Resolution**: Added input validation guard in `verify-actions.ts`. Redesigned the guest verification view (`verify/page.tsx`) with proper "Not Found" and "Missing ID" error states and a clear "Return to Login" CTA.
 
-### 3. PDF Export Truncation
-- **Issue**: For classes with more than 150 cadets, the `jspdf-autotable` plugin sometimes clips the bottom rows off the page instead of beautifully handling the page break.
-- **Workaround**: Split large enrollments into two class sessions ("Part A" and "Part B").
-- **TODO**: Calibrate the `startY` and margin settings in `pdf-export-button.tsx`.
+### ~~3. PDF Export Truncation~~ ✅ RESOLVED (March 27, 2026)
+- **Resolution**: Calibrated `jspdf-autotable` with explicit bottom margins (`margin: { bottom: 20 }`) and automatic page-break handling (`rowPageBreak: 'auto'`) in both `pdf-export-button.tsx` and `sheet/page.tsx`. Reports now include Unit Name in the header.
 
-### 4. Mobile Safari Clipping
-- **Issue**: The bottom navigation bar on newer iPhones overlaps the fixed submit button in the "Mark Attendance" sheet due to WebKit's safe-area padding not being fully accounted for.
-- **TODO**: Add `padding-bottom: env(safe-area-inset-bottom)` to the sticky footer component.
+### ~~4. Mobile Safari Clipping~~ ✅ RESOLVED (March 27, 2026)
+- **Resolution**: Applied `pb-[env(safe-area-inset-bottom)]` to the dashboard layout container in `layout.tsx`.
 
-### 5. Single-Tenant Architecture
-- **Issue**: Everything assumes a single NCC unit. The `unitName` in profiles is currently a field, but there's no actual data partitioning. 
-- **TODO**: If we ever want to onboard 10 Assam Bn or another unit, we'll need a full multi-tenant refactor with a new `units` table and massive changes to RLS policies. It's a huge undertaking we're deferring for now.
+### ~~5. Single-Tenant Architecture~~ ✅ FOUNDATION LAID (March 27, 2026)
+- **Resolution**: Created `004_multi_tenancy.sql` migration with a `units` table, `unit_id` columns on all entity tables, and unit-scoped RLS policies. Updated all server actions to inject `unit_id` on writes. Added `get_my_unit_id()` helper function for RLS. UI now displays unit branding in the Topbar and PDF exports.
+- **Remaining**: New unit onboarding workflow/admin panel is not yet built. Currently, new units must be added via direct SQL.
+
+---
+
+## New Issues (Discovered March 27, 2026)
+
+### ~~6. Activity Log Missing `unit_id` on Client Inserts~~ ✅ RESOLVED (March 27, 2026)
+- **Resolution**: Migrated activity logging to a new server action (`activity-actions.ts`). The `unit_id` and `userName` are now securely injected from the caller session via an improved `getCallerSession` helper.
+
+### ~~7. Avatar Signed URLs — 10-Year Expiry Risk~~ ✅ RESOLVED (March 27, 2026)
+- **Resolution**: Switched from generating expiring signed URLs to generating persistent public bucket URLs via `getPublicUrl` in `profile/page.tsx`.
+
+### ~~8. ID Card Download Clipping on Older Android~~ ✅ RESOLVED (March 27, 2026)
+- **Resolution**: Hardened the `toPng` rendering in `profile/page.tsx` by adding explicit canvas sizing (`canvasWidth` / `canvasHeight`), explicitly setting the background color to white, and introducing a 100ms render delay to allow fonts and images to settle before snapshotting.
+

@@ -21,7 +21,7 @@ import { Role } from "@/types";
  */
 export async function getCallerSession(
     accessToken: string | undefined
-): Promise<{ userId: string; role: Role; unitId?: string } | null> {
+): Promise<{ userId: string; role: Role; unitId?: string; userName?: string } | null> {
     if (!accessToken) return null;
 
     try {
@@ -32,7 +32,7 @@ export async function getCallerSession(
         // Look up the user's role and unit from the profiles table
         const { data: profile } = await supabaseAdmin
             .from("profiles")
-            .select("role, unit_id")
+            .select("role, unit_id, full_name")
             .eq("id", user.id)
             .single();
 
@@ -40,7 +40,8 @@ export async function getCallerSession(
         return { 
             userId: user.id, 
             role: profile.role as Role,
-            unitId: profile.unit_id
+            unitId: profile.unit_id,
+            userName: profile.full_name || undefined
         };
     } catch {
         return null;

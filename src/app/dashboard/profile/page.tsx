@@ -83,13 +83,13 @@ export default function ProfilePage() {
                 .upload(path, file, { upsert: true });
 
             if (!uploadErr) {
-                // Storage upload worked — get signed URL
-                const { data: signedData } = await supabase.storage
+                // Storage upload worked — use public URL (never expires, unlike signed URLs)
+                const { data: publicData } = supabase.storage
                     .from("avatars")
-                    .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+                    .getPublicUrl(path);
 
-                if (signedData?.signedUrl) {
-                    await updateCadet(user.id, { avatarUrl: signedData.signedUrl });
+                if (publicData?.publicUrl) {
+                    await updateCadet(user.id, { avatarUrl: publicData.publicUrl });
                     setUploadSuccess(true);
                     return;
                 }
@@ -123,8 +123,16 @@ export default function ProfilePage() {
         if (!idCardRef.current) return;
         setIsDownloading(true);
         try {
-            // TODO: Sometimes this clips on older Android devices. Need to test on more phones.
-            const dataUrl = await toPng(idCardRef.current, { cacheBust: true, pixelRatio: 3 });
+            // Short delay to let fonts/images settle — prevents clipping on older Android WebViews
+            await new Promise(r => setTimeout(r, 100));
+            const dataUrl = await toPng(idCardRef.current, {
+                cacheBust: true,
+                pixelRatio: 3,
+                backgroundColor: '#ffffff',
+                // Explicit canvas sizing prevents edge clipping on Android
+                canvasWidth: idCardRef.current.offsetWidth * 3,
+                canvasHeight: idCardRef.current.offsetHeight * 3,
+            });
             const link = document.createElement("a");
             link.download = `NCC_ID_${currentUser.name.replace(/\s+/g, "_")}.png`;
             link.href = dataUrl;

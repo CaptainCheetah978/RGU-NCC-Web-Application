@@ -4,6 +4,8 @@ import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ActivityLogEntry } from "@/types";
 import { supabase } from "@/lib/supabase-client";
+import { logActivityAction } from "@/app/actions/activity-actions";
+import { getAccessToken } from "@/lib/get-access-token";
 
 const ACTIVITY_COLUMNS = "id, action, performed_by, performed_by_name, target_name, created_at";
 
@@ -43,14 +45,11 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
     });
 
     const logActivityMutation = useMutation({
-        mutationFn: async ({ action, userId, userName, targetName }: { action: string; userId: string; userName: string; targetName?: string }) => {
-            const { error } = await supabase.from("activity_log").insert({
-                action,
-                performed_by: userId,
-                performed_by_name: userName,
-                target_name: targetName || null,
-            });
-            if (error) throw error;
+        mutationFn: async ({ action, targetName }: { action: string; userId: string; userName: string; targetName?: string }) => {
+            const token = await getAccessToken();
+            if (!token) throw new Error("Not authenticated");
+            const result = await logActivityAction({ action, targetName }, token);
+            if (!result.success) throw new Error(result.error);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["activity"] });
