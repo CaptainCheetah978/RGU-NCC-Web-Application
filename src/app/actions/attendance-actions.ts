@@ -26,9 +26,16 @@ export async function getAttendanceAction(
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
         .from("attendance")
         .select("id, class_id, cadet_id, status, created_at");
+
+    // Scope to the caller's unit so users cannot enumerate other units' attendance
+    if (session.unitId) {
+        query = query.eq("unit_id", session.unitId);
+    }
+
+    const { data, error } = await query;
     if (error) return { success: false, error: error.message };
     return { success: true, data: (data as AttendanceRow[]) || [] };
 }

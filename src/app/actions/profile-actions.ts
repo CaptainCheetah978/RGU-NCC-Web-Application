@@ -32,7 +32,38 @@ export type CertificateRow = {
     upload_date: string;
 };
 
+// UUID v4 regex — used to validate IDs before passing to DB queries
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isUUID = (v: unknown): v is string => typeof v === "string" && UUID_RE.test(v);
+
+// Fields that any authenticated user may update on their own profile.
+// Critically: "role" and "unit_id" are intentionally excluded — those
+// can only be changed by ANO/SUO via the admin-level allowlist below.
+const SELF_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
+    "full_name",
+    "regimental_number",
+    "rank",
+    "wing",
+    "gender",
+    "unit_number",
+    "unit_name",
+    "enrollment_year",
+    "blood_group",
+    "avatar_url",
+    "status",
+]);
+
+// Fields that ANO/SUO may also update on any profile.
+const ADMIN_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
+    ...SELF_UPDATE_ALLOWED,
+    "access_pin",
+    "role",
+    "unit_id",
+]);
+
 export async function getProfileByIdAction(userId: string) {
+    if (!isUUID(userId)) return null;
+
     const { data, error } = await supabaseAdmin
         .from('profiles')
         .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email, unit_id')
@@ -46,7 +77,7 @@ export async function getProfileByIdAction(userId: string) {
     return data;
 }
 
-// ── Get All Profiles (admin-bypasses RLS) ──────────────────────────────────
+// ── Get All Profiles (admin-bypasses RLS, scoped to caller's unit) ───────────
 
 export async function getAllProfilesAction(
     accessToken: string
@@ -55,14 +86,22 @@ export async function getAllProfilesAction(
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
-    const { data, error } = await supabaseAdmin
-        .from("profiles")
-        .select(PROFILE_READ_COLUMNS);
+    let query = supabaseAdmin.from("profiles").select(PROFILE_READ_COLUMNS);
+
+    // Scope to the caller's unit so users cannot enumerate other units' data
+    if (session.unitId) {
+        query = query.eq("unit_id", session.unitId);
+    } else {
+        // No unit assigned — can only see their own profile
+        query = query.eq("id", session.userId);
+    }
+
+    const { data, error } = await query;
     if (error) return { success: false, error: error.message };
     return { success: true, data: (data as ProfileRow[]) || [] };
 }
 
-// ── Get All Certificates (admin-bypasses RLS) ─────────────────────────────
+// ── Get All Certificates (admin-bypasses RLS, scoped to caller's unit) ───────
 
 export async function getAllCertificatesAction(
     accessToken: string
@@ -71,33 +110,59 @@ export async function getAllCertificatesAction(
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
+    // Get the unit's profile IDs first to scope certificates
+    let profileQuery = supabaseAdmin.from("profiles").select("id");
+    if (session.unitId) {
+        profileQuery = profileQuery.eq("unit_id", session.unitId);
+    } else {
+        profileQuery = profileQuery.eq("id", session.userId);
+    }
+    const { data: profileIds, error: profileErr } = await profileQuery;
+    if (profileErr) return { success: false, error: profileErr.message };
+
+    const ids = (profileIds || []).map((p: { id: string }) => p.id);
+    if (ids.length === 0) return { success: true, data: [] };
+
     const { data, error } = await supabaseAdmin
         .from("certificates")
-        .select(CERTIFICATE_READ_COLUMNS);
+        .select(CERTIFICATE_READ_COLUMNS)
+        .in("user_id", ids);
     if (error) return { success: false, error: error.message };
     return { success: true, data: (data as CertificateRow[]) || [] };
 }
 
-// ── Update Profile (admin-bypasses RLS) ───────────────────────────────────
+// ── Update Profile (admin-bypasses RLS, field-allowlisted) ───────────────────
 
 export async function updateProfileAction(
     id: string,
     payload: Record<string, unknown>,
     accessToken: string
 ): Promise<{ success: boolean; error?: string }> {
+    if (!isUUID(id)) return { success: false, error: "Invalid profile ID." };
+
     const { getCallerSession } = await import("@/lib/server-auth");
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
     // Only ANO/SUO can update other profiles; others can only update their own
-    const allowedRoles: Role[] = [Role.ANO, Role.SUO];
-    if (!allowedRoles.includes(session.role) && session.userId !== id) {
+    const isAdmin = [Role.ANO, Role.SUO].includes(session.role);
+    if (!isAdmin && session.userId !== id) {
         return { success: false, error: "Forbidden: insufficient permissions." };
+    }
+
+    // Filter payload to only allowed fields to prevent privilege escalation
+    const allowedFields = isAdmin ? ADMIN_UPDATE_ALLOWED : SELF_UPDATE_ALLOWED;
+    const safePayload = Object.fromEntries(
+        Object.entries(payload).filter(([key]) => allowedFields.has(key))
+    );
+
+    if (Object.keys(safePayload).length === 0) {
+        return { success: false, error: "No valid fields to update." };
     }
 
     const { error } = await supabaseAdmin
         .from("profiles")
-        .update(payload)
+        .update(safePayload)
         .eq("id", id);
     if (error) return { success: false, error: error.message };
     return { success: true };
