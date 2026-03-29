@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Role } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
-import { ensureUserProfileAction } from "@/app/actions/profile-actions";
+import { ensureUserProfileAction, getProfileByIdAction } from "@/app/actions/profile-actions";
 
 interface AuthContextType {
     user: User | null;
@@ -72,56 +72,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchProfile = async (userId: string, timeoutMs = 12000, retries = 1): Promise<User | null> => {
         // Race against a timeout so login never spins forever on a slow connection
-        const attemptFetch = async () => {
-            const timeoutPromise = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Profile fetch timed out')), timeoutMs)
-            );
-            return Promise.race([
-                supabase
-                    .from('profiles')
-                    .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email, unit_id')
-                    .eq('id', userId)
-                    .single(),
-                timeoutPromise
-            ]);
-        };
-
         try {
-            let result;
+            let data;
             try {
-                result = await attemptFetch();
+                // RACE AGAINST TIMEOUT
+                const timeoutPromise = new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Profile fetch timed out')), timeoutMs)
+                );
+
+                // BYPASS RLS LOOP: Call the server action instead of the client-side select.
+                // This ensures we always get the profile, even if RLS recursion is broken.
+                const profileResult = await Promise.race([
+                    getProfileByIdAction(userId),
+                    timeoutPromise
+                ]);
+                
+                if (!profileResult && retries > 0) {
+                    throw new Error("Empty profile result"); // Trigger retry
+                }
+                
+                data = profileResult;
             } catch (firstError) {
-                // First attempt failed (likely timeout on slow connection) — retry once
+                // First attempt failed — retry once
                 if (retries > 0) {
-                    console.warn('Profile fetch timed out, retrying...', firstError);
-                    await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
-                    result = await attemptFetch();
+                    console.warn('Profile fetch attempt failed, retrying...', firstError);
+                    await new Promise(r => setTimeout(r, 1500)); 
+                    data = await getProfileByIdAction(userId);
                 } else {
                     throw firstError;
                 }
             }
 
-            let { data, error } = result;
-
-            if (error && error.code === 'PGRST116') {
+            if (!data) {
                 // Profile not found, but user is authenticated.
                 // Attempt to create a default profile (self-healing)
-
                 try {
                     const { data: { session: activeSession } } = await supabase.auth.getSession();
                     if (activeSession?.access_token) {
-                        const newProfile = await ensureUserProfileAction(activeSession.access_token);
-                        if (newProfile) {
-                            data = newProfile;
-                            error = null;
-                        }
+                        data = await ensureUserProfileAction(activeSession.access_token);
                     }
                 } catch (createError) {
                     console.error("Failed to auto-create profile via action:", createError);
                 }
-            } else if (error) {
-                console.error('Error fetching profile:', error);
-                return null;
             }
 
             if (data) {

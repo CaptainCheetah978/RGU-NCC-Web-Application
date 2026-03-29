@@ -3,6 +3,20 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { Role } from "@/types";
 
+export async function getProfileByIdAction(userId: string) {
+    const { data, error } = await supabaseAdmin
+        .from('profiles')
+        .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email, unit_id')
+        .eq('id', userId)
+        .single();
+    
+    if (error) {
+        console.error("getProfileByIdAction error:", error);
+        return null;
+    }
+    return data;
+}
+
 export async function ensureUserProfileAction(accessToken: string) {
     if (!accessToken) {
         throw new Error("Unauthorized");
@@ -16,7 +30,14 @@ export async function ensureUserProfileAction(accessToken: string) {
 
     const isANO = user.email?.startsWith('ano_') || false;
 
-    // Use admin client to bypass RLS for profile creation (solves PGRST116 auto-healing issue)
+    // 1. Get a default unit ID to assign (first available unit)
+    const { data: defaultUnit } = await supabaseAdmin
+        .from('units')
+        .select('id')
+        .limit(1)
+        .single();
+
+    // 2. Use admin client to bypass RLS for profile creation (solves PGRST116 auto-healing issue)
     const { data: newProfile, error: createError } = await supabaseAdmin
         .from('profiles')
         .upsert({
@@ -24,6 +45,7 @@ export async function ensureUserProfileAction(accessToken: string) {
             full_name: isANO ? 'Associate NCC Officer' : 'New User',
             role: isANO ? Role.ANO : Role.CADET,
             email: user.email,
+            unit_id: defaultUnit?.id,
             updated_at: new Date().toISOString(),
         })
         .select()
