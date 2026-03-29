@@ -25,7 +25,7 @@ export default function ProfilePage() {
     
     // Get the most up-to-date user data directly from context
     const currentUser = currentUserProfile as (User & Partial<Cadet>);
-    const stats = getStats(user?.id);
+    const stats = getStats();
 
     const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [uploadError, setUploadError] = useState("");

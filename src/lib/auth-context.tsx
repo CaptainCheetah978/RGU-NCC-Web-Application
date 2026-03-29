@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return Promise.race([
                 supabase
                     .from('profiles')
-                    .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email')
+                    .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email, unit_id')
                     .eq('id', userId)
                     .single(),
                 timeoutPromise

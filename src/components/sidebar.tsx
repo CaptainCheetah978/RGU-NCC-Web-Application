@@ -37,7 +37,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
     if (!user) return null;
 
-    const unreadNotes = getStats(user.id).unreadNotes;
+    const unreadNotes = getStats().unreadNotes;
 
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [] }, // All
