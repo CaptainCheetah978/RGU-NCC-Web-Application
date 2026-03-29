@@ -20,6 +20,8 @@ const mockSignOut = vi.fn()
 const mockOnAuthStateChange = vi.fn()
 const mockGetUser = vi.fn()
 const mockSupabaseFrom = vi.fn()
+const mockGetProfileByIdAction = vi.fn()
+const mockEnsureUserProfileAction = vi.fn()
 
 vi.mock('@/lib/supabase-client', () => ({
   supabase: {
@@ -32,6 +34,11 @@ vi.mock('@/lib/supabase-client', () => ({
     },
     from: (...args: unknown[]) => mockSupabaseFrom(...args)
   }
+}))
+
+vi.mock('@/app/actions/profile-actions', () => ({
+  getProfileByIdAction: (...args: unknown[]) => mockGetProfileByIdAction(...args),
+  ensureUserProfileAction: (...args: unknown[]) => mockEnsureUserProfileAction(...args),
 }))
 
 // Set up default onAuthStateChange returning a dummy unsubscribe function
@@ -80,19 +87,12 @@ describe('AuthContext', () => {
       error: null
     })
 
-    // Mock profile fetch success
-    mockSupabaseFrom.mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: {
-          id: 'test-user-id',
-          full_name: 'Test Cadet',
-          role: 'CADET',
-          regimental_number: 'AS20SDA100000',
-        },
-        error: null
-      })
+    // Mock profile fetch success via Server Action
+    mockGetProfileByIdAction.mockResolvedValue({
+      id: 'test-user-id',
+      full_name: 'Test Cadet',
+      role: 'CADET',
+      regimental_number: 'AS20SDA100000',
     })
 
     const wrapper = createWrapper()
@@ -156,17 +156,11 @@ describe('AuthContext', () => {
       error: null
     })
 
-    mockSupabaseFrom.mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: {
-          id: 'usr-1',
-          full_name: 'Logged In User',
-          role: 'ANO'
-        },
-        error: null
-      })
+    // Mock profile fetch success via Server Action
+    mockGetProfileByIdAction.mockResolvedValue({
+      id: 'usr-1',
+      full_name: 'Logged In User',
+      role: 'ANO'
     })
 
     const wrapper = createWrapper()
