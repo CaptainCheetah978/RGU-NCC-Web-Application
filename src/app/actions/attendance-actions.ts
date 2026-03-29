@@ -10,6 +10,29 @@ const ATTENDANCE_ROLES: Role[] = [Role.ANO, Role.SUO, Role.UO, Role.SGT];
 
 type ActionResult = { success: boolean; error?: string };
 
+type AttendanceRow = {
+    id: string;
+    class_id: string;
+    cadet_id: string;
+    status: string;
+    created_at: string;
+};
+
+// ── Get Attendance ────────────────────────────────────────────────────────────
+
+export async function getAttendanceAction(
+    accessToken: string
+): Promise<{ success: boolean; data?: AttendanceRow[]; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    const { data, error } = await supabaseAdmin
+        .from("attendance")
+        .select("id, class_id, cadet_id, status, created_at");
+    if (error) return { success: false, error: error.message };
+    return { success: true, data: (data as AttendanceRow[]) || [] };
+}
+
 export async function markAttendanceAction(
     data: { classId: string; cadetId: string; status: string; timestamp?: string },
     accessToken: string

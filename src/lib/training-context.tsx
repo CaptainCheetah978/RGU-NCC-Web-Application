@@ -3,9 +3,10 @@
 import { createContext, useCallback, useContext, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ClassSession, AttendanceRecord } from "@/types";
-import { supabase } from "@/lib/supabase-client";
 import { useAuth } from "@/lib/auth-context";
 import { requireAccessToken } from "@/lib/require-access-token";
+import { getClassesAction } from "@/app/actions/class-actions";
+import { getAttendanceAction } from "@/app/actions/attendance-actions";
 
 interface PersonalAttendanceEntry {
     date: string;
@@ -27,9 +28,6 @@ interface TrainingContextType {
     error: unknown;
 }
 
-const CLASS_COLUMNS = "id, title, date, time, instructor_id, description, tag";
-const ATTENDANCE_COLUMNS = "id, class_id, cadet_id, status, created_at";
-
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
 
 const generateOptimisticId = (scope = "id") =>
@@ -45,33 +43,33 @@ const getCadetIdFromAttendance = (record: Partial<AttendanceRecord> & { cadet_id
     record.cadetId ?? record.cadet_id;
 
 async function fetchClasses(): Promise<ClassSession[]> {
-    const { data, error } = await supabase.from("classes").select(CLASS_COLUMNS);
-    if (error) throw error;
-    return (
-        data?.map((c) => ({
-            id: c.id,
-            title: c.title,
-            date: c.date,
-            time: c.time,
-            instructorId: c.instructor_id,
-            description: c.description,
-            tag: c.tag || "Training",
-            attendees: [],
-        })) || []
-    );
+    const token = await requireAccessToken();
+    const result = await getClassesAction(token);
+    if (!result.success || !result.data) throw new Error(result.error || "Failed to fetch classes");
+    return result.data.map((c) => ({
+        id: c.id,
+        title: c.title,
+        date: c.date,
+        time: c.time,
+        instructorId: c.instructor_id,
+        description: c.description ?? undefined,
+        tag: c.tag || "Training",
+        attendees: [],
+    }));
 }
 
 async function fetchAttendance(): Promise<AttendanceRecord[]> {
-    const { data, error } = await supabase.from("attendance").select(ATTENDANCE_COLUMNS);
-    if (error) throw error;
-    
-    const serverData = data?.map((a: { id: string; class_id: string; cadet_id: string; status: string; created_at: string }) => ({
+    const token = await requireAccessToken();
+    const result = await getAttendanceAction(token);
+    if (!result.success || !result.data) throw new Error(result.error || "Failed to fetch attendance");
+
+    const serverData: AttendanceRecord[] = result.data.map((a) => ({
         id: a.id,
         classId: a.class_id,
         cadetId: a.cadet_id,
         status: a.status as AttendanceRecord["status"],
         timestamp: a.created_at,
-    })) || [];
+    }));
 
     if (typeof window !== "undefined") {
         const { getOfflineAttendanceQueue } = await import("@/lib/offline-sync");
@@ -131,13 +129,13 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
     const classesQuery = useQuery({
         queryKey: ["classes"],
         queryFn: fetchClasses,
-        refetchOnMount: 'always' as const,
+        enabled: !!user,
     });
 
     const attendanceQuery = useQuery({
         queryKey: ["attendance"],
         queryFn: fetchAttendance,
-        refetchOnMount: 'always' as const,
+        enabled: !!user,
     });
 
     const addClassMutation = useMutation({

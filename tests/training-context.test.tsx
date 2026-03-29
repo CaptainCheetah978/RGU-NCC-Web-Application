@@ -13,37 +13,27 @@ vi.mock('@/lib/auth-context', () => ({
   })
 }))
 
-// Mock supabase-client
-vi.mock('@/lib/supabase-client', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockImplementation(() => ({
-        // Return empty array by default
-        then: (cb: (val: { data: unknown[]; error: null }) => void) => cb({ data: [], error: null })
-      })),
-      insert: vi.fn().mockReturnValue({ data: null, error: null }),
-      delete: vi.fn().mockReturnValue({ data: null, error: null })
-    }))
-  }
-}))
-
 // Mock require-access-token
 vi.mock('@/lib/require-access-token', () => ({
   requireAccessToken: vi.fn(() => Promise.resolve('fake-token'))
 }))
 
-// Mock Server Actions (dynamic imports)
-const classActions = {
+// Mock server actions (module-level imports in training-context).
+// Factories must be self-contained — no outer-scope variable references
+// because vi.mock calls are hoisted to the top of the file.
+vi.mock('@/app/actions/class-actions', () => ({
+  getClassesAction: vi.fn(() => Promise.resolve({ success: true, data: [] })),
   addClassAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50))),
-  deleteClassAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50)))
-}
+  deleteClassAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50))),
+}))
 
-const attendanceActions = {
-  markAttendanceAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50)))
-}
+vi.mock('@/app/actions/attendance-actions', () => ({
+  getAttendanceAction: vi.fn(() => Promise.resolve({ success: true, data: [] })),
+  markAttendanceAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50))),
+}))
 
-vi.mock('@/app/actions/class-actions', () => classActions)
-vi.mock('@/app/actions/attendance-actions', () => attendanceActions)
+// Import mocked module functions so tests can override them with mockReturnValueOnce
+import { addClassAction } from '@/app/actions/class-actions'
 
 // Mock crypto for optimistic IDs
 if (typeof global.crypto === 'undefined') {
@@ -134,7 +124,7 @@ describe('TrainingContext Optimistic Updates', () => {
 
   it('should rollback state on error', async () => {
     // Mock failure
-    classActions.addClassAction.mockReturnValueOnce(Promise.resolve({ success: false, error: 'DB Error' }))
+    vi.mocked(addClassAction).mockReturnValueOnce(Promise.resolve({ success: false, error: 'DB Error' }))
 
     const wrapper = createWrapper()
     const { result } = renderHook(() => useTrainingData(), { wrapper })

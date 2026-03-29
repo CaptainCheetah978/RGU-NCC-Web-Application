@@ -2,14 +2,11 @@
 
 import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cadet, Certificate, Role, User, AttendanceRecord, Note } from "@/types";
-import { supabase } from "@/lib/supabase-client";
+import { Cadet, Certificate, Role, User, AttendanceRecord, Note, Wing, Gender } from "@/types";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessToken } from "@/lib/get-access-token";
+import { getAllProfilesAction, getAllCertificatesAction, updateProfileAction } from "@/app/actions/profile-actions";
 
-const PROFILE_COLUMNS =
-    "id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, status";
-const CERTIFICATE_COLUMNS = "id, user_id, name, type, file_data, upload_date";
 const getCadetId = (record: Partial<AttendanceRecord> & { cadet_id?: string }) =>
     record.cadetId ?? record.cadet_id;
 const getCertificateUserId = (record: Partial<Certificate> & { user_id?: string }) =>
@@ -36,40 +33,40 @@ interface CadetContextType {
 const CadetContext = createContext<CadetContextType | undefined>(undefined);
 
 async function fetchProfiles(): Promise<(User & Partial<Cadet>)[]> {
-    const { data, error } = await supabase.from("profiles").select(PROFILE_COLUMNS);
-    if (error) throw error;
-    return (
-        data?.map((p) => ({
-            id: p.id,
-            name: p.full_name || "Unknown",
-            role: (p.role as Role) || Role.CADET,
-            regimentalNumber: p.regimental_number,
-            wing: p.wing,
-            rank: p.rank,
-            avatarUrl: p.avatar_url,
-            enrollmentYear: p.enrollment_year,
-            bloodGroup: p.blood_group,
-            gender: p.gender,
-            unitName: p.unit_name,
-            unitNumber: p.unit_number,
-            status: p.status || "active",
-        })) || []
-    );
+    const token = await getAccessToken();
+    if (!token) return [];
+    const result = await getAllProfilesAction(token);
+    if (!result.success || !result.data) throw new Error(result.error || "Failed to fetch profiles");
+    return result.data.map((p) => ({
+        id: p.id,
+        name: p.full_name || "Unknown",
+        role: ((p.role as Role) || Role.CADET) as Role,
+        regimentalNumber: p.regimental_number ?? undefined,
+        wing: p.wing as Wing | undefined,
+        rank: p.rank as Role | undefined,
+        avatarUrl: p.avatar_url ?? undefined,
+        enrollmentYear: p.enrollment_year ?? undefined,
+        bloodGroup: p.blood_group ?? undefined,
+        gender: p.gender as Gender | undefined,
+        unitName: p.unit_name ?? undefined,
+        unitNumber: p.unit_number ?? undefined,
+        status: (p.status || "active") as "active" | "alumni",
+    }));
 }
 
 async function fetchCertificates(): Promise<Certificate[]> {
-    const { data, error } = await supabase.from("certificates").select(CERTIFICATE_COLUMNS);
-    if (error) throw error;
-    return (
-        data?.map((c) => ({
-            id: c.id,
-            userId: c.user_id,
-            name: c.name,
-            type: c.type,
-            fileData: c.file_data,
-            uploadDate: c.upload_date,
-        })) || []
-    );
+    const token = await getAccessToken();
+    if (!token) return [];
+    const result = await getAllCertificatesAction(token);
+    if (!result.success || !result.data) throw new Error(result.error || "Failed to fetch certificates");
+    return result.data.map((c) => ({
+        id: c.id,
+        userId: c.user_id,
+        name: c.name,
+        type: c.type as Certificate["type"],
+        fileData: c.file_data,
+        uploadDate: c.upload_date,
+    }));
 }
 
 export function CadetProvider({ children }: { children: React.ReactNode }) {
@@ -79,16 +76,20 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
     const profilesQuery = useQuery({
         queryKey: ["profiles"],
         queryFn: fetchProfiles,
+        enabled: !!user,
     });
 
     const certificatesQuery = useQuery({
         queryKey: ["certificates"],
         queryFn: fetchCertificates,
+        enabled: !!user,
     });
 
     const addCadetMutation = useMutation({
         mutationFn: async (cadet: Cadet) => {
-            const { error } = await supabase.from("profiles").insert({
+            const token = await getAccessToken();
+            if (!token) throw new Error("Not authenticated");
+            const result = await updateProfileAction(cadet.id, {
                 id: cadet.id,
                 full_name: cadet.name,
                 role: cadet.role,
@@ -102,8 +103,8 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                 blood_group: cadet.bloodGroup,
                 access_pin: cadet.access_pin,
                 status: cadet.status || "active",
-            });
-            if (error) throw error;
+            }, token);
+            if (!result.success) throw new Error(result.error || "Failed to add cadet profile");
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["profiles"] });
@@ -127,8 +128,10 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             if (updates.access_pin !== undefined) payload.access_pin = updates.access_pin;
             if (updates.status !== undefined) payload.status = updates.status;
             if (Object.keys(payload).length === 0) return;
-            const { error } = await supabase.from("profiles").update(payload).eq("id", id);
-            if (error) throw error;
+            const token = await getAccessToken();
+            if (!token) throw new Error("Not authenticated");
+            const result = await updateProfileAction(id, payload, token);
+            if (!result.success) throw new Error(result.error || "Failed to update cadet profile");
         },
         onMutate: async ({ id, updates }) => {
             await queryClient.cancelQueries({ queryKey: ["profiles"] });

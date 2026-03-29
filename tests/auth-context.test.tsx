@@ -41,12 +41,15 @@ vi.mock('@/app/actions/profile-actions', () => ({
   ensureUserProfileAction: (...args: unknown[]) => mockEnsureUserProfileAction(...args),
 }))
 
-// Set up default onAuthStateChange returning a dummy unsubscribe function
+// Set up default onAuthStateChange that properly fires INITIAL_SESSION
 beforeEach(() => {
   vi.clearAllMocks()
-  mockOnAuthStateChange.mockReturnValue({
-    data: { subscription: { unsubscribe: vi.fn() } }
+  // Default: simulate no active session — fire INITIAL_SESSION with null
+  mockOnAuthStateChange.mockImplementation((callback: (event: string, session: null) => void) => {
+    Promise.resolve().then(() => callback('INITIAL_SESSION', null))
+    return { data: { subscription: { unsubscribe: vi.fn() } } }
   })
+  // getSession is still used by signupWithPassword and loginWithPassword flows
   mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
   
   // By default window replace mock
@@ -150,10 +153,11 @@ describe('AuthContext', () => {
   })
 
   it('should handle logout', async () => {
-    // Initialize with a mock user
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: 'usr-1' } } },
-      error: null
+    // Initialize with a mock user via onAuthStateChange INITIAL_SESSION
+    const mockSession = { user: { id: 'usr-1' }, access_token: 'fake-token' }
+    mockOnAuthStateChange.mockImplementation((callback: (event: string, session: typeof mockSession) => void) => {
+      Promise.resolve().then(() => callback('INITIAL_SESSION', mockSession))
+      return { data: { subscription: { unsubscribe: vi.fn() } } }
     })
 
     // Mock profile fetch success via Server Action

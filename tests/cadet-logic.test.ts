@@ -13,33 +13,23 @@ vi.mock('../src/lib/auth-context', () => ({
   })
 }))
 
-vi.mock('../src/lib/supabase-client', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockImplementation(() => ({
-        // Return a promise that takes a little long to resolve
-        then: (cb: (val: { data: unknown[]; error: null }) => void) => new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(cb({ 
-                    data: [{
-                      id: 'cadet-1',
-                      full_name: 'Original Name',
-                      role: 'CADET',
-                      regimental_number: 'RG123',
-                      status: 'active'
-                    }], 
-                    error: null 
-                }))
-            }, 50)
-        })
-      })),
-      insert: vi.fn().mockReturnValue({ then: (cb: (val: { data: null; error: null }) => void) => Promise.resolve({ data: null, error: null }).then(cb) }),
-      update: vi.fn().mockImplementation(() => ({
-        eq: vi.fn().mockReturnValue({ then: (cb: (val: { data: null; error: null }) => void) => Promise.resolve({ data: null, error: null }).then(cb) })
-      })),
-      delete: vi.fn().mockReturnValue({ then: (cb: (val: { data: null; error: null }) => void) => cb({ data: null, error: null }) })
-    }))
-  }
+// fetchProfiles and fetchCertificates now use server actions via dynamic import.
+// Mock the profile-actions module so dynamic import resolves correctly.
+vi.mock('../src/app/actions/profile-actions', () => ({
+  getAllProfilesAction: vi.fn(() => Promise.resolve({
+    success: true,
+    data: [{
+      id: 'cadet-1',
+      full_name: 'Original Name',
+      role: 'CADET',
+      regimental_number: 'RG123',
+      status: 'active',
+    }]
+  })),
+  getAllCertificatesAction: vi.fn(() => Promise.resolve({ success: true, data: [] })),
+  // Delay simulates real async latency so the optimistic UI update has time
+  // to render before the mutation resolves and triggers a background refetch.
+  updateProfileAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50))),
 }))
 
 vi.mock('../src/lib/get-access-token', () => ({
