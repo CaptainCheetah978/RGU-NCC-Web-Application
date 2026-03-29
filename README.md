@@ -6,8 +6,10 @@
 
 # NCC RGU Cadet Management System
 
+> Open-source, offline-capable cadet management portal for the National Cadet Corps — built with Next.js and Supabase.
+
 <p align="center">
-  <img src="https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
+  <img src="https://github.com/CaptainCheetah978/ncc-cadet-management/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
   <img src="https://img.shields.io/badge/Vitest-Tested-729B1B?style=for-the-badge&logo=vitest" alt="Vitest" />
   <img src="https://img.shields.io/badge/Vercel-Deployed-success?style=for-the-badge&logo=vercel" alt="Vercel Deployed" />
   <img src="https://img.shields.io/badge/Next.js%2016-Black?style=for-the-badge&logo=next.js" alt="Next.js" />
@@ -15,7 +17,7 @@
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License" />
 </p>
 
-A role-based Cadet Management System built with Next.js 16 and Supabase. Features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
+A role-based Cadet Management System built with Next.js 16 and Supabase. Features real-time dashboards, QR verification, offline attendance tracking, and administrative tools tailored for the National Cadet Corps. White-labeled and forkable for any NCC unit or similar paramilitary organisation.
 
 ## Tech Stack
 - **Framework**: Next.js 16 (App Router, Server Actions)
@@ -115,8 +117,8 @@ This guide assumes you have Node.js (v20+) and Git installed.
 
 **1. Clone & Install Dependencies**
 ```bash
-git clone https://github.com/CaptainCheetah978/RGU-NCC-Web-Application.git
-cd RGU-NCC-Web-Application
+git clone https://github.com/CaptainCheetah978/ncc-cadet-management.git
+cd ncc-cadet-management
 npm install
 ```
 
@@ -151,12 +153,12 @@ NEXT_PUBLIC_INSTITUTION_NAME="Royal Global University"
 ```bash
 npm run dev
 # App is ready at http://localhost:3000
+```
 
 **5. Run Automated Tests**
 ```bash
 npm test          # Run all tests once
 npm run test:watch # Run tests in interactive watch mode
-```
 ```
 
 ## Documentation & Project State
@@ -180,7 +182,30 @@ If you are planning to contribute, we are looking at:
 - **Analytics Dashboard**: Attendance trends, cadet performance scoring.
 - **Export Features**: Integrated `jspdf` and `jspdf-autotable` for attendance reports and cadet summaries.
 
+## Suggested GitHub Repository Topics
+
+For maximum discoverability, add the following topics to the repository via **GitHub → Settings → Topics**:
+
+`ncc` `national-cadet-corps` `cadet-management` `nextjs` `supabase` `attendance-tracker` `pwa` `qr-code` `offline-first` `india` `typescript` `tailwindcss`
+
+## Repository Rename Guide
+
+The recommended repository name is **`ncc-cadet-management`** (replacing `RGU-NCC-Web-Application`). This removes institution-specific lock-in and makes the project more discoverable.
+
+### Steps to rename safely
+
+1. **Rename on GitHub** — *Settings → General → Repository name → `ncc-cadet-management` → Rename*.
+2. **GitHub keeps a redirect** from the old URL to the new one automatically, as long as you do not create a new repository under the old name.
+3. **Update your local remote** in every local clone:
+   ```bash
+   git remote set-url origin https://github.com/CaptainCheetah978/ncc-cadet-management.git
+   git remote -v  # Verify
+   ```
+4. **Verify Vercel** — Open your Vercel project → *Settings → Git*. Confirm the connected repository shows the new name. If automatic deployments stop triggering, disconnect and reconnect the repository from that page, then push a test commit.
+5. **GitHub Actions badge** — The CI badge URL in this README already targets `ncc-cadet-management`. It will resolve correctly once the rename is complete (and continues to resolve via GitHub's redirect in the meantime).
+
 ## License & Primary Contact
+
 Released under the [MIT License](LICENSE).
 
 **Technical Lead:** [SUO Aditya Singh](https://github.com/CaptainCheetah978) 

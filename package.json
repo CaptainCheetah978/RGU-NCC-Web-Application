@@ -1,7 +1,24 @@
 {
-  "name": "ncc-rgu-app",
+  "name": "ncc-cadet-management",
   "version": "0.1.0",
   "private": true,
+  "description": "Open-source, offline-capable cadet management portal for the National Cadet Corps. Features role-based access control, QR-verified digital ID cards, offline attendance tracking, and real-time dashboards.",
+  "keywords": [
+    "ncc",
+    "national-cadet-corps",
+    "cadet-management",
+    "nextjs",
+    "supabase",
+    "attendance",
+    "pwa",
+    "qr-code",
+    "offline-first",
+    "india"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CaptainCheetah978/ncc-cadet-management.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
