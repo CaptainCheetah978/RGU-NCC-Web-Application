@@ -201,14 +201,14 @@ export default function LoginPage() {
                     <div className="space-y-4">
                       <div>
                         <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
-                          {activeTab === Role.ANO ? "Officer ID" : activeTab === Role.CADET ? "Your Name or Regt No" : "Username"}
+                          {activeTab === Role.ANO ? "Officer ID" : activeTab === Role.CADET ? "Regimental Number" : "Username"}
                         </label>
                         <div className="relative mt-1">
                           <User className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
                           <Input
                             value={formData.username}
                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                            placeholder={activeTab === Role.ANO ? "ANO" : "e.g. Rahul Singh"}
+                            placeholder={activeTab === Role.ANO ? "ANO" : activeTab === Role.CADET ? "e.g. SW/RGU/1234" : "e.g. Rahul Singh"}
                             className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary"
                             required
                           />

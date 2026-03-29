@@ -18,7 +18,7 @@ export default function DashboardPage() {
 
     if (!user) return null;
 
-    const stats = getStats(user.id);
+    const stats = getStats();
     const currentUser = messageableUsers.find(u => u.id === user.id);
     const displayUser = currentUser || user;
 

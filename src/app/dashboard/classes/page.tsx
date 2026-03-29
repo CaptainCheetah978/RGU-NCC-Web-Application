@@ -71,9 +71,10 @@ export default function ClassesPage() {
             if (logActivity) logActivity("Scheduled class", user.id, user.name, formData.title);
             setIsModalOpen(false);
             setFormData({ title: "", date: "", time: "", tag: "Training", description: "" });
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Failed to schedule class", error);
-            showToast("Failed to schedule class. Please check your internet connection and try again.");
+            const msg = error instanceof Error ? error.message : "Failed to schedule class. Please check your internet connection and try again.";
+            showToast(msg);
         } finally {
             setIsLoading(false);
         }

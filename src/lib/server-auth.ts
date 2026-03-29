@@ -32,7 +32,7 @@ export async function getCallerSession(
         // Look up the user's role and unit from the profiles table
         const { data: profile } = await supabaseAdmin
             .from("profiles")
-            .select("role, unit_id, full_name")
+            .select("role, full_name")
             .eq("id", user.id)
             .single();
 

@@ -224,7 +224,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                     { classId: record.classId, cadetId: record.cadetId, status: record.status, timestamp: record.timestamp },
                     token
                 );
-                if (!result.success) throw new Error(result.error || "Failed to mark attendance");
+                if (!result.success) throw new Error(result.error || "Server Action Failed");
             } catch (err: unknown) {
                 const errorObj = err instanceof Error ? err : new Error(String(err));
                 const isNetworkError = errorObj.message?.includes("fetch") || 

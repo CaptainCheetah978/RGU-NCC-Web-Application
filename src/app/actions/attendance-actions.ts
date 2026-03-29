@@ -29,7 +29,7 @@ export async function markAttendanceAction(
         // Check if attendance record already exists
         const { data: existing, error: fetchError } = await supabaseAdmin
             .from("attendance")
-            .select("id, updated_at")
+            .select("id, created_at")
             .eq("class_id", parsed.data.classId)
             .eq("cadet_id", parsed.data.cadetId)
             .single();
@@ -43,7 +43,7 @@ export async function markAttendanceAction(
             // or if it's newer than the server's last update.
             if (parsed.data.timestamp) {
                 const incomingDate = new Date(parsed.data.timestamp);
-                const serverDate = new Date(existing.updated_at);
+                const serverDate = new Date(existing.created_at);
 
                 if (incomingDate <= serverDate) {
                     // This is an old offline record trying to overwrite a newer online record.
@@ -56,7 +56,7 @@ export async function markAttendanceAction(
                 .from("attendance")
                 .update({
                     status: parsed.data.status,
-                    updated_at: new Date().toISOString()
+                    created_at: new Date().toISOString()
                 })
                 .eq("id", existing.id);
             if (error) return { success: false, error: error.message };

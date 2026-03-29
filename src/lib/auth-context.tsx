@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Role } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
+import { ensureUserProfileAction } from "@/app/actions/profile-actions";
 
 interface AuthContextType {
     user: User | null;
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchProfile = async (userId: string, timeoutMs = 12000, retries = 1): Promise<void> => {
+    const fetchProfile = async (userId: string, timeoutMs = 12000, retries = 1): Promise<User | null> => {
         // Race against a timeout so login never spins forever on a slow connection
         const attemptFetch = async () => {
             const timeoutPromise = new Promise<never>((_, reject) =>
@@ -78,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return Promise.race([
                 supabase
                     .from('profiles')
-                    .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email, unit_id')
+                    .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email')
                     .eq('id', userId)
                     .single(),
                 timeoutPromise
@@ -106,34 +107,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // Profile not found, but user is authenticated.
                 // Attempt to create a default profile (self-healing)
 
-                // Fetch the user email/metadata from auth to help populate
-                const { data: { user: authUser } } = await supabase.auth.getUser();
-
-                if (authUser) {
-                    const isANO = authUser.email?.startsWith('ano_') || false;
-
-                    const { data: newProfile, error: createError } = await supabase
-                        .from('profiles')
-                        .insert({
-                            id: userId,
-                            full_name: isANO ? 'Associate NCC Officer' : 'New User',
-                            role: isANO ? Role.ANO : Role.CADET,
-                            email: authUser.email,
-                            updated_at: new Date().toISOString(),
-                        })
-                        .select()
-                        .single();
-
-                    if (!createError && newProfile) {
-                        data = newProfile;
-                        error = null;
-                    } else {
-                        console.error("Failed to auto-create profile:", createError);
+                try {
+                    const { data: { session: activeSession } } = await supabase.auth.getSession();
+                    if (activeSession?.access_token) {
+                        const newProfile = await ensureUserProfileAction(activeSession.access_token);
+                        if (newProfile) {
+                            data = newProfile;
+                            error = null;
+                        }
                     }
+                } catch (createError) {
+                    console.error("Failed to auto-create profile via action:", createError);
                 }
             } else if (error) {
                 console.error('Error fetching profile:', error);
-                return;
+                return null;
             }
 
             if (data) {
@@ -150,10 +138,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 };
                 setUser(appUser);
                 userLoadedRef.current = true;
+                return appUser;
             }
         } catch (error) {
             console.error('Unexpected error fetching profile:', error);
         }
+        return null;
     };
 
     const login = async (email: string) => {
@@ -189,9 +179,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data.user) {
-            await fetchProfile(data.user.id);
+            const fetchedUser = await fetchProfile(data.user.id);
             if (!skipRedirect) {
-                router.push("/dashboard");
+                if (fetchedUser) {
+                    router.push("/dashboard");
+                } else {
+                    throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
+                }
             }
         }
         setIsLoading(false);
@@ -224,7 +218,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (data.user) {
                 // Success!
-                await fetchProfile(data.user.id);
+                const fetchedUser = await fetchProfile(data.user.id);
+                if (!fetchedUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
                 router.push("/dashboard");
                 return;
             }
@@ -239,11 +234,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 });
 
                 if (legacyData.user) {
-                    // Legacy login succeeded — upgrade to secure password format
+                    // Fetch the profile FIRST while the newly-minted session is definitely valid
+                    const fetchedLegacyUser = await fetchProfile(legacyData.user.id);
+                    if (!fetchedLegacyUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
+
                     // Automatically upgrade their password to the secure format
+                    // Doing this *after* fetching profile prevents JWT rotation race conditions
                     await supabase.auth.updateUser({ password: securePassword });
 
-                    await fetchProfile(legacyData.user.id);
                     router.push("/dashboard");
                     return;
                 }
@@ -290,7 +288,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     console.error("Profile creation error:", profileError);
                 }
 
-                await fetchProfile(data.user.id);
+                const fetchedUser = await fetchProfile(data.user.id);
+                if (!fetchedUser) throw new Error("Signup succeeded but your profile could not be loaded. Please contact your ANO.");
                 router.push("/dashboard");
             }
         } catch (error) {

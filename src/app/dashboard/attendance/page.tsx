@@ -213,9 +213,10 @@ function AttendanceContent() {
 
         try {
             await markAttendance(payload);
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Failed to mark attendance", error);
-            showToast("Failed to save attendance. Please check your internet connection or try again.");
+            const msg = error instanceof Error ? error.message : "Failed to save attendance. Please check your internet connection or try again.";
+            showToast(msg);
         }
     };
 
