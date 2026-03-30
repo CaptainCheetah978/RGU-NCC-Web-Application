@@ -83,17 +83,15 @@ export async function getProfileByIdAction(userId: string) {
 export async function getAllProfilesAction(
     accessToken: string
 ): Promise<{ success: boolean; data?: ProfileRow[]; error?: string }> {
-    const { getCallerSession } = await import("@/lib/server-auth");
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
     let query = supabaseAdmin.from("profiles").select(PROFILE_READ_COLUMNS);
 
-    // Scope to the caller's unit so users cannot enumerate other units' data
+    // Multi-tenancy: scope to the caller's unit
     if (session.unitId) {
         query = query.eq("unit_id", session.unitId);
     } else {
-        // No unit assigned — can only see their own profile
         query = query.eq("id", session.userId);
     }
 
@@ -102,12 +100,14 @@ export async function getAllProfilesAction(
     return { success: true, data: (data as ProfileRow[]) || [] };
 }
 
+// Keep getProfilesAction as an alias for getAllProfilesAction if needed by other contexts
+export const getProfilesAction = getAllProfilesAction;
+
 // ── Get All Certificates (admin-bypasses RLS, scoped to caller's unit) ───────
 
 export async function getAllCertificatesAction(
     accessToken: string
 ): Promise<{ success: boolean; data?: CertificateRow[]; error?: string }> {
-    const { getCallerSession } = await import("@/lib/server-auth");
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
@@ -141,7 +141,6 @@ export async function updateProfileAction(
 ): Promise<{ success: boolean; error?: string }> {
     if (!isUUID(id)) return { success: false, error: "Invalid profile ID." };
 
-    const { getCallerSession } = await import("@/lib/server-auth");
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
@@ -189,7 +188,6 @@ export async function ensureUserProfileAction(accessToken: string) {
         .limit(1)
         .single();
 
-    // 2. Use admin client to bypass RLS for profile creation (solves PGRST116 auto-healing issue)
     const { data: newProfile, error: createError } = await supabaseAdmin
         .from('profiles')
         .upsert({
@@ -209,65 +207,4 @@ export async function ensureUserProfileAction(accessToken: string) {
     }
 
     return newProfile;
-}
-
-// ── Get Profiles ─────────────────────────────────────────────────────────────
-
-/**
- * Fetches all user profiles for the caller's unit.
- */
-export async function getProfilesAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
-    const session = await getCallerSession(accessToken);
-    if (!session) return { success: false, error: "Unauthorized." };
-
-    try {
-        // Multi-tenancy: only fetch profiles for the caller's unit
-        const { data, error } = await supabaseAdmin
-            .from("profiles")
-            .select("id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, status")
-            .eq("unit_id", session.unitId);
-
-        if (error) return { success: false, error: error.message };
-        return { success: true, data: data || [] };
-    } catch (e: unknown) {
-        return {
-            success: false,
-            error: e instanceof Error ? e.message : "Unknown error",
-        };
-    }
-}
-
-// ── Update Profile ────────────────────────────────────────────────────────────
-
-/**
- * Updates a user's profile data.
- * ANO can update ANY profile; users can only update their own.
- */
-export async function updateProfileAction(
-    userId: string,
-    updates: Record<string, any>,
-    accessToken: string
-): Promise<{ success: boolean; error?: string }> {
-    const session = await getCallerSession(accessToken);
-    if (!session) return { success: false, error: "Unauthorized." };
-
-    // Security: users can only update their own, unless they are ANO
-    if (session.role !== Role.ANO && session.userId !== userId) {
-        return { success: false, error: "Forbidden: you can only update your own profile." };
-    }
-
-    try {
-        const { error } = await supabaseAdmin
-            .from("profiles")
-            .update(updates)
-            .eq("id", userId);
-
-        if (error) return { success: false, error: error.message };
-        return { success: true };
-    } catch (e: unknown) {
-        return {
-            success: false,
-            error: e instanceof Error ? e.message : "Unknown error",
-        };
-    }
 }

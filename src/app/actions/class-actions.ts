@@ -27,18 +27,26 @@ export async function getClassesAction(
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
-    let query = supabaseAdmin
-        .from("classes")
-        .select("id, title, date, time, instructor_id, description, tag");
+    try {
+        let query = supabaseAdmin
+            .from("classes")
+            .select("id, title, date, time, instructor_id, description, tag");
 
-    // Scope to the caller's unit so users cannot enumerate other units' classes
-    if (session.unitId) {
-        query = query.eq("unit_id", session.unitId);
+        // Scope to the caller's unit so users cannot enumerate other units' classes
+        // Multi-tenancy enforcement at the server layer
+        if (session.unitId) {
+            query = query.eq("unit_id", session.unitId);
+        }
+
+        const { data, error } = await query;
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: (data as ClassRow[]) || [] };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
     }
-
-    const { data, error } = await query;
-    if (error) return { success: false, error: error.message };
-    return { success: true, data: (data as ClassRow[]) || [] };
 }
 
 type ClassInsertPayload = {
@@ -113,32 +121,6 @@ export async function deleteClassAction(
             .eq("id", classId);
         if (error) return { success: false, error: error.message };
         return { success: true };
-    } catch (e: unknown) {
-        return {
-            success: false,
-            error: e instanceof Error ? e.message : "Unknown error",
-        };
-    }
-}
-
-// ── Get Classes ─────────────────────────────────────────────────────────────
-
-/**
- * Fetches all scheduled classes for the caller's unit.
- */
-export async function getClassesAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
-    const session = await getCallerSession(accessToken);
-    if (!session) return { success: false, error: "Unauthorized." };
-
-    try {
-        // Multi-tenancy: only fetch classes for the caller's unit
-        const { data, error } = await supabaseAdmin
-            .from("classes")
-            .select("id, title, date, time, instructor_id, description, tag")
-            .eq("unit_id", session.unitId);
-
-        if (error) return { success: false, error: error.message };
-        return { success: true, data: data || [] };
     } catch (e: unknown) {
         return {
             success: false,
