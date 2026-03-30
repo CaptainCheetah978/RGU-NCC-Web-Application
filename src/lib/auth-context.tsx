@@ -29,19 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userLoadedRef = React.useRef(false);
 
     useEffect(() => {
-        const initializeAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-
-            if (session?.user) {
-                await fetchProfile(session.user.id);
-            } else {
-                setUser(null);
-            }
-            setIsLoading(false);
-        };
-
-        initializeAuth();
-
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_OUT') {
                 userLoadedRef.current = false;
@@ -53,8 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             // Skip redundant profile fetch if user is already loaded and this
-            // is just a background token refresh or initial echo.
-            if (userLoadedRef.current && (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+            // is just a background token refresh.
+            if (userLoadedRef.current && event === 'TOKEN_REFRESHED') {
                 return;
             }
 
@@ -65,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } else {
                 setUser(null);
             }
+            setIsLoading(false);
         });
 
         return () => subscription.unsubscribe();
@@ -269,17 +257,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (error) throw error;
 
             if (data.user) {
-                const { error: profileError } = await supabase.from('profiles').upsert({
-                    id: data.user.id,
-                    full_name: name,
-                    role: role,
-                    updated_at: new Date().toISOString(),
-                });
-
-                if (profileError) {
-                    console.error("Profile creation error:", profileError);
+                const { data: { session: activeSession } } = await supabase.auth.getSession();
+                if (activeSession?.access_token) {
+                    // Use server action (admin client) to create the profile, bypassing RLS
+                    await ensureUserProfileAction(activeSession.access_token);
                 }
-
                 const fetchedUser = await fetchProfile(data.user.id);
                 if (!fetchedUser) throw new Error("Signup succeeded but your profile could not be loaded. Please contact your ANO.");
                 router.push("/dashboard");

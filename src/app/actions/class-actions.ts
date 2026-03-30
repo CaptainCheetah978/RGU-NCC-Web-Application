@@ -8,6 +8,39 @@ import { Role } from "@/types";
 const MANAGE_ROLES: Role[] = [Role.ANO, Role.SUO, Role.UO];
 
 type ActionResult = { success: boolean; error?: string };
+
+type ClassRow = {
+    id: string;
+    title: string;
+    date: string;
+    time: string;
+    instructor_id: string;
+    description: string | null;
+    tag: string | null;
+};
+
+// ── Get Classes ───────────────────────────────────────────────────────────────
+
+export async function getClassesAction(
+    accessToken: string
+): Promise<{ success: boolean; data?: ClassRow[]; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    let query = supabaseAdmin
+        .from("classes")
+        .select("id, title, date, time, instructor_id, description, tag");
+
+    // Scope to the caller's unit so users cannot enumerate other units' classes
+    if (session.unitId) {
+        query = query.eq("unit_id", session.unitId);
+    }
+
+    const { data, error } = await query;
+    if (error) return { success: false, error: error.message };
+    return { success: true, data: (data as ClassRow[]) || [] };
+}
+
 type ClassInsertPayload = {
     id?: string;
     title: string;
