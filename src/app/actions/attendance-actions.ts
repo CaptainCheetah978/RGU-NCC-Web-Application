@@ -109,3 +109,29 @@ export async function markAttendanceAction(
         };
     }
 }
+
+// ── Get Attendance ───────────────────────────────────────────────────────────
+
+/**
+ * Fetches all attendance records for the caller's unit.
+ */
+export async function getAttendanceAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    try {
+        // Multi-tenancy: only fetch records for the caller's unit
+        const { data, error } = await supabaseAdmin
+            .from("attendance")
+            .select("id, class_id, cadet_id, status, created_at")
+            .eq("unit_id", session.unitId);
+
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}

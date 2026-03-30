@@ -207,3 +207,37 @@ export async function deleteNoteAction(noteId: string, accessToken: string): Pro
         return { success: false, error: message };
     }
 }
+
+// ── Get Notes ──────────────────────────────────────────────────────────────
+
+/**
+ * Fetches all notes for the caller's unit.
+ */
+export async function getNotesAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    try {
+        // Multi-tenancy: fetch notes where caller is sender or recipient, 
+        // OR if ANO, fetch all notes for the unit
+        const query = supabaseAdmin
+            .from("notes")
+            .select("id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name")
+            .eq("unit_id", session.unitId);
+
+        const { Role } = await import("@/types");
+        if (session.role !== Role.ANO) {
+            // Non-ANOs only see notes they are involved in
+            query.or(`sender_id.eq.${session.userId},recipient_id.eq.${session.userId}`);
+        }
+
+        const { data, error } = await query;
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}

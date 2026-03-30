@@ -1,6 +1,7 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { getCallerSession } from "@/lib/server-auth";
 import { Role } from "@/types";
 
 const PROFILE_READ_COLUMNS =
@@ -208,4 +209,65 @@ export async function ensureUserProfileAction(accessToken: string) {
     }
 
     return newProfile;
+}
+
+// ── Get Profiles ─────────────────────────────────────────────────────────────
+
+/**
+ * Fetches all user profiles for the caller's unit.
+ */
+export async function getProfilesAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    try {
+        // Multi-tenancy: only fetch profiles for the caller's unit
+        const { data, error } = await supabaseAdmin
+            .from("profiles")
+            .select("id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, status")
+            .eq("unit_id", session.unitId);
+
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}
+
+// ── Update Profile ────────────────────────────────────────────────────────────
+
+/**
+ * Updates a user's profile data.
+ * ANO can update ANY profile; users can only update their own.
+ */
+export async function updateProfileAction(
+    userId: string,
+    updates: Record<string, any>,
+    accessToken: string
+): Promise<{ success: boolean; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    // Security: users can only update their own, unless they are ANO
+    if (session.role !== Role.ANO && session.userId !== userId) {
+        return { success: false, error: "Forbidden: you can only update your own profile." };
+    }
+
+    try {
+        const { error } = await supabaseAdmin
+            .from("profiles")
+            .update(updates)
+            .eq("id", userId);
+
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
 }

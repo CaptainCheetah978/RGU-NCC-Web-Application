@@ -59,3 +59,29 @@ export async function deleteAnnouncementAction(
         };
     }
 }
+
+// ── Get Announcements ────────────────────────────────────────────────────────
+
+/**
+ * Fetches all announcements for the caller's unit.
+ */
+export async function getAnnouncementsAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    try {
+        // Multi-tenancy: fetch only announcements for caller's unit
+        const { data, error } = await supabaseAdmin
+            .from("announcements")
+            .select("id, title, content, author_id, priority, created_at")
+            .eq("unit_id", session.unitId);
+
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}

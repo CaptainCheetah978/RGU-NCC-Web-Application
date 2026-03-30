@@ -99,3 +99,29 @@ export async function deleteCertificateAction(
         };
     }
 }
+
+// ── Get Certificates ─────────────────────────────────────────────────────────
+
+/**
+ * Fetches all certificates for the caller's unit.
+ */
+export async function getCertificatesAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const session = await getCallerSession(accessToken);
+    if (!session) return { success: false, error: "Unauthorized." };
+
+    try {
+        // Multi-tenancy: fetch only certificates for caller's unit
+        const { data, error } = await supabaseAdmin
+            .from("certificates")
+            .select("id, user_id, name, type, file_data, upload_date")
+            .eq("unit_id", session.unitId);
+
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e.message : "Unknown error",
+        };
+    }
+}
