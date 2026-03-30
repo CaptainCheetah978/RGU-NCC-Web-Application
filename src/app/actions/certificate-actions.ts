@@ -3,6 +3,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
 import { Certificate, Role } from "@/types";
+import { CertificateRow } from "@/app/actions/profile-actions";
 
 type ActionResult = { success: boolean; error?: string };
 
@@ -105,7 +106,7 @@ export async function deleteCertificateAction(
 /**
  * Fetches all certificates for the caller's unit.
  */
-export async function getCertificatesAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+export async function getCertificatesAction(accessToken: string): Promise<{ success: boolean; data?: CertificateRow[]; error?: string }> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
