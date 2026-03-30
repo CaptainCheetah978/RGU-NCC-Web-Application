@@ -3,15 +3,10 @@
 import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Announcement, Note } from "@/types";
-import { supabase } from "@/lib/supabase-client";
 import { requireAccessToken } from "@/lib/require-access-token";
 import { useCadetData } from "@/lib/cadet-context";
 import { getNotesAction, sendNoteAction, markNoteAsReadAction, markAllAsReadAction, deleteNoteAction, forwardNoteToANOAction } from "@/app/actions/note-actions";
 import { getAnnouncementsAction, addAnnouncementAction, deleteAnnouncementAction } from "@/app/actions/announcement-actions";
-
-const NOTE_COLUMNS =
-    "id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name";
-const ANNOUNCEMENT_COLUMNS = "id, title, content, author_id, priority, created_at";
 
 type NoteRow = {
     id: string;

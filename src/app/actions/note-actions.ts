@@ -6,6 +6,19 @@ import { NoteIdSchema } from "@/lib/schemas";
 
 type ActionResult = { success: boolean; error?: string };
 
+type NoteRow = {
+    id: string;
+    sender_id: string;
+    recipient_id: string;
+    subject: string;
+    content: string;
+    is_read: boolean;
+    created_at: string;
+    forwarded_to_ano: boolean | null;
+    original_sender_id: string | null;
+    original_sender_name: string | null;
+};
+
 // ── Send Note ────────────────────────────────────────────────────────────────
 
 export async function sendNoteAction(
@@ -213,7 +226,7 @@ export async function deleteNoteAction(noteId: string, accessToken: string): Pro
 /**
  * Fetches all notes for the caller's unit.
  */
-export async function getNotesAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+export async function getNotesAction(accessToken: string): Promise<{ success: boolean; data?: NoteRow[]; error?: string }> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 

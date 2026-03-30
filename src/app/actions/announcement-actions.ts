@@ -9,6 +9,15 @@ const ANNOUNCEMENT_ROLES: Role[] = [Role.ANO, Role.SUO];
 
 type ActionResult = { success: boolean; error?: string };
 
+type AnnouncementRow = {
+    id: string;
+    title: string;
+    content: string;
+    author_id: string;
+    priority: string;
+    created_at: string;
+};
+
 export async function addAnnouncementAction(
     data: { title: string; content: string; priority: string },
     accessToken: string
@@ -65,7 +74,7 @@ export async function deleteAnnouncementAction(
 /**
  * Fetches all announcements for the caller's unit.
  */
-export async function getAnnouncementsAction(accessToken: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+export async function getAnnouncementsAction(accessToken: string): Promise<{ success: boolean; data?: AnnouncementRow[]; error?: string }> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
