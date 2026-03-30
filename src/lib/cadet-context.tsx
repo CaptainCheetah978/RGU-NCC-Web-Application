@@ -5,7 +5,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Cadet, Certificate, Role, User, AttendanceRecord, Note, Wing, Gender } from "@/types";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessToken } from "@/lib/get-access-token";
-import { getAllProfilesAction, getAllCertificatesAction, updateProfileAction } from "@/app/actions/profile-actions";
+import { requireAccessToken } from "@/lib/require-access-token";
+import { getProfilesAction, updateProfileAction } from "@/app/actions/profile-actions";
+import { deleteCadetAction } from "@/app/actions/cadet-actions";
+import { getCertificatesAction, addCertificateAction, deleteCertificateAction } from "@/app/actions/certificate-actions";
 
 const getCadetId = (record: Partial<AttendanceRecord> & { cadet_id?: string }) =>
     record.cadetId ?? record.cadet_id;
@@ -33,32 +36,34 @@ interface CadetContextType {
 const CadetContext = createContext<CadetContextType | undefined>(undefined);
 
 async function fetchProfiles(): Promise<(User & Partial<Cadet>)[]> {
-    const token = await getAccessToken();
-    if (!token) return [];
-    const result = await getAllProfilesAction(token);
+    const token = await requireAccessToken();
+    const result = await getProfilesAction(token);
+    
     if (!result.success || !result.data) throw new Error(result.error || "Failed to fetch profiles");
+
     return result.data.map((p) => ({
         id: p.id,
         name: p.full_name || "Unknown",
-        role: ((p.role as Role) || Role.CADET) as Role,
-        regimentalNumber: p.regimental_number ?? undefined,
-        wing: p.wing as Wing | undefined,
-        rank: p.rank as Role | undefined,
-        avatarUrl: p.avatar_url ?? undefined,
-        enrollmentYear: p.enrollment_year ?? undefined,
-        bloodGroup: p.blood_group ?? undefined,
-        gender: p.gender as Gender | undefined,
-        unitName: p.unit_name ?? undefined,
-        unitNumber: p.unit_number ?? undefined,
-        status: (p.status || "active") as "active" | "alumni",
+        role: (p.role as Role) || Role.CADET,
+        regimentalNumber: p.regimental_number,
+        wing: p.wing as Wing,
+        rank: p.rank as Role,
+        avatarUrl: p.avatar_url,
+        enrollmentYear: p.enrollment_year,
+        bloodGroup: p.blood_group,
+        gender: p.gender as Gender,
+        unitName: p.unit_name,
+        unitNumber: p.unit_number,
+        status: (p.status as "active" | "alumni") || "active",
     }));
 }
 
 async function fetchCertificates(): Promise<Certificate[]> {
-    const token = await getAccessToken();
-    if (!token) return [];
-    const result = await getAllCertificatesAction(token);
+    const token = await requireAccessToken();
+    const result = await getCertificatesAction(token);
+    
     if (!result.success || !result.data) throw new Error(result.error || "Failed to fetch certificates");
+
     return result.data.map((c) => ({
         id: c.id,
         userId: c.user_id,
@@ -128,16 +133,20 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             if (updates.access_pin !== undefined) payload.access_pin = updates.access_pin;
             if (updates.status !== undefined) payload.status = updates.status;
             if (Object.keys(payload).length === 0) return;
+
             const token = await getAccessToken();
-            if (!token) throw new Error("Not authenticated");
-            const result = await updateProfileAction(id, payload, token);
-            if (!result.success) throw new Error(result.error || "Failed to update cadet profile");
+            const result = await updateProfileAction(id, payload, token || "");
+            if (!result.success) throw new Error(result.error || "Failed to update profile");
         },
         onMutate: async ({ id, updates }) => {
             await queryClient.cancelQueries({ queryKey: ["profiles"] });
             const previousProfiles = queryClient.getQueryData<(User & Partial<Cadet>)[]>(["profiles"]) || [];
+            
+            // Map keys correctly for optimistic update
+            const mappedUpdates: Partial<User & Partial<Cadet>> = { ...updates };
+            
             queryClient.setQueryData<(User & Partial<Cadet>)[]>(["profiles"], (old) =>
-                (old || []).map((p) => (p.id === id ? { ...p, ...updates } : p))
+                (old || []).map((p) => (p.id === id ? { ...p, ...mappedUpdates } : p))
             );
             return { previousProfiles };
         },
@@ -153,7 +162,6 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
 
     const deleteCadetMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { deleteCadetAction } = await import("@/app/actions/cadet-actions");
             const token = await getAccessToken();
             const result = await deleteCadetAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete cadet");
@@ -181,7 +189,6 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                 (old || []).filter((c) => getCertificateUserId(c) !== id)
             );
             queryClient.setQueryData<Note[]>(["notes"], (old) =>
-                // Remove any note involving the deleted cadet (either sender or recipient).
                 (old || []).filter((n) => n.senderId !== id && n.recipientId !== id)
             );
 
@@ -203,7 +210,6 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
 
     const addCertificateMutation = useMutation({
         mutationFn: async (cert: Certificate) => {
-            const { addCertificateAction } = await import("@/app/actions/certificate-actions");
             const token = await getAccessToken();
             if (!token) throw new Error("Missing access token");
             const result = await addCertificateAction(
@@ -237,7 +243,6 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
 
     const deleteCertificateMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { deleteCertificateAction } = await import("@/app/actions/certificate-actions");
             const token = await getAccessToken();
             const result = await deleteCertificateAction(id, token || "");
             if (!result.success) throw new Error(result.error || "Failed to delete certificate");

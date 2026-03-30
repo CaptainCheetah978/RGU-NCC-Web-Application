@@ -6,6 +6,8 @@ import { Announcement, Note } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { requireAccessToken } from "@/lib/require-access-token";
 import { useCadetData } from "@/lib/cadet-context";
+import { getNotesAction, sendNoteAction, markNoteAsReadAction, markAllAsReadAction, deleteNoteAction, forwardNoteToANOAction } from "@/app/actions/note-actions";
+import { getAnnouncementsAction, addAnnouncementAction, deleteAnnouncementAction } from "@/app/actions/announcement-actions";
 
 const NOTE_COLUMNS =
     "id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name";
@@ -57,9 +59,11 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
     const notesQuery = useQuery<Note[]>({
         queryKey: ["notes", allProfiles.length],
         queryFn: async (): Promise<Note[]> => {
-            const { data, error } = await supabase.from("notes").select(NOTE_COLUMNS);
-            if (error) throw error;
-            const rows = (data ?? []) as NoteRow[];
+            const token = await requireAccessToken();
+            const result = await getNotesAction(token);
+            if (!result.success) throw new Error(result.error || "Failed to fetch notes");
+
+            const rows = (result.data ?? []) as NoteRow[];
             const profileMap = new Map<string, string>();
             allProfiles.forEach((p) => profileMap.set(p.id, p.name));
             return (
@@ -84,9 +88,11 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
     const announcementsQuery = useQuery<Announcement[]>({
         queryKey: ["announcements", allProfiles.length],
         queryFn: async (): Promise<Announcement[]> => {
-            const { data, error } = await supabase.from("announcements").select(ANNOUNCEMENT_COLUMNS);
-            if (error) throw error;
-            const rows = (data ?? []) as AnnouncementRow[];
+            const token = await requireAccessToken();
+            const result = await getAnnouncementsAction(token);
+            if (!result.success) throw new Error(result.error || "Failed to fetch announcements");
+
+            const rows = (result.data ?? []) as AnnouncementRow[];
             const profileMap = new Map<string, string>();
             allProfiles.forEach((p) => profileMap.set(p.id, p.name));
             return (
@@ -106,7 +112,6 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const sendNoteMutation = useMutation({
         mutationFn: async (note: Note) => {
-            const { sendNoteAction } = await import("@/app/actions/note-actions");
             const token = await requireAccessToken();
             const result = await sendNoteAction(
                 { recipientId: note.recipientId, subject: note.subject, content: note.content },
@@ -133,7 +138,6 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const markNoteAsReadMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { markNoteAsReadAction } = await import("@/app/actions/note-actions");
             const token = await requireAccessToken();
             const result = await markNoteAsReadAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to mark note as read");
@@ -145,7 +149,6 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const markAllAsReadMutation = useMutation({
         mutationFn: async () => {
-            const { markAllAsReadAction } = await import("@/app/actions/note-actions");
             const token = await requireAccessToken();
             const result = await markAllAsReadAction(token);
             if (!result.success) throw new Error(result.error || "Failed to mark all notes as read");
@@ -157,7 +160,6 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const deleteNoteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { deleteNoteAction } = await import("@/app/actions/note-actions");
             const token = await requireAccessToken();
             const result = await deleteNoteAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to delete note");
@@ -180,7 +182,6 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const forwardNoteMutation = useMutation({
         mutationFn: async ({ noteId, anoId }: { noteId: string; anoId: string }) => {
-            const { forwardNoteToANOAction } = await import("@/app/actions/note-actions");
             const token = await requireAccessToken();
             const result = await forwardNoteToANOAction(noteId, anoId, token);
             if (!result.success) throw new Error(result.error || "Failed to forward note");
@@ -203,7 +204,6 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const addAnnouncementMutation = useMutation({
         mutationFn: async (announcement: Announcement) => {
-            const { addAnnouncementAction } = await import("@/app/actions/announcement-actions");
             const token = await requireAccessToken();
             const result = await addAnnouncementAction(
                 {
@@ -234,7 +234,6 @@ export function CommunicationProvider({ children }: { children: React.ReactNode 
 
     const deleteAnnouncementMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { deleteAnnouncementAction } = await import("@/app/actions/announcement-actions");
             const token = await requireAccessToken();
             const result = await deleteAnnouncementAction(id, token);
             if (!result.success) throw new Error(result.error || "Failed to delete announcement");
