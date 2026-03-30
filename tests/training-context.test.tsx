@@ -1,39 +1,44 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { TrainingProvider, useTrainingData } from '../src/lib/training-context'
+import { TrainingProvider, useTrainingData } from '@/lib/training-context'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
+import { addClassAction } from '@/app/actions/class-actions'
 
 // --- MOCKS ---
 
-// Mock useAuth
 vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({
     user: { id: 'test-user-id', name: 'Test User', role: 'ANO' }
   })
 }))
 
-// Mock require-access-token
+vi.mock('@/lib/supabase-client', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockImplementation(() => ({
+        then: (cb: any) => cb({ data: [], error: null })
+      })),
+      insert: vi.fn().mockReturnValue({ data: null, error: null }),
+      delete: vi.fn().mockReturnValue({ data: null, error: null })
+    }))
+  }
+}))
+
 vi.mock('@/lib/require-access-token', () => ({
   requireAccessToken: vi.fn(() => Promise.resolve('fake-token'))
 }))
 
-// Mock server actions (module-level imports in training-context).
-// Factories must be self-contained — no outer-scope variable references
-// because vi.mock calls are hoisted to the top of the file.
 vi.mock('@/app/actions/class-actions', () => ({
   getClassesAction: vi.fn(() => Promise.resolve({ success: true, data: [] })),
-  addClassAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50))),
-  deleteClassAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50))),
+  addClassAction: vi.fn(() => Promise.resolve({ success: true })),
+  deleteClassAction: vi.fn(() => Promise.resolve({ success: true }))
 }))
 
 vi.mock('@/app/actions/attendance-actions', () => ({
-  getAttendanceAction: vi.fn(() => Promise.resolve({ success: true, data: [] })),
-  markAttendanceAction: vi.fn(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 50))),
+    getAttendanceAction: vi.fn(() => Promise.resolve({ success: true, data: [] })),
+    markAttendanceAction: vi.fn(() => Promise.resolve({ success: true }))
 }))
-
-// Import mocked module functions so tests can override them with mockReturnValueOnce
-import { addClassAction } from '@/app/actions/class-actions'
 
 // Mock crypto for optimistic IDs
 if (typeof global.crypto === 'undefined') {
@@ -51,7 +56,7 @@ const createWrapper = () => {
     defaultOptions: {
       queries: {
         retry: false,
-        staleTime: Infinity, // Prevent background refetches during tests
+        staleTime: Infinity,
       },
     },
   })
@@ -94,7 +99,7 @@ describe('TrainingContext Optimistic Updates', () => {
       }))
     })
 
-    await promise // Wait for mutation to finish
+    await promise
   })
 
   it('should optimistically mark attendance', async () => {
@@ -124,7 +129,7 @@ describe('TrainingContext Optimistic Updates', () => {
 
   it('should rollback state on error', async () => {
     // Mock failure
-    vi.mocked(addClassAction).mockReturnValueOnce(Promise.resolve({ success: false, error: 'DB Error' }))
+    vi.mocked(addClassAction).mockResolvedValueOnce({ success: false, error: 'DB Error' })
 
     const wrapper = createWrapper()
     const { result } = renderHook(() => useTrainingData(), { wrapper })
