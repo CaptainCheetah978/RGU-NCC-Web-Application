@@ -105,8 +105,13 @@ sequenceDiagram
     end
 ```
 
-### 5. Dynamic QR Security Flow
-To prevent screenshot spoofing and replay attacks, the digital ID card uses a constantly rotating, cryptographically signed JWT.
+### 5. Dynamic QR Security Flow (Dual-Mode)
+To prevent screenshot spoofing and replay attacks, the digital ID card uses a constantly rotating, cryptographically signed JWT. For static media (prints/downloads), it automatically switches to a stable Verification ID to ensure long-term validity without compromising live security.
+
+| Mode | Trigger | Payload | Security |
+| :--- | :--- | :--- | :--- |
+| **Live (On-Screen)** | Default | **JWT (Signed)** | High: Expiring (30s) + Anti-Screenshot |
+| **Static (Print/PDF)** | Print/Download | **Cadet ID (Stable)** | Medium: Database Photo Match required |
 
 ```mermaid
 sequenceDiagram

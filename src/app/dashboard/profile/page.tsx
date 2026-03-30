@@ -41,6 +41,7 @@ export default function ProfilePage() {
     const [changePinSuccess, setChangePinSuccess] = useState(false);
     const [currentTime, setCurrentTime] = useState<string>("");
     const [qrToken, setQrToken] = useState<string>("");
+    const [isStaticQR, setIsStaticQR] = useState(false);
 
     // Dynamic QR: Fetch a short-lived, signed JWT every 25 seconds
     useEffect(() => {
@@ -165,11 +166,24 @@ export default function ProfilePage() {
     };
 
     const handleDownload = async () => {
-        if (!idCardRef.current) return;
+        if (!idCardRef.current || !currentUser?.id) return;
         setIsDownloading(true);
+        setIsStaticQR(true); // Switch to stable ID-based QR for download
+        
+        // iOS Safari Compatibility: We must open the window synchronously in the click handler 
+        // to bypass the popup blocker, as the subsequent 'await' makes the context asynchronous.
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        let iosWin: Window | null = null;
+        if (isIOS) {
+            iosWin = window.open('about:blank', '_blank');
+            if (iosWin) {
+                iosWin.document.write('<p style="font-family:sans-serif; text-align:center; margin-top:50px;">Generating High-Res ID Snapshot...</p>');
+            }
+        }
+
         try {
-            // Short delay to let fonts/images settle — prevents clipping on older Android WebViews
-            await new Promise(r => setTimeout(r, 100));
+            // Short delay to let state update and fonts/images settle
+            await new Promise(r => setTimeout(r, 250));
             const dataUrl = await toPng(idCardRef.current, {
                 cacheBust: true,
                 pixelRatio: 3,
@@ -181,18 +195,36 @@ export default function ProfilePage() {
             const link = document.createElement("a");
             link.download = `NCC_ID_${currentUser.name.replace(/\s+/g, "_")}.png`;
             link.href = dataUrl;
-            link.click();
+
+            if (isIOS && iosWin) {
+                // Populate the pre-opened window
+                iosWin.document.body.innerHTML = `
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:sans-serif; padding:20px; box-sizing:border-box;">
+                        <img src="${dataUrl}" style="max-width:100%; height:auto; box-shadow:0 20px 50px rgba(0,0,0,0.2); border-radius:20px;" alt="NCC ID">
+                        <p style="margin-top:24px; font-weight:bold; color:#1D2951; text-align:center;">LONG PRESS THE IMAGE ABOVE<br>TO SAVE TO PHOTOS</p>
+                        <button onclick="window.close()" style="margin-top:32px; padding:12px 24px; background:#1D2951; color:white; border:none; border-radius:12px; font-weight:bold;">Close Window</button>
+                    </div>
+                `;
+                iosWin.document.title = "Save NCC ID Card";
+            } else {
+                link.click();
+            }
         } catch (err) {
             console.error("Failed to download ID card:", err);
+            if (iosWin) iosWin.close();
         } finally {
+            setIsStaticQR(false); // Revert to dynamic JWT QR
             setIsDownloading(false);
         }
     };
 
     const handlePrint = async () => {
-        if (!idCardRef.current) return;
+        if (!idCardRef.current || !currentUser?.id) return;
         setIsPrinting(true);
+        setIsStaticQR(true); // Switch to stable ID-based QR for print
         try {
+            // Wait for re-render with static QR
+            await new Promise(r => setTimeout(r, 250));
             // Snapshot the wrapper to keep the white background and rounded corners
             const dataUrl = await toPng(idCardRef.current, { cacheBust: true, pixelRatio: 3, backgroundColor: '#ffffff' });
 
@@ -215,17 +247,28 @@ export default function ProfilePage() {
             img.style.maxWidth = "100%";
             img.onload = () => {
                 // Wait for image render before printing
+                // Increased delay for iOS Safari to ensure the image buffer is fully ready
                 setTimeout(() => {
-                    window.print();
-                    document.body.removeChild(printRoot);
+                    try {
+                        window.print();
+                    } catch (e) {
+                        console.error("Print failed", e);
+                    }
+                    
+                    // Cleanup
+                    if (document.body.contains(printRoot)) {
+                        document.body.removeChild(printRoot);
+                    }
                     setIsPrinting(false);
-                }, 100);
+                }, 250);
             };
 
             printRoot.appendChild(img);
             document.body.appendChild(printRoot);
         } catch (err) {
             console.error("Failed to print ID card:", err);
+        } finally {
+            setIsStaticQR(false); // Revert to dynamic JWT QR
             setIsPrinting(false);
         }
     };
@@ -450,12 +493,12 @@ export default function ProfilePage() {
 
                                                 {/* QR Code + Color of the Day */}
                                                 <div className="ml-3 shrink-0 flex flex-col items-center">
-                                                    {/* Fallback to ID initially so the QR doesn't flash empty; update to JWT token when ready */}
+                                                    {/* Dual-Mode QR: High-security JWT on live screen, stable ID for Printed/Downloaded media */}
                                                     <QRCodeSVG
-                                                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?${qrToken ? `token=${qrToken}` : `id=${currentUser.id}`}`}
+                                                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?${(qrToken && !isStaticQR) ? `token=${qrToken}` : `id=${currentUser.id}`}`}
                                                         size={56}
                                                         level="M"
-                                                        className={`rounded transition-opacity duration-300 ${!qrToken ? 'opacity-50' : 'opacity-100'}`}
+                                                        className={`rounded transition-opacity duration-300 ${(!qrToken && !isStaticQR) ? 'opacity-50' : 'opacity-100'}`}
                                                     />
                                                     <div className="flex items-center gap-1 mt-0.5">
                                                         <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dailyColor.hex }} title={`Today: ${dailyColor.name}`} />
@@ -467,6 +510,14 @@ export default function ProfilePage() {
                                             {/* Bottom Signatures Area */}
                                             <div className="px-8 pb-3.5 mt-auto flex justify-between items-end relative z-30 pl-12 shrink-0">
                                                 <div className="text-center">
+                                                    {/* Snapshot Reference — only on static media (Print/Download) */}
+                                                    {isStaticQR && (
+                                                        <div className="absolute left-[38px] bottom-0.5 whitespace-nowrap opacity-50">
+                                                            <p className="text-[5px] font-black font-mono text-gray-400 uppercase tracking-tighter leading-none">
+                                                                ID Snapshot: {new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }).replace(',', '')}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                     {/* Spacer to match ANO side's s/d- height for perfect line alignment */}
                                                     <div className="h-[10.5px] mb-0.5" />
                                                     <div className="w-20 border-b border-gray-300 mb-1" />
@@ -483,9 +534,12 @@ export default function ProfilePage() {
                                             </div>
 
                                             {/* Instruction Block footer — tells verifiers how to authenticate */}
-                                            <div className="absolute bottom-0 left-0 right-0 h-4 bg-[#002147] z-20 flex items-center justify-center px-4">
-                                                <p className="text-[6px] text-white/80 font-bold uppercase tracking-widest text-center leading-none truncate">
-                                                    Verify: Scan QR or visit {typeof window !== 'undefined' ? window.location.host : 'ncc-rgu.app'}/verify
+                                            <div className="absolute bottom-0 left-0 right-0 h-4 bg-[#002147] z-20 flex items-center justify-between px-4">
+                                                <p className="text-[6px] text-white/90 font-bold uppercase tracking-[0.2em] leading-none truncate">
+                                                    Verify: {typeof window !== 'undefined' ? window.location.host : 'ncc-rgu.app'}/verify
+                                                </p>
+                                                <p className="text-[6px] text-white/50 font-black uppercase tracking-[0.1em] leading-none">
+                                                    Verification Engine by RGU-NCC
                                                 </p>
                                             </div>
                                         </div>

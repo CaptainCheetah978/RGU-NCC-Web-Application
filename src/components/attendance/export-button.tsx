@@ -42,12 +42,21 @@ export function AttendanceExport({ classSession, cadets, attendance, className }
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Attendance_${classSession.title}_${classSession.date}.csv`);
-        link.style.visibility = "hidden";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        link.href = url;
+        link.download = `Attendance_${classSession.title}_${classSession.date}.csv`;
+        
+        // iOS Safari Compatibility for CSV Blobs
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (isIOS) {
+            window.open(url, '_blank');
+        } else {
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Revoke after a delay as the tab needs time to load the blob in iOS
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
     };
 
     return (
