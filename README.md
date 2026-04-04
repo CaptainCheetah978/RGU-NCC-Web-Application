@@ -109,9 +109,10 @@ A mental model of the source code for new contributors:
 └── postcss.config.mjs      # PostCSS config (Tailwind 4 plugin)
 ```
 
-## Quick Start (Local Development)
+## Getting Started
 
-This guide assumes you have Node.js (v20+) and Git installed.
+### Path A: Local Development (Cloning)
+Use this if you want to run the application locally for testing or development.
 
 **1. Clone & Install Dependencies**
 ```bash
@@ -151,13 +152,23 @@ NEXT_PUBLIC_INSTITUTION_NAME="Royal Global University"
 ```bash
 npm run dev
 # App is ready at http://localhost:3000
+```
 
 **5. Run Automated Tests**
 ```bash
 npm test          # Run all tests once
 npm run test:watch # Run tests in interactive watch mode
 ```
-```
+
+---
+
+### Path B: Multi-Unit Deployment by Forking
+Use this if you are deploying the application for a new NCC unit or battalion.
+
+1. **Fork** the repository on GitHub to your own account.
+2. **Branding**: Replace `public/ncc-logo.png` and `public/rgu-logo.png` with your respective unit logos.
+3. **Configuration**: Update the `NEXT_PUBLIC_UNIT_NAME` and `NEXT_PUBLIC_INSTITUTION_NAME` in your deployment environment (e.g., Vercel) or `.env.local`.
+4. **Database**: Initialize your own Supabase project following the **Initialize Database** steps above.
 
 ## Documentation & Project State
 
@@ -166,19 +177,13 @@ This repo tracks its own issues and design choices:
 - **[Known Issues](KNOWN_ISSUES.md)**: A list of current bugs, technical debt, and missing features.
 - **[Security Policy](SECURITY.md)**: Basic guidelines for vulnerabilities.
 
-## Multi-Unit Deployment
-This repository is built to be unit-agnostic ("white-labeled"). To fork this for a different battalion or institution:
-1. **Fork** the repository on GitHub.
-2. Update the `NEXT_PUBLIC_*` branding variables in your deployment environment (e.g., Vercel).
-3. Replace `public/ncc-logo.png` and `public/rgu-logo.png` with your respective unit vectors.
-4. Ensure your Supabase backend is configured.
-
 ## Upcoming Roadmap
 If you are planning to contribute, we are looking at:
-- **Multilingual Support**: Abstracting strings for i18n routing (Hindi/Regional languages).
-- **Camp Management**: High-volume parallel data ingestion logic.
-- **Analytics Dashboard**: Attendance trends, cadet performance scoring.
-- **Export Features**: Integrated `jspdf` and `jspdf-autotable` for attendance reports and cadet summaries.
+- **Unit Onboarding Admin**: Workflow for adding new units.
+- **Improved PIN Handling**: Better security for cadet access codes.
+- **Unit Performance Dashboards**: Detailed attendance and activity tracking.
+- **Automated Certificate Reports**: Eligibility checking for 'B' and 'C' certificates.
+- **Multilingual Support**: Language support for Hindi and regional dialects.
 
 ## License & Primary Contact
 Released under the [MIT License](LICENSE).
