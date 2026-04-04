@@ -38,9 +38,13 @@ export async function getAttendanceAction(
         }
 
         const { data, error } = await query;
-        if (error) return { success: false, error: error.message };
+        if (error) {
+            console.error("getAttendanceAction DB error:", error);
+            return { success: false, error: error.message };
+        }
         return { success: true, data: (data as AttendanceRow[]) || [] };
     } catch (e: unknown) {
+        console.error("getAttendanceAction unexpected error:", e);
         return {
             success: false,
             error: e instanceof Error ? e.message : "Unknown error",
@@ -80,12 +84,13 @@ export async function markAttendanceAction(
             // Conflict Resolution: Only update if incoming timestamp is missing (immediate online update)
             // or if it's newer than the server's last update.
             if (parsed.data.timestamp) {
-                const incomingDate = new Date(parsed.data.timestamp);
-                const serverDate = new Date(existing.created_at);
+                const incomingDate = new Date(parsed.data.timestamp).getTime();
+                const serverDate = new Date(existing.created_at).getTime();
 
                 if (incomingDate <= serverDate) {
                     // This is an old offline record trying to overwrite a newer online record.
                     // Silent success to prevent error toasts for stale data.
+                    console.log("Stale update rejected:", { incomingDate, serverDate });
                     return { success: true };
                 }
             }
@@ -94,10 +99,15 @@ export async function markAttendanceAction(
                 .from("attendance")
                 .update({
                     status: parsed.data.status,
-                    created_at: new Date().toISOString()
+                    marked_by: session.userId,
+                    created_at: new Date().toISOString() // Bump timestamp on every edit
                 })
                 .eq("id", existing.id);
-            if (error) return { success: false, error: error.message };
+            
+            if (error) {
+                console.error("markAttendance update error:", error);
+                return { success: false, error: error.message };
+            }
         } else {
             const { error } = await supabaseAdmin.from("attendance").insert({
                 class_id: parsed.data.classId,
@@ -105,12 +115,17 @@ export async function markAttendanceAction(
                 status: parsed.data.status,
                 marked_by: session.userId,
                 unit_id: session.unitId,
+                created_at: parsed.data.timestamp || new Date().toISOString()
             });
-            if (error) return { success: false, error: error.message };
+            if (error) {
+                console.error("markAttendance insert error:", error);
+                return { success: false, error: error.message };
+            }
         }
 
         return { success: true };
     } catch (e: unknown) {
+        console.error("markAttendanceAction unexpected error:", e);
         return {
             success: false,
             error: e instanceof Error ? e.message : "Unknown error",

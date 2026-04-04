@@ -39,9 +39,13 @@ export async function getClassesAction(
         }
 
         const { data, error } = await query;
-        if (error) return { success: false, error: error.message };
+        if (error) {
+            console.error("getClassesAction DB error:", error);
+            return { success: false, error: error.message };
+        }
         return { success: true, data: (data as ClassRow[]) || [] };
     } catch (e: unknown) {
+        console.error("getClassesAction unexpected error:", e);
         return {
             success: false,
             error: e instanceof Error ? e.message : "Unknown error",
@@ -91,9 +95,13 @@ export async function addClassAction(
         if (classData.id) payload.id = classData.id;
 
         const { error } = await supabaseAdmin.from("classes").insert(payload);
-        if (error) return { success: false, error: error.message };
+        if (error) {
+            console.error("addClass insert error:", error);
+            return { success: false, error: error.message };
+        }
         return { success: true };
     } catch (e: unknown) {
+        console.error("addClassAction unexpected error:", e);
         return {
             success: false,
             error: e instanceof Error ? e.message : "Unknown error",

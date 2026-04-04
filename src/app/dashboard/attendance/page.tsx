@@ -79,30 +79,8 @@ function AttendanceContent() {
         return classes[0].id;
     }, [classes, classIdParam, selectedClassId]);
 
-    // --- Offline Sync Logic ---
-    useEffect(() => {
-        const checkQueue = async () => {
-            const queue = await getOfflineAttendanceQueue();
-
-            if (isOnline && queue.length > 0) {
-                // We're back online, let's sync!
-                try {
-                    showToast(`Syncing ${queue.length} offline records...`);
-                    for (const record of queue) {
-                        await markAttendance(record);
-                    }
-                    await clearOfflineQueue();
-                    await refreshAttendance();
-                    showToast("Offline records synced successfully.");
-                } catch (error) {
-                    console.error("Failed to sync offline queue", error);
-                    showToast("Failed to sync some offline records.");
-                }
-            }
-        };
-
-        checkQueue();
-    }, [isOnline, markAttendance, refreshAttendance, showToast]);
+    // Offline sync is now handled centrally in TrainingContext to prevent race conditions.
+    // We only keep a status check here if needed for UI indicators.
 
     const canMark = user && [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
 
@@ -182,41 +160,15 @@ function AttendanceContent() {
             timestamp: new Date().toISOString()
         };
 
-        if (!isOnline) {
-            // Offline mode: queue it
-            await queueAttendanceOffline(payload);
-
-            // Optimistically update the local cache so buttons flip instantly
-            queryClient.setQueryData<AttendanceRecord[]>(["attendance"], (old) => {
-                const records = old || [];
-                const existingIdx = records.findIndex(
-                    (r) => r.classId === effectiveClassId && r.cadetId === cadetId
-                );
-                const newRecord: AttendanceRecord = {
-                    id: payload.id,
-                    classId: effectiveClassId,
-                    cadetId,
-                    status,
-                    timestamp: payload.timestamp,
-                };
-                if (existingIdx !== -1) {
-                    const updated = [...records];
-                    updated[existingIdx] = newRecord;
-                    return updated;
-                }
-                return [...records, newRecord];
-            });
-
-            showToast("Saved offline. Will sync when reconnected.");
-            return;
-        }
-
         try {
             await markAttendance(payload);
+            if (!isOnline) {
+                showToast("Saved offline. Will sync when reconnected.", "info");
+            }
         } catch (error: unknown) {
             console.error("Failed to mark attendance", error);
-            const msg = error instanceof Error ? error.message : "Failed to save attendance. Please check your internet connection or try again.";
-            showToast(msg);
+            const msg = error instanceof Error ? error.message : "Failed to save attendance.";
+            showToast(msg, "error");
         }
     };
 

@@ -113,7 +113,8 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
                 
                 if (allSuccess) {
                     await clearOfflineQueue();
-                    queryClient.invalidateQueries({ queryKey: ["attendance"] });
+                    await queryClient.invalidateQueries({ queryKey: ["attendance"] });
+                    console.log("Offline sync complete: All records synced.");
                 }
             } catch (e) {
                 console.error("Failed to sync offline queue:", e);
@@ -275,11 +276,8 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
             }
         },
         onSettled: () => {
-            // Delay refetch slightly to let the DB write propagate —
-            // prevents the optimistic update from being overwritten by stale data.
-            setTimeout(() => {
-                queryClient.invalidateQueries({ queryKey: ["attendance"] });
-            }, 600);
+            // Refetch immediately to ensure consistency
+            queryClient.invalidateQueries({ queryKey: ["attendance"] });
         },
     });
 

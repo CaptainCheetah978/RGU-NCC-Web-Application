@@ -30,20 +30,30 @@ export async function getCallerSession(
         if (error || !user) return null;
 
         // Look up the user's role and unit from the profiles table
-        const { data: profile } = await supabaseAdmin
+        const { data: profile, error: profileErr } = await supabaseAdmin
             .from("profiles")
             .select("role, full_name, unit_id")
             .eq("id", user.id)
             .single();
 
-        if (!profile?.role) return null;
+        if (profileErr) {
+            console.error("getCallerSession profile error:", profileErr);
+            return null;
+        }
+
+        if (!profile?.role) {
+            console.error("getCallerSession profile missing role for user:", user.id);
+            return null;
+        }
+
         return { 
             userId: user.id, 
             role: profile.role as Role,
             unitId: profile.unit_id,
             userName: profile.full_name || undefined
         };
-    } catch {
+    } catch (e: unknown) {
+        console.error("getCallerSession unexpected error:", e);
         return null;
     }
 }

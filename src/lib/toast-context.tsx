@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, CheckCircle2, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, X, Info } from "lucide-react";
 
-type ToastType = "error" | "success";
+type ToastType = "error" | "success" | "info";
 
 interface Toast {
     id: string;
@@ -50,13 +50,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                             className={`flex items-start gap-3 px-4 py-3 rounded-xl shadow-xl border backdrop-blur-md ${toast.type === "error"
                                     ? "bg-red-50 dark:bg-red-950/80 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200"
-                                    : "bg-green-50 dark:bg-green-950/80 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200"
+                                    : toast.type === "success"
+                                        ? "bg-green-50 dark:bg-green-950/80 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200"
+                                        : "bg-blue-50 dark:bg-blue-950/80 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200"
                                 }`}
                         >
                             {toast.type === "error" ? (
                                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                            ) : (
+                            ) : toast.type === "success" ? (
                                 <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
+                            ) : (
+                                <Info className="w-5 h-5 shrink-0 mt-0.5" />
                             )}
                             <p className="text-sm font-medium flex-1">{toast.message}</p>
                             <button
