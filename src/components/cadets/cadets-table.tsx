@@ -32,11 +32,11 @@ export function CadetsTable({ cadets, canEdit, isANO, onView, onEdit, onDelete }
             <table className="w-full text-left border-collapse table-fixed">
                 <thead className="bg-gray-50/50 dark:bg-slate-900/30 sticky top-0 z-10 w-full">
                     <tr className="flex w-full">
-                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Cadet</th>
-                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Rank &amp; Regt. #</th>
-                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-1/4">Unit</th>
-                        <th className="p-4 text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-[15%]">Year</th>
-                        <th className="p-4 text-right text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider w-[10%]">Actions</th>
+                        <th className="p-4 text-xs font-black text-zinc-800 dark:text-slate-300 uppercase tracking-wider w-1/4">Cadet</th>
+                        <th className="p-4 text-xs font-black text-zinc-800 dark:text-slate-300 uppercase tracking-wider w-1/4">Rank &amp; Regt. #</th>
+                        <th className="p-4 text-xs font-black text-zinc-800 dark:text-slate-300 uppercase tracking-wider w-1/4">Unit</th>
+                        <th className="p-4 text-xs font-black text-zinc-800 dark:text-slate-300 uppercase tracking-wider w-[15%]">Year</th>
+                        <th className="p-4 text-right text-xs font-black text-zinc-800 dark:text-slate-300 uppercase tracking-wider w-[10%]">Actions</th>
                     </tr>
                 </thead>
                 <tbody
@@ -57,7 +57,7 @@ export function CadetsTable({ cadets, canEdit, isANO, onView, onEdit, onDelete }
                                 >
                                     <td className="p-3 w-1/4 flex items-center">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center font-bold text-gray-400 dark:text-slate-500 overflow-hidden shrink-0">
+                                            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center font-bold text-zinc-500 dark:text-slate-400 overflow-hidden shrink-0">
                                                 {cadet.avatarUrl ? <Image src={cadet.avatarUrl} alt="" width={40} height={40} /> : cadet.name.charAt(0)}
                                             </div>
                                             <div className="flex flex-col truncate">
@@ -75,7 +75,7 @@ export function CadetsTable({ cadets, canEdit, isANO, onView, onEdit, onDelete }
                                     <td className="p-3 w-1/4 flex flex-col justify-center truncate">
                                         <div className="flex flex-col truncate">
                                             <span className="font-bold text-gray-900 dark:text-slate-200">{cadet.rank}</span>
-                                            <span className="text-xs text-gray-700 dark:text-slate-400 font-bold underline decoration-primary/10 truncate">
+                                            <span className="text-xs text-zinc-800 dark:text-slate-300 font-bold underline decoration-primary/10 truncate">
                                                 {cadet.regimentalNumber}
                                             </span>
                                         </div>

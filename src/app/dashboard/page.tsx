@@ -27,7 +27,7 @@ export default function DashboardPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-0">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h2>
-                    <p className="text-gray-600 dark:text-slate-400 font-medium">Here&apos;s what&apos;s happening in your unit today.</p>
+                    <p className="text-zinc-800 dark:text-slate-400 font-bold italic">Here&apos;s what&apos;s happening in your unit today.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
                     <Image src="/ncc-logo.png" alt="NCC Logo" width={64} height={64} className="h-10 w-10 md:h-16 md:w-16 object-contain dark:drop-shadow-[0_0_8px_rgba(75,146,219,0.4)]" />
@@ -41,7 +41,7 @@ export default function DashboardPage() {
                             )}
                         </div>
                         <div className="min-w-0">
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Welcome back,</p>
+                            <p className="text-xs md:text-sm text-zinc-600 dark:text-slate-300">Welcome back,</p>
                             <p className="text-sm md:text-lg font-bold text-gray-900 dark:text-white truncate max-w-[120px] lg:max-w-[200px]">{displayUser.name}</p>
                         </div>
                     </div>

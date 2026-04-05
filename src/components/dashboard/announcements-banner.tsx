@@ -71,14 +71,14 @@ export function AnnouncementsBanner() {
                                 </p>
                                 <div className="flex items-center justify-between mt-2">
                                     <span className={`text-[10px] font-bold ${ann.priority === "urgent"
-                                        ? "text-red-700 dark:text-slate-500"
-                                        : "text-gray-600 dark:text-slate-500"
+                                        ? "text-red-700 dark:text-slate-400"
+                                        : "text-gray-600 dark:text-slate-400"
                                         }`}>
                                         {ann.authorName}
                                     </span>
                                     <span className={`text-[10px] ${ann.priority === "urgent"
-                                        ? "text-red-700 dark:text-slate-500"
-                                        : "text-gray-600 dark:text-slate-500"
+                                        ? "text-red-700 dark:text-slate-400"
+                                        : "text-gray-600 dark:text-slate-400"
                                         }`}>
                                         {new Date(ann.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                                     </span>

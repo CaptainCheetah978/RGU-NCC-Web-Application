@@ -39,7 +39,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h3>
                                 <button
                                     onClick={onClose}
-                                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/60 transition-all"
+                                    aria-label="Close modal"
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/60 transition-all font-bold"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>

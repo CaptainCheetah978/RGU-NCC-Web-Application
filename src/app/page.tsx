@@ -170,7 +170,7 @@ export default function LoginPage() {
             <Image src="/rgu-logo.png" alt="RGU" width={64} height={64} className="w-16 h-16 object-contain drop-shadow-2xl" />
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">NCC Management</h1>
-          <p className="text-gray-400 text-sm mt-1">Royal Global University Unit</p>
+          <p className="text-zinc-300 text-sm mt-1 font-bold">Royal Global University Unit</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
@@ -183,7 +183,7 @@ export default function LoginPage() {
                     <button
                       key={tab.id}
                       onClick={() => { setActiveTab(tab.id); setError(""); setFormData({ username: "", pin: "" }); }}
-                      className={`relative py-4 text-sm font-medium transition-all duration-300 ${activeTab === tab.id ? "text-white bg-white/5" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}
+                      className={`relative py-4 text-sm font-black transition-all duration-300 ${activeTab === tab.id ? "text-white bg-white/5" : "text-zinc-400 hover:text-gray-200 hover:bg-white/5"}`}
                     >
                       <div className="flex flex-col items-center gap-1">
                         <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? "text-white" : ""}`} />
@@ -200,33 +200,33 @@ export default function LoginPage() {
                   <form onSubmit={handleLogin} className="space-y-6">
                     <div className="space-y-4">
                       <div>
-                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                        <label className="text-xs font-black text-zinc-300 uppercase tracking-widest ml-1">
                           {activeTab === Role.ANO ? "Officer ID" : activeTab === Role.CADET ? "Regimental Number" : "Username"}
                         </label>
                         <div className="relative mt-1">
-                          <User className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                          <User className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
                           <Input
                             value={formData.username}
                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                             placeholder={activeTab === Role.ANO ? "ANO" : activeTab === Role.CADET ? "e.g. SW/RGU/1234" : "e.g. Rahul Singh"}
-                            className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary"
+                            className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-primary font-bold"
                             required
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                        <label className="text-xs font-black text-zinc-300 uppercase tracking-widest ml-1">
                           {activeTab === Role.ANO ? "Secure PIN" : "Access PIN"}
                         </label>
                         <div className="relative mt-1">
-                          <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                          <Lock className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
                           <Input
                             type="password"
                             value={formData.pin}
                             onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
                             placeholder="••••"
-                            className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary tracking-widest"
+                            className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-primary tracking-widest font-bold"
                             required
                           />
                         </div>
@@ -255,7 +255,7 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={() => { setStep("forgot-email"); setError(""); }}
-                        className="w-full text-center text-xs text-gray-500 hover:text-red-400 transition-colors mt-2 font-medium"
+                        className="w-full text-center text-xs text-zinc-300 hover:text-red-400 transition-colors mt-2 font-bold uppercase tracking-widest"
                       >
                         Forgot PIN? Reset via Email OTP
                       </button>
@@ -387,7 +387,7 @@ export default function LoginPage() {
           </AnimatePresence>
         </div>
 
-        <p className="text-center text-gray-600 text-[10px] mt-8 uppercase tracking-widest font-bold opacity-60">
+        <p className="text-center text-zinc-400 text-[10px] mt-8 uppercase tracking-widest font-black opacity-80">
           Restricted Area • {activeTab} Classification
         </p>
       </div>

@@ -28,7 +28,7 @@ export function InfoCard({ title, value, icon: Icon, trend, color, delay = 0 }: 
         },
         orange: {
             iconBg: "bg-orange-100 dark:bg-orange-500/20",
-            iconColor: "text-orange-600 dark:text-orange-400",
+            iconColor: "text-orange-700 dark:text-orange-400",
             glow: "bg-orange-500/10 dark:bg-orange-400/15",
             accent: "from-orange-500/5 to-transparent dark:from-orange-500/10",
         },
@@ -56,7 +56,7 @@ export function InfoCard({ title, value, icon: Icon, trend, color, delay = 0 }: 
 
             <div className="relative flex justify-between items-start">
                 <div>
-                    <p className="text-gray-700 dark:text-slate-400 text-sm font-bold">{title}</p>
+                    <p className="text-zinc-800 dark:text-slate-300 text-sm font-bold">{title}</p>
                     <h3 className="text-3xl font-black text-black dark:text-white mt-1 tracking-tight">{value}</h3>
                 </div>
                 <div className={`p-3 rounded-xl ${styles.iconBg} ${styles.iconColor} group-hover:scale-110 transition-transform duration-300`}>
@@ -66,11 +66,11 @@ export function InfoCard({ title, value, icon: Icon, trend, color, delay = 0 }: 
 
             {trend && (
                 <div className="relative mt-4 flex items-center text-sm">
-                    <span className="text-green-600 dark:text-green-400 font-medium flex items-center">
+                    <span className="text-green-700 dark:text-green-400 font-bold flex items-center">
                         <ArrowUpRight className="w-4 h-4 mr-1" />
                         {trend}
                     </span>
-                    <span className="text-gray-600 dark:text-slate-500 ml-2 font-medium">vs last month</span>
+                    <span className="text-zinc-700 dark:text-slate-400 ml-2 font-medium">vs last month</span>
                 </div>
             )}
         </motion.div>

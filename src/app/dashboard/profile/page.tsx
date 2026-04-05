@@ -321,7 +321,7 @@ export default function ProfilePage() {
 
             <div className="no-print">
                 <h1 className="text-3xl font-extrabold text-black dark:text-white tracking-tight">My Profile</h1>
-                <p className="text-gray-800 dark:text-slate-400 mt-1 font-bold italic">Manage your official NCC records and digital identity.</p>
+                <p className="text-gray-800 dark:text-slate-300 mt-1 font-bold italic">Manage your official NCC records and digital identity.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -361,14 +361,14 @@ export default function ProfilePage() {
 
                         <div className="mt-8 w-full space-y-4">
                             <div className="flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
-                                <div className="flex items-center text-gray-800 dark:text-slate-400 font-black">
+                                <div className="flex items-center text-gray-800 dark:text-slate-300 font-black">
                                     <Award className="w-4 h-4 mr-2" />
                                     <span>Regt. Number</span>
                                 </div>
                                 <span className="font-mono font-black text-gray-900 dark:text-white">{currentUser.regimentalNumber || "N/A"}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
-                                <div className="flex items-center text-gray-800 dark:text-slate-400 font-black">
+                                <div className="flex items-center text-gray-800 dark:text-slate-300 font-black">
                                     <Calendar className="w-4 h-4 mr-2" />
                                     <span>Attendance</span>
                                 </div>
@@ -606,7 +606,7 @@ export default function ProfilePage() {
                                     <form onSubmit={handleChangePinSubmit} className="space-y-3">
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label htmlFor="new-pin" className="text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">New PIN</label>
+                                                <label htmlFor="new-pin" className="text-xs font-black text-gray-700 dark:text-slate-300 uppercase tracking-wider">New PIN</label>
                                                 <input
                                                     id="new-pin"
                                                     type="password"
@@ -618,7 +618,7 @@ export default function ProfilePage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label htmlFor="confirm-pin" className="text-xs font-black text-gray-700 dark:text-slate-400 uppercase tracking-wider">Confirm PIN</label>
+                                                <label htmlFor="confirm-pin" className="text-xs font-black text-gray-700 dark:text-slate-300 uppercase tracking-wider">Confirm PIN</label>
                                                 <input
                                                     id="confirm-pin"
                                                     type="password"
@@ -676,7 +676,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <p className="text-sm text-gray-500 dark:text-slate-400 italic px-2">
+                    <p className="text-sm text-gray-500 dark:text-slate-300 italic px-2">
                         Uploading an improper photo may lead to the rejection of your digital ID validity by the ANO.
                     </p>
 

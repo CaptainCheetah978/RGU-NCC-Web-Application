@@ -112,7 +112,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             )}
 
             <div className={cn(
-                "h-screen w-64 bg-white/5 dark:bg-slate-900/95 backdrop-blur-xl border-r border-white/10 dark:border-slate-700/50 flex flex-col fixed left-0 top-0 z-30 transition-transform duration-300 md:translate-x-0",
+                "h-screen w-64 bg-white dark:bg-slate-900/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-700/50 flex flex-col fixed left-0 top-0 z-30 transition-transform duration-300 md:translate-x-0",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="p-6 flex items-center space-x-3 border-b border-gray-200 dark:border-slate-700/50 relative">
@@ -142,7 +142,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                         "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
                                         isActive
                                             ? "text-white bg-primary dark:bg-blue-700 shadow-lg shadow-primary/25"
-                                            : "text-gray-800 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
+                                            : "text-zinc-900 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
                                     )}
                                 >
                                     {isActive && (
@@ -152,7 +152,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                         />
                                     )}
-                                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-800 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white")} />
+                                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-zinc-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white")} />
                                     <span className="font-black flex-1">{link.name}</span>
                                     {link.href === "/dashboard/notes" && unreadNotes > 0 && (
                                         <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
@@ -168,7 +168,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 <div className="p-4 border-t border-white/10 dark:border-slate-700/50 space-y-2">
                     <button
                         onClick={toggleTheme}
-                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-800 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white w-full transition-colors"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-zinc-900 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white w-full transition-colors"
                         aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
                     >
                         {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -176,7 +176,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     </button>
                     <button
                         onClick={logout}
-                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-700 dark:text-red-400 hover:bg-red-500/10 hover:text-red-800 dark:hover:text-red-300 w-full transition-colors"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-800 dark:text-red-400 hover:bg-red-500/10 hover:text-red-800 dark:hover:text-red-300 w-full transition-colors"
                     >
                         <LogOut className="w-5 h-5" />
                         <span className="font-black">Logout</span>

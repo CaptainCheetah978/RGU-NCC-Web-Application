@@ -94,7 +94,7 @@ export default function PerformanceDashboard() {
         <div className="space-y-6 max-w-7xl mx-auto">
             <div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Performance Analytics</h2>
-                <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Track cadet attendance and unit health metrics.</p>
+                <p className="text-zinc-800 dark:text-slate-400 mt-1 font-bold italic">Track cadet attendance and unit health metrics.</p>
             </div>
 
             {/* Overview Cards */}
@@ -102,9 +102,9 @@ export default function PerformanceDashboard() {
                 <Card className="border-2 border-primary/10 bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-slate-800/50 shadow-md">
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Unit Average</p>
+                            <p className="text-sm font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-1">Unit Average</p>
                             <h3 className="text-4xl font-black text-gray-900 dark:text-white">{avgAttendance}%</h3>
-                            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Based on {performanceData[0]?.total} classes</p>
+                            <p className="text-sm text-zinc-600 dark:text-slate-400 mt-1">Based on {performanceData[0]?.total} classes</p>
                         </div>
                         <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
                             <TrendingUp className="w-7 h-7" />
@@ -115,9 +115,9 @@ export default function PerformanceDashboard() {
                 <Card className="border-2 border-green-200/50 bg-gradient-to-br from-white to-green-50/50 dark:from-slate-900 dark:to-green-900/10 shadow-md">
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-1">Top Performers</p>
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Top Performers</p>
                             <h3 className="text-4xl font-black text-gray-900 dark:text-white">{topPerformers.length}</h3>
-                            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Cadets with &ge; 90% attendance</p>
+                            <p className="text-sm text-zinc-600 dark:text-slate-400 mt-1">Cadets with &ge; 90% attendance</p>
                         </div>
                         <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 dark:text-green-400">
                             <UserCheck className="w-7 h-7" />
@@ -128,9 +128,9 @@ export default function PerformanceDashboard() {
                 <Card className="border-2 border-red-200/50 bg-gradient-to-br from-white to-red-50/50 dark:from-slate-900 dark:to-red-900/10 shadow-md">
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1">At Risk</p>
+                            <p className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">At Risk</p>
                             <h3 className="text-4xl font-black text-gray-900 dark:text-white">{atRiskCadets.length}</h3>
-                            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Cadets with &le; 50% attendance</p>
+                            <p className="text-sm text-zinc-600 dark:text-slate-400 mt-1">Cadets with &le; 50% attendance</p>
                         </div>
                         <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400">
                             <AlertTriangle className="w-7 h-7" />
@@ -158,12 +158,12 @@ export default function PerformanceDashboard() {
                                         </div>
                                         <div>
                                             <p className="font-bold text-gray-900 dark:text-white">{cadet.name}</p>
-                                            <p className="text-xs text-gray-500 dark:text-slate-400 font-mono">{cadet.regimentalNumber}</p>
+                                            <p className="text-xs text-zinc-600 dark:text-slate-400 font-mono">{cadet.regimentalNumber}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-black text-green-600 dark:text-green-400 text-lg">{cadet.percentage}%</p>
-                                        <p className="text-xs text-gray-500 dark:text-slate-400">{cadet.present} / {cadet.total} present</p>
+                                        <p className="font-black text-green-700 dark:text-green-400 text-lg">{cadet.percentage}%</p>
+                                        <p className="text-xs text-zinc-600 dark:text-slate-400">{cadet.present} / {cadet.total} present</p>
                                     </div>
                                 </div>
                             )) : (
@@ -190,12 +190,12 @@ export default function PerformanceDashboard() {
                                         </div>
                                         <div>
                                             <p className="font-bold text-gray-900 dark:text-white">{cadet.name}</p>
-                                            <p className="text-xs text-gray-500 dark:text-slate-400 font-mono">{cadet.regimentalNumber}</p>
+                                            <p className="text-xs text-zinc-600 dark:text-slate-400 font-mono">{cadet.regimentalNumber}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-black text-red-600 dark:text-red-400 text-lg">{cadet.percentage}%</p>
-                                        <p className="text-xs text-gray-500 dark:text-slate-400">{cadet.absent} absences</p>
+                                        <p className="font-black text-red-700 dark:text-red-400 text-lg">{cadet.percentage}%</p>
+                                        <p className="text-xs text-zinc-600 dark:text-slate-400">{cadet.absent} absences</p>
                                     </div>
                                 </div>
                             )) : (
@@ -234,11 +234,11 @@ export default function PerformanceDashboard() {
                                 <tr key={cadet.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="font-bold text-gray-900 dark:text-white">{cadet.name}</div>
-                                        <div className="text-xs font-mono text-gray-500">{cadet.regimentalNumber}</div>
+                                        <div className="text-xs font-mono text-zinc-600">{cadet.regimentalNumber}</div>
                                     </td>
-                                    <td className="px-6 py-4 text-center font-medium text-green-600">{cadet.present}</td>
-                                    <td className="px-6 py-4 text-center font-medium text-red-500">{cadet.absent}</td>
-                                    <td className="px-6 py-4 text-center font-medium text-amber-500">{cadet.late}</td>
+                                    <td className="px-6 py-4 text-center font-bold text-green-700">{cadet.present}</td>
+                                    <td className="px-6 py-4 text-center font-bold text-red-700">{cadet.absent}</td>
+                                    <td className="px-6 py-4 text-center font-bold text-amber-700">{cadet.late}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 text-right font-bold text-gray-900 dark:text-white">

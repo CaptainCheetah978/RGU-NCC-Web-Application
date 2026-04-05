@@ -26,14 +26,14 @@ const ACTION_ICONS: Record<string, typeof History> = {
 const ACTION_COLORS: Record<string, string> = {
     "Enrolled new cadet": "bg-green-100 text-green-600",
     "Deleted cadet": "bg-red-100 text-red-600",
-    "Created class": "bg-blue-100 text-blue-600",
-    "Deleted class": "bg-red-100 text-red-600",
-    "Marked attendance": "bg-teal-100 text-teal-600",
-    "Posted announcement": "bg-purple-100 text-purple-600",
-    "Deleted announcement": "bg-red-100 text-red-600",
-    "Sent note": "bg-amber-100 text-amber-600",
-    "Uploaded certificate": "bg-emerald-100 text-emerald-600",
-    "Deleted certificate": "bg-red-100 text-red-600",
+    "Created class": "bg-blue-100 text-blue-700",
+    "Deleted class": "bg-red-100 text-red-700",
+    "Marked attendance": "bg-teal-100 text-teal-800",
+    "Posted announcement": "bg-purple-100 text-purple-700",
+    "Deleted announcement": "bg-red-100 text-red-800",
+    "Sent note": "bg-amber-100 text-amber-800",
+    "Uploaded certificate": "bg-emerald-100 text-emerald-800",
+    "Deleted certificate": "bg-red-100 text-red-800",
 };
 
 export default function ActivityLogPage() {
@@ -78,7 +78,7 @@ export default function ActivityLogPage() {
         <div className="space-y-6 max-w-4xl mx-auto">
             <div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Activity Log</h2>
-                <p className="text-gray-800 dark:text-slate-400 mt-1 font-bold italic">Track all actions performed across the system.</p>
+                <p className="text-zinc-800 dark:text-slate-300 mt-1 font-bold italic">Track all actions performed across the system.</p>
             </div>
 
             {/* Filter */}
@@ -91,7 +91,7 @@ export default function ActivityLogPage() {
                         aria-label={`Filter by ${action}`}
                         className={`px-3 py-1.5 rounded-lg text-xs font-black whitespace-nowrap transition-colors ${filterAction === action
                             ? "bg-primary text-white shadow-md shadow-primary/20"
-                            : "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700 font-bold"
+                            : "bg-gray-100 dark:bg-slate-800 text-zinc-800 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 font-bold"
                             }`}
                     >
                         {action}
@@ -103,8 +103,8 @@ export default function ActivityLogPage() {
                 <Card className="border-gray-100">
                     <CardContent className="py-16 text-center">
                         <History className="w-16 h-16 mx-auto text-gray-300 dark:text-slate-700 mb-4" />
-                        <p className="text-gray-800 dark:text-slate-400 font-bold">No activity recorded yet.</p>
-                        <p className="text-gray-700 dark:text-slate-500 text-xs mt-1 font-bold italic">Actions like enrolling cadets, marking attendance, and posting announcements will appear here.</p>
+                        <p className="text-gray-800 dark:text-slate-300 font-bold">No activity recorded yet.</p>
+                        <p className="text-gray-700 dark:text-slate-400 text-xs mt-1 font-bold italic">Actions like enrolling cadets, marking attendance, and posting announcements will appear here.</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -138,10 +138,10 @@ export default function ActivityLogPage() {
                                                         <span className="font-bold">{entry.performedByName}</span>
                                                         {" "}<span className="font-medium">{entry.action.toLowerCase()}</span>
                                                         {entry.targetName && (
-                                                            <span className="font-bold text-primary underline decoration-primary/10"> &quot;{entry.targetName}&quot;</span>
+                                                            <span className="font-bold text-primary dark:text-blue-400 underline decoration-primary/10"> &quot;{entry.targetName}&quot;</span>
                                                         )}
                                                     </p>
-                                                    <span className="text-[10px] text-gray-800 dark:text-slate-500 font-black whitespace-nowrap ml-4 italic">
+                                                    <span className="text-[10px] text-zinc-700 dark:text-slate-400 font-black whitespace-nowrap ml-4 italic">
                                                         {timeAgo(entry.timestamp)}
                                                     </span>
                                                 </div>

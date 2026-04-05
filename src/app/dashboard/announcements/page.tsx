@@ -98,7 +98,7 @@ export default function AnnouncementsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Announcements</h2>
-                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Important notices and updates for all cadets.</p>
+                    <p className="text-zinc-800 dark:text-slate-400 mt-1 font-bold italic">Important notices and updates for all cadets.</p>
                 </div>
                 {canPost && (
                     <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-primary/25">
@@ -111,8 +111,8 @@ export default function AnnouncementsPage() {
             {sortedAnnouncements.length === 0 ? (
                 <Card className="border-gray-100">
                     <CardContent className="py-16 text-center">
-                        <Megaphone className="w-16 h-16 mx-auto text-gray-300 dark:text-slate-700 mb-4" />
-                        <p className="text-gray-700 dark:text-slate-400 font-bold">No announcements posted yet.</p>
+                        <Megaphone className="w-16 h-16 mx-auto text-zinc-400 dark:text-slate-700 mb-4" />
+                        <p className="text-zinc-800 dark:text-slate-400 font-black">No announcements posted yet.</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -149,12 +149,12 @@ export default function AnnouncementsPage() {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p className="text-gray-800 dark:text-slate-300 mt-2 text-sm leading-relaxed whitespace-pre-line font-medium">
+                                                <p className="text-zinc-900 dark:text-slate-300 mt-2 text-sm leading-relaxed whitespace-pre-line font-bold">
                                                     {ann.content}
                                                 </p>
-                                                <div className="flex items-center space-x-4 mt-3 text-xs text-gray-700 dark:text-slate-400">
+                                                <div className="flex items-center space-x-4 mt-3 text-xs text-zinc-800 dark:text-slate-400">
                                                     <span className="font-black uppercase tracking-tight">By {ann.authorName}</span>
-                                                    <span className="flex items-center text-gray-600 dark:text-slate-500 font-bold italic">
+                                                    <span className="flex items-center text-zinc-700 dark:text-slate-500 font-bold italic">
                                                         <Clock className="w-3 h-3 mr-1" />
                                                         {timeAgo(ann.createdAt)}
                                                     </span>
@@ -164,7 +164,7 @@ export default function AnnouncementsPage() {
                                         {canPost && (
                                             <button
                                                 onClick={() => handleDelete(ann)}
-                                                className="p-2 text-gray-700 dark:text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0 font-bold"
+                                                className="p-2 text-zinc-800 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0 font-black"
                                                 aria-label={`Delete announcement ${ann.title}`}
                                             >
                                                 <Trash2 className="w-4 h-4" />

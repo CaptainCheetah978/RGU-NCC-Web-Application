@@ -226,7 +226,7 @@ export default function CadetsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Cadet Registry</h2>
-                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Manage personnel records, promotions, and assignments.</p>
+                    <p className="text-zinc-800 dark:text-slate-400 mt-1 font-bold italic">Manage personnel records, promotions, and assignments.</p>
                 </div>
                 <div className="flex gap-3">
                     <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
@@ -262,8 +262,8 @@ export default function CadetsPage() {
                     <button
                         onClick={() => setFilterStatus("active")}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterStatus === "active"
-                            ? "bg-white dark:bg-slate-600 shadow-sm text-primary dark:text-blue-400"
-                            : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"
+                            ? "bg-white dark:bg-blue-600 shadow-sm text-primary dark:text-white"
+                            : "text-zinc-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-300"
                             }`}
                     >
                         Active
@@ -271,8 +271,8 @@ export default function CadetsPage() {
                     <button
                         onClick={() => setFilterStatus("alumni")}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterStatus === "alumni"
-                            ? "bg-white dark:bg-slate-600 shadow-sm text-amber-600 dark:text-amber-400"
-                            : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"
+                            ? "bg-white dark:bg-amber-600 shadow-sm text-amber-600 dark:text-white"
+                            : "text-zinc-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-300"
                             }`}
                     >
                         Alumni
@@ -335,11 +335,11 @@ export default function CadetsPage() {
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center space-x-4">
                                                         <div className="relative shrink-0">
-                                                            <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center">
+                                                            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center">
                                                                 {cadet.avatarUrl ? (
                                                                     <Image src={cadet.avatarUrl} alt={cadet.name} width={64} height={64} className="object-cover" />
                                                                 ) : (
-                                                                    <span className="text-xl font-bold text-gray-400 dark:text-slate-500">{cadet.name.charAt(0)}</span>
+                                                                    <span className="text-xl font-bold text-zinc-500 dark:text-slate-500">{cadet.name.charAt(0)}</span>
                                                                 )}
                                                             </div>
                                                             <span className="absolute -bottom-2 -right-2 text-lg">
@@ -353,7 +353,7 @@ export default function CadetsPage() {
                                                                     <span className="text-[10px] uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
                                                                 )}
                                                             </h3>
-                                                            <p className="text-sm text-gray-700 dark:text-slate-400 font-bold decoration-primary/20 underline underline-offset-4">
+                                                            <p className="text-sm text-gray-700 dark:text-slate-300 font-bold decoration-primary/20 underline underline-offset-4">
                                                                 {cadet.regimentalNumber || "N/A"}
                                                             </p>
                                                         </div>
@@ -362,11 +362,11 @@ export default function CadetsPage() {
 
                                                 <div className="space-y-2 mb-4">
                                                     <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
-                                                        <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Unit</span>
+                                                        <span className="w-24 text-zinc-800 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Unit</span>
                                                         <span className="font-bold truncate">{cadet.unitNumber} {cadet.unitName}</span>
                                                     </div>
                                                     <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
-                                                        <span className="w-24 text-gray-700 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Batches</span>
+                                                        <span className="w-24 text-zinc-800 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Batches</span>
                                                         <span className="font-bold bg-primary/5 dark:bg-slate-700 px-2 py-0.5 rounded text-xs text-primary dark:text-slate-300">{cadet.enrollmentYear}</span>
                                                     </div>
                                                 </div>
@@ -464,7 +464,7 @@ export default function CadetsPage() {
                                     <span className="text-xs uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
                                 )}
                             </h3>
-                            <p className="text-gray-500 dark:text-slate-400 font-mono bg-gray-100 dark:bg-slate-700 px-3 py-1 rounded-full text-xs mt-2">{viewingCadet.regimentalNumber}</p>
+                            <p className="text-zinc-700 dark:text-slate-300 font-mono bg-gray-100 dark:bg-slate-700 px-3 py-1 rounded-full text-xs mt-2">{viewingCadet.regimentalNumber}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">

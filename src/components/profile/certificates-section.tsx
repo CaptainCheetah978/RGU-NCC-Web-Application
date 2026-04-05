@@ -103,7 +103,7 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
                 </CardHeader>
                 <CardContent>
                     {certs.length === 0 ? (
-                        <div className="py-8 text-center text-gray-700">
+                        <div className="py-8 text-center text-gray-700 dark:text-slate-400">
                             <Award className="w-10 h-10 mx-auto mb-2 opacity-30" />
                             <p className="text-sm font-medium">No certificates uploaded yet.</p>
                         </div>

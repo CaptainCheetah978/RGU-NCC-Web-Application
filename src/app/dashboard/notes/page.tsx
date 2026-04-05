@@ -164,7 +164,7 @@ export default function NotesPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Private Notes</h2>
-                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium italic">Direct communication for NCC duties and requests.</p>
+                    <p className="text-zinc-800 dark:text-slate-400 mt-1 font-bold italic">Direct communication for NCC duties and requests.</p>
                 </div>
                 <Button onClick={() => setIsComposeModalOpen(true)} className="shadow-lg shadow-primary/25">
                     <Plus className="w-5 h-5 mr-2" />
@@ -184,7 +184,7 @@ export default function NotesPage() {
                                         "flex-1 flex items-center justify-center space-x-2 py-2 rounded-lg text-sm font-black transition-all",
                                         activeTab === tab
                                             ? "bg-white dark:bg-slate-700 text-primary dark:text-slate-100 shadow-sm"
-                                            : "text-gray-700 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200"
+                                            : "text-zinc-800 dark:text-slate-400 hover:text-black dark:hover:text-slate-200"
                                     )}
                                 >
                                     {tab === "inbox" ? <Inbox className="w-4 h-4" /> : <Send className="w-4 h-4" />}
@@ -203,7 +203,7 @@ export default function NotesPage() {
                                 placeholder={`Search ${activeTab}...`}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-slate-800/60 border-none dark:text-slate-200 text-xs font-bold focus:ring-2 focus:ring-primary/10 transition-shadow outline-none placeholder:text-gray-600 dark:placeholder:text-slate-500"
+                                className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-slate-800/60 border-none dark:text-slate-200 text-xs font-bold focus:ring-2 focus:ring-primary/10 transition-shadow outline-none placeholder:text-gray-600 dark:placeholder:text-slate-400"
                             />
                         </div>
                     </div>
@@ -211,8 +211,8 @@ export default function NotesPage() {
                     <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2">
                         {filteredNotes.length === 0 ? (
                             <div className="text-center py-8 px-4">
-                                <MessageSquare className="w-10 h-10 text-gray-300 dark:text-slate-600 mx-auto mb-2" />
-                                <p className="text-sm text-gray-700 dark:text-slate-400 font-bold">No {activeTab} yet.</p>
+                                <MessageSquare className="w-10 h-10 text-zinc-400 dark:text-slate-600 mx-auto mb-2" />
+                                <p className="text-sm text-zinc-800 dark:text-slate-400 font-black">No {activeTab} yet.</p>
                             </div>
                         ) : (
                             filteredNotes.map((note) => (
@@ -235,21 +235,21 @@ export default function NotesPage() {
                                     <div className="flex justify-between items-start mb-1">
                                         <span className={cn(
                                             "text-xs font-black leading-tight line-clamp-1 flex-1",
-                                            activeTab === "inbox" && !note.isRead ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-slate-400"
+                                            activeTab === "inbox" && !note.isRead ? "text-gray-900 dark:text-white" : "text-zinc-800 dark:text-slate-400"
                                         )}>
                                             {activeTab === "inbox" ? note.senderName : note.recipientName}
                                         </span>
-                                        <span className="text-[10px] text-gray-600 dark:text-slate-500 font-bold whitespace-nowrap ml-2 italic">
+                                        <span className="text-[10px] text-zinc-700 dark:text-slate-400 font-bold whitespace-nowrap ml-2 italic">
                                             {new Date(note.timestamp).toLocaleDateString()}
                                         </span>
                                     </div>
                                     <div className={cn(
-                                        "text-sm font-bold mb-1 line-clamp-1",
-                                        activeTab === "inbox" && !note.isRead ? "text-primary" : "text-gray-700 dark:text-slate-300"
+                                        "text-sm font-black mb-1 line-clamp-1",
+                                        activeTab === "inbox" && !note.isRead ? "text-primary" : "text-zinc-800 dark:text-slate-300"
                                     )}>
                                         {note.subject}
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-1">{note.content}</p>
+                                    <p className="text-xs text-zinc-600 dark:text-slate-400 line-clamp-1 font-medium">{note.content}</p>
 
                                     {note.forwardedToANO && (
                                         <div className="mt-2 flex items-center text-[10px] text-primary font-black uppercase tracking-wider">
@@ -283,7 +283,7 @@ export default function NotesPage() {
                                                 {activeTab === "inbox" ? selectedNote.senderName : selectedNote.recipientName}
                                             </h3>
                                         </div>
-                                        <div className="flex items-center text-sm text-gray-700 dark:text-slate-400 space-x-4 font-bold italic">
+                                        <div className="flex items-center text-sm text-zinc-800 dark:text-slate-300 space-x-4 font-bold italic">
                                             <span className="flex items-center"><Clock className="w-4 h-4 mr-1.5" /> {new Date(selectedNote.timestamp).toLocaleString()}</span>
                                         </div>
                                     </div>
@@ -322,7 +322,7 @@ export default function NotesPage() {
                                                     }
                                                 }
                                             }}
-                                            className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                            className="p-2 text-zinc-500 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-bold"
                                         >
                                             <Trash2 className="w-5 h-5" />
                                         </button>
@@ -333,7 +333,7 @@ export default function NotesPage() {
                                         <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-b dark:border-slate-700/60 pb-4">
                                             {selectedNote.subject}
                                         </h4>
-                                        <div className="text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                                        <div className="text-zinc-900 dark:text-slate-300 font-bold leading-relaxed whitespace-pre-wrap">
                                             {selectedNote.content}
                                         </div>
                                     </div>
@@ -355,8 +355,8 @@ export default function NotesPage() {
                                     <MessageSquare className="w-10 h-10 text-gray-200" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-800 dark:text-slate-300">Select a message</h3>
-                                    <p className="text-sm font-medium text-gray-600 dark:text-slate-500 max-w-xs mx-auto">Click on a message from the list to view its contents and take action.</p>
+                                    <h3 className="text-lg font-black text-gray-900 dark:text-slate-300">Select a message</h3>
+                                    <p className="text-sm font-bold text-zinc-700 dark:text-slate-400 max-w-xs mx-auto">Click on a message from the list to view its contents and take action.</p>
                                 </div>
                             </div>
                         )}

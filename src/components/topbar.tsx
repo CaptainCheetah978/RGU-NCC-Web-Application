@@ -59,7 +59,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             <div className="flex items-center space-x-4">
                 <button
                     onClick={onMenuClick}
-                    className="md:hidden p-2 -ml-2 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none"
+                    className="md:hidden p-2 -ml-2 text-zinc-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none font-bold"
                     aria-label="Toggle menu"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
@@ -95,7 +95,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                                 : "bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700"
                         )}
                     >
-                        <Bell className={cn("w-5 h-5 transition-colors", showNotifications ? "text-primary" : "text-gray-600 dark:text-slate-300")} />
+                        <Bell className={cn("w-5 h-5 transition-colors", showNotifications ? "text-primary" : "text-zinc-700 dark:text-slate-300")} />
                         {unreadCount > 0 && (
                             <motion.span
                                 initial={{ scale: 0 }}
@@ -119,14 +119,14 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                             >
                                 {/* Dropdown Header */}
                                 <div className="p-4 border-b border-gray-100 dark:border-slate-700/60 flex items-center justify-between bg-gray-50/80 dark:bg-slate-900/40">
-                                    <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
+                                    <h2 className="text-sm font-bold text-gray-900 dark:text-white flex items-center">
                                         Notifications
                                         {unreadCount > 0 && (
                                             <span className="ml-2 text-[10px] px-2 py-0.5 bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full">
                                                 {unreadCount} New
                                             </span>
                                         )}
-                                    </h3>
+                                    </h2>
                                     {unreadCount > 0 && (
                                         <button
                                             onClick={() => markAllAsRead()}
@@ -145,8 +145,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                                                 <Inbox className="w-8 h-8 text-gray-300 dark:text-slate-500" />
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="font-bold text-gray-700 dark:text-slate-300">All caught up!</p>
-                                                <p className="text-xs text-gray-600 dark:text-slate-500 font-medium">No new notifications at the moment.</p>
+                                                <p className="font-black text-zinc-800 dark:text-slate-200">All caught up!</p>
+                                                <p className="text-xs text-zinc-700 dark:text-slate-400 font-bold">No new notifications at the moment.</p>
                                             </div>
                                         </div>
                                     ) : (
@@ -169,10 +169,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                                                                 {new Date(note.timestamp).toLocaleDateString()}
                                                             </span>
                                                         </div>
-                                                        <p className="text-sm font-bold text-primary dark:text-blue-400 truncate mb-1 leading-tight">
+                                                        <p className="text-sm font-black text-primary dark:text-blue-400 truncate mb-1 leading-tight">
                                                             {note.subject}
                                                         </p>
-                                                        <p className="text-[12px] text-gray-700 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
+                                                        <p className="text-[12px] text-zinc-800 dark:text-slate-300 line-clamp-2 leading-relaxed font-bold">
                                                             {note.content}
                                                         </p>
                                                     </div>
@@ -185,7 +185,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                                 <Link
                                     href="/dashboard/notes"
                                     onClick={() => setShowNotifications(false)}
-                                    className="flex items-center justify-center space-x-1.5 p-3 text-center text-xs font-bold text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700/40 border-t border-gray-100 dark:border-slate-700/60 transition-all"
+                                    className="flex items-center justify-center space-x-1.5 p-3 text-center text-xs font-black text-zinc-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700/40 border-t border-gray-100 dark:border-slate-700/60 transition-all uppercase tracking-widest"
                                 >
                                     <span>View all Private Notes</span>
                                     <ExternalLink className="w-3 h-3" />
@@ -198,7 +198,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 <div className="flex items-center space-x-3 pl-3 md:pl-4 border-l border-gray-200 dark:border-slate-700 flex-shrink-0">
                     <div className="text-right hidden md:block max-w-[120px] lg:max-w-[200px]">
                         <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{displayUser.name}</p>
-                        <p className="text-xs text-gray-700 dark:text-slate-400 truncate font-medium">{displayUser.regimentalNumber}</p>
+                        <p className="text-xs text-zinc-800 dark:text-slate-400 truncate font-bold">{displayUser.regimentalNumber}</p>
                     </div>
                     <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white font-bold shadow-lg shadow-black/20 overflow-hidden ring-2 ring-white/20 dark:ring-slate-700/50 flex-shrink-0">
                         {displayUser.avatarUrl ? (

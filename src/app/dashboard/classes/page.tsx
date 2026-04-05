@@ -100,7 +100,7 @@ export default function ClassesPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Training Sessions</h2>
-                    <p className="text-gray-700 dark:text-slate-400 mt-1 font-medium">Manage drill sessions and theory classes.</p>
+                    <p className="text-zinc-800 dark:text-slate-400 mt-1 font-bold italic">Manage drill sessions and theory classes.</p>
                 </div>
                 {canEdit && (
                     <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-primary/25">
@@ -113,8 +113,8 @@ export default function ClassesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {classes.length === 0 ? (
                     <div className="col-span-full flex flex-col items-center justify-center p-12 text-gray-600 dark:text-slate-500 bg-white/50 dark:bg-slate-800/30 rounded-3xl border border-dashed border-gray-300 dark:border-slate-700">
-                        <Calendar className="w-16 h-16 mb-4 opacity-50" />
-                        <p className="text-lg font-bold">No classes scheduled</p>
+                        <Calendar className="w-16 h-16 mb-4 text-zinc-400 opacity-50" />
+                        <p className="text-lg font-bold text-zinc-900">No classes scheduled</p>
                     </div>
                 ) : (
                     classes.map((cls, index) => (
@@ -142,7 +142,7 @@ export default function ClassesPage() {
                                         {canDelete && (
                                             <button
                                                 onClick={() => handleDelete(cls.id, cls.title)}
-                                                className="text-gray-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full"
+                                                className="text-gray-400 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full"
                                                 title="Delete Class"
                                                 aria-label={`Delete Class ${cls.title}`}
                                             >
@@ -156,17 +156,17 @@ export default function ClassesPage() {
                                         <Calendar className="w-4 h-4 mr-2 text-secondary" />
                                         <span className="font-bold underline decoration-secondary/30">{cls.date}</span>
                                     </div>
-                                    <div className="flex items-center text-sm text-gray-700 dark:text-slate-300 bg-gray-50 dark:bg-slate-700/40 p-2 rounded-lg group-hover:bg-gray-100/50 dark:group-hover:bg-slate-700/60 transition-colors">
+                                    <div className="flex items-center text-sm text-zinc-800 dark:text-slate-300 bg-gray-50 dark:bg-slate-700/40 p-2 rounded-lg group-hover:bg-gray-100/50 dark:group-hover:bg-slate-700/60 transition-colors">
                                         <Clock className="w-4 h-4 mr-2 text-tertiary" />
                                         <span className="font-bold underline decoration-tertiary/30">{cls.time}</span>
                                     </div>
                                     {cls.description && (
-                                        <p className="text-sm text-gray-700 dark:text-slate-400 mt-2 line-clamp-2 px-1 font-medium italic">{cls.description}</p>
+                                        <p className="text-sm text-zinc-800 dark:text-slate-400 mt-2 line-clamp-2 px-1 font-bold italic">{cls.description}</p>
                                     )}
                                 </CardContent>
                                 <CardFooter className="bg-gray-50/50 dark:bg-slate-900/20 border-t border-gray-100 dark:border-slate-700/50 flex justify-between items-center p-4">
-                                    <div className="flex items-center text-sm text-gray-700 dark:text-slate-400 font-bold">
-                                        <Users className="w-4 h-4 mr-2 text-gray-600" />
+                                    <div className="flex items-center text-sm text-zinc-800 dark:text-slate-400 font-bold">
+                                        <Users className="w-4 h-4 mr-2 text-zinc-700" />
                                         {/* Attendees count might be inaccurate if not joined, but relying on what's in classes state */}
                                         {cls.attendees?.length || 0} Cadets
                                     </div>

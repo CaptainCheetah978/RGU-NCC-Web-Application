@@ -193,7 +193,7 @@ export default function FilesPage() {
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Documents &amp; Media</h2>
                     <div className="flex items-center gap-2 mt-1">
-                        <p className="text-gray-700 dark:text-slate-400 font-medium italic">Shared resources — secured with expiring access links.</p>
+                        <p className="text-zinc-800 dark:text-slate-300 font-medium italic">Shared resources — secured with expiring access links.</p>
                         <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 px-2 py-0.5 rounded-full">
                             <Lock className="w-3 h-3" /> Private
                         </span>
@@ -227,10 +227,10 @@ export default function FilesPage() {
             ) : files.length === 0 ? (
                 <div className="text-center py-24 bg-white dark:bg-slate-800/50 rounded-3xl border border-dashed border-gray-200 dark:border-slate-700">
                     <div className="w-20 h-20 bg-gray-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100 dark:border-slate-600">
-                        <Upload className="w-10 h-10 text-gray-400 dark:text-slate-600" />
+                        <Upload className="w-10 h-10 text-gray-400 dark:text-slate-400" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">No files uploaded yet</h3>
-                    <p className="text-gray-700 dark:text-slate-400 mt-2 text-sm font-medium max-w-sm mx-auto">
+                    <p className="text-zinc-800 dark:text-slate-400 mt-2 text-sm font-medium max-w-sm mx-auto">
                         {canUpload ? "Upload the first file to get started." : "No shared files available yet."}
                     </p>
                 </div>
@@ -264,15 +264,15 @@ export default function FilesPage() {
                                             <h3 className="font-bold text-gray-900 dark:text-white truncate w-full max-w-[180px] mx-auto" title={file.name}>
                                                 {file.name}
                                             </h3>
-                                            <p className="text-xs text-gray-700 dark:text-slate-400 mt-1 font-bold">{file.size} · {file.date}</p>
-                                            <p className="text-[10px] text-gray-600 dark:text-slate-500 font-black uppercase tracking-tight">by {file.uploadedBy}</p>
+                                            <p className="text-xs text-zinc-800 dark:text-slate-300 mt-1 font-bold">{file.size} · {file.date}</p>
+                                            <p className="text-[10px] text-zinc-700 dark:text-slate-400 font-black uppercase tracking-tight">by {file.uploadedBy}</p>
                                         </div>
                                         <div className="flex items-center justify-center space-x-2 w-full pt-2 border-t border-gray-50 dark:border-slate-700/60">
                                             <a
                                                 href={file.signedUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="p-2 text-gray-700 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors font-bold"
+                                                className="p-2 text-zinc-700 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors font-bold"
                                                 title="Download / Open (link valid 1 hour)"
                                                 aria-label={`Download ${file.name}`}
                                             >
@@ -281,7 +281,7 @@ export default function FilesPage() {
                                             {canDelete && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleDelete(file); }}
-                                                    className="p-2 text-gray-700 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-bold"
+                                                    className="p-2 text-zinc-700 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-bold"
                                                     title="Delete file"
                                                     aria-label={`Delete ${file.name}`}
                                                 >
