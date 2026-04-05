@@ -18,11 +18,12 @@ export function PdfExportButton({ classSession, cadets, attendance, className }:
         if (!classSession) return;
 
         const doc = new jsPDF();
+        const unitTitle = cadets[0]?.unitName || cadets[0]?.unitNumber || "NCC Unit";
 
         // Add Header
         doc.setFontSize(18);
         doc.setTextColor(20, 50, 100); // Primary blue
-        doc.text("NCC Unit Attendance Report", 14, 20);
+        doc.text(`${unitTitle} Attendance Report`, 14, 20);
 
         doc.setFontSize(11);
         doc.setTextColor(80, 80, 80);
@@ -71,15 +72,16 @@ export function PdfExportButton({ classSession, cadets, attendance, className }:
             ]);
         });
 
-        // Add Summary Stats
+        // Add Summary Stats (Spaced out to avoid overlap)
         doc.setFontSize(11);
-        doc.text(`Present: ${present}  |  Absent: ${absent}  |  Late: ${late}`, 14, 48);
+        doc.setTextColor(50, 50, 50);
+        doc.text(`Present: ${present}  |  Absent: ${absent}  |  Late: ${late}`, 14, 54);
 
         // Add Table
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 54,
+            startY: 60,
             theme: 'grid',
             headStyles: { fillColor: [24, 52, 94], textColor: 255, fontStyle: 'bold' },
             alternateRowStyles: { fillColor: [245, 247, 250] },
