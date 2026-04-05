@@ -2,10 +2,8 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
-import { Role } from "@/types";
 
-/** Roles allowed to manage class scheduling */
-const MANAGE_ROLES: Role[] = [Role.ANO, Role.SUO, Role.UO];
+import { Permissions } from "@/lib/permissions";
 
 type ActionResult = { success: boolean; error?: string };
 
@@ -83,7 +81,7 @@ export async function addClassAction(
 ): Promise<ActionResult> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
-    if (!MANAGE_ROLES.includes(session.role))
+    if (!Permissions.CAN_MANAGE_CLASSES.has(session.role))
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     try {
@@ -133,7 +131,7 @@ export async function deleteClassAction(
 ): Promise<ActionResult> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
-    if (!MANAGE_ROLES.includes(session.role))
+    if (!Permissions.CAN_MANAGE_CLASSES.has(session.role))
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     try {

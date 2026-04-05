@@ -3,7 +3,8 @@
 import { useAuth } from "@/lib/auth-context";
 import { useCommunicationData } from "@/lib/communication-context";
 import { useActivityData } from "@/lib/activity-context";
-import { Role, Announcement } from "@/types";
+import { Announcement } from "@/types";
+import { Permissions } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
@@ -39,7 +40,7 @@ export default function AnnouncementsPage() {
 
     if (!user) return null;
 
-    const canPost = [Role.ANO, Role.SUO].includes(user.role);
+    const canPost = Permissions.CAN_POST_ANNOUNCEMENTS.has(user.role);
 
     const handlePost = async () => {
         if (!title.trim() || !content.trim()) return;

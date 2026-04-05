@@ -3,6 +3,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
 import { Role } from "@/types";
+import { Permissions } from "@/lib/permissions";
 
 const PROFILE_READ_COLUMNS =
     "id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, status";
@@ -185,8 +186,8 @@ export async function updateProfileAction(
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
-    // Only ANO/SUO can update other profiles; others can only update their own
-    const isAdmin = [Role.ANO, Role.SUO].includes(session.role);
+    // Only ANO/CTO/CSUO can update other profiles; others can only update their own
+    const isAdmin = Permissions.CAN_MANAGE_USERS.has(session.role);
     if (!isAdmin && session.userId !== id) {
         return { success: false, error: "Forbidden: insufficient permissions." };
     }

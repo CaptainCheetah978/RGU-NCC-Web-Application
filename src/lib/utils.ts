@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { Role, Wing } from "@/types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -35,4 +36,33 @@ export function getColorOfTheDay(): { name: string; hex: string } {
   const start = new Date(now.getFullYear(), 0, 0);
   const dayOfYear = Math.floor((now.getTime() - start.getTime()) / 86400000);
   return colors[dayOfYear % colors.length];
+}
+
+/**
+ * Transforms an underlying database rank into its Wing-appropriate title.
+ */
+export function getWingAwareRank(rank: Role, wing?: Wing): string {
+    if (!wing || wing === Wing.ARMY || wing === Wing.AIR) {
+        return rank;
+    }
+    
+    // Navy mapping
+    if (wing === Wing.NAVY) {
+        switch (rank) {
+            case Role.CSM:
+            case Role.CQMS:
+                return "CPO"; // Cadet Petty Officer
+            case Role.SGT:
+                return "PO CADET"; // Petty Officer Cadet
+            case Role.CPL:
+                return "LEADING CADET"; 
+            case Role.LCPL:
+                return "ABLE CADET"; 
+            default:
+                // ANO, CTO, CSUO, CJUO, CADET stay the same as standard NCC abbreviations
+                return rank;
+        }
+    }
+
+    return rank;
 }

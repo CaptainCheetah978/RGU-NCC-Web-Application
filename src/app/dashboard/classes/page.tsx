@@ -3,7 +3,8 @@
 import { useTrainingData } from "@/lib/training-context";
 import { useActivityData } from "@/lib/activity-context";
 import { useAuth } from "@/lib/auth-context";
-import { Role } from "@/types";
+
+import { Permissions } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
@@ -46,8 +47,8 @@ export default function ClassesPage() {
 
     if (!user) return null;
 
-    const canEdit = user && [Role.ANO, Role.SUO, Role.UO].includes(user.role);
-    const canDelete = user && [Role.ANO, Role.SUO].includes(user.role);
+    const canEdit = user && Permissions.CAN_MANAGE_CLASSES.has(user.role);
+    const canDelete = user && Permissions.CAN_MANAGE_USERS.has(user.role);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

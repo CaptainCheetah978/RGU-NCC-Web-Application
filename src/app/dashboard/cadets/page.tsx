@@ -4,6 +4,7 @@ import { useCadetData } from "@/lib/cadet-context";
 import { useActivityData } from "@/lib/activity-context";
 import { useAuth } from "@/lib/auth-context";
 import { Role, Wing, Gender, Cadet } from "@/types";
+import { Permissions } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, UserPlus, Trash2, Key, Edit2, LayoutGrid, List as ListIcon } from "lucide-react";
@@ -107,7 +108,7 @@ export default function CadetsPage() {
 
     if (!user) return null;
 
-    const canEdit = user && [Role.ANO, Role.SUO].includes(user.role);
+    const canEdit = user && Permissions.CAN_MANAGE_USERS.has(user.role);
     const isANO = user.role === Role.ANO;
 
     // --- Handlers ---
@@ -297,8 +298,10 @@ export default function CadetsPage() {
                         aria-label="Filter by Rank"
                     >
                         <option value="ALL">All Ranks</option>
-                        <option value={Role.SUO}>SUO</option>
-                        <option value={Role.UO}>UO</option>
+                        <option value={Role.CSUO}>CSUO</option>
+                        <option value={Role.CJUO}>CJUO</option>
+                        <option value={Role.CSM}>CSM</option>
+                        <option value={Role.CQMS}>CQMS</option>
                         <option value={Role.SGT}>SGT</option>
                         <option value={Role.CPL}>CPL</option>
                         <option value={Role.LCPL}>LCPL</option>

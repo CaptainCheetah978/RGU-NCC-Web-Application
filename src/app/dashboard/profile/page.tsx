@@ -372,7 +372,7 @@ export default function ProfilePage() {
                                     <Calendar className="w-4 h-4 mr-2" />
                                     <span>Attendance</span>
                                 </div>
-                                <span className="font-black text-primary">{stats.attendanceRate}</span>
+                                <span className="font-black text-primary">{stats.attendanceRateValue}</span>
                             </div>
                         </div>
 

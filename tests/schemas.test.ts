@@ -6,7 +6,7 @@ describe('CreateCadetSchema Validation', () => {
     const validCadet = {
       name: 'Aditya Singh',
       regimentalNumber: 'AS21SDA123456',
-      rank: 'SUO',
+      rank: 'CSUO',
       wing: 'Army',
       gender: 'Male',
       unitNumber: '30',
@@ -35,7 +35,7 @@ describe('CreateCadetSchema Validation', () => {
     const invalidBlood = {
       name: 'Aditya Singh',
       regimentalNumber: 'AS21SDA123456',
-      rank: 'SUO',
+      rank: 'CSUO',
       wing: 'Army',
       gender: 'Male',
       unitNumber: '30',

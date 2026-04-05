@@ -6,7 +6,7 @@ import { z } from "zod";
 
 // ─── Primitives ────────────────────────────────────────────────────────────────
 
-const RoleEnum = z.enum(["ANO", "SUO", "UO", "SGT", "CPL", "LCPL", "CADET"]);
+const RoleEnum = z.enum(["ANO", "CTO", "CSUO", "CJUO", "CSM", "CQMS", "SGT", "CPL", "LCPL", "CADET"]);
 const WingEnum = z.enum(["Army", "Air", "Navy"]);
 const GenderEnum = z.enum(["Male", "Female"]);
 

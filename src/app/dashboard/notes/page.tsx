@@ -76,10 +76,10 @@ export default function NotesPage() {
     const recipientList = useMemo(
         () => {
             if (!user) return [];
-            const isOfficer = user.role === Role.ANO || user.role === Role.SUO;
+            const isOfficer = user.role === Role.ANO || user.role === Role.CSUO;
             return messageableUsers.filter(u =>
                 u.id !== user.id &&
-                (isOfficer || u.role === Role.ANO || u.role === Role.SUO)
+                (isOfficer || u.role === Role.ANO || u.role === Role.CSUO)
             );
         },
         [messageableUsers, user]
@@ -87,7 +87,7 @@ export default function NotesPage() {
 
     if (!user) return null;
 
-    const isOfficer = user.role === Role.ANO || user.role === Role.SUO;
+    const isOfficer = user.role === Role.ANO || user.role === Role.CSUO;
 
     const handleSendNote = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -299,7 +299,7 @@ export default function NotesPage() {
                                                 Reply
                                             </Button>
                                         )}
-                                        {activeTab === "inbox" && user.role === Role.SUO && !selectedNote.forwardedToANO && (
+                                        {activeTab === "inbox" && user.role === Role.CSUO && !selectedNote.forwardedToANO && (
                                             <Button
                                                 variant="ghost"
                                                 size="sm"

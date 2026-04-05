@@ -1,11 +1,14 @@
 "use client";
 
 import { useTrainingData } from "@/lib/training-context";
+import { useAuth } from "@/lib/auth-context";
 import { Calendar } from "lucide-react";
+import { Permissions } from "@/lib/permissions";
 import Link from "next/link";
 
 export function UpcomingClasses() {
     const { classes } = useTrainingData();
+    const { user } = useAuth();
 
     return (
         <div className="lg:col-span-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/60">
@@ -32,11 +35,13 @@ export function UpcomingClasses() {
                                     <h4 className="font-bold text-gray-900 dark:text-white">{cls.title}</h4>
                                     <p className="text-sm text-gray-600 dark:text-slate-400">{cls.time}</p>
                                 </div>
-                                <Link href={`/dashboard/attendance?classId=${cls.id}`}>
-                                    <button className="px-4 py-2 text-sm font-medium text-primary bg-primary/5 dark:bg-primary/10 rounded-lg hover:bg-primary hover:text-white transition-all">
-                                        View
-                                    </button>
-                                </Link>
+                                {(user?.role && Permissions.CAN_MANAGE_ATTENDANCE.has(user.role)) && (
+                                    <Link href={`/dashboard/attendance?classId=${cls.id}`}>
+                                        <button className="px-4 py-2 text-sm font-medium text-primary bg-primary/5 dark:bg-primary/10 rounded-lg hover:bg-primary hover:text-white transition-all">
+                                            View
+                                        </button>
+                                    </Link>
+                                )}
                             </div>
                         );
                     })}

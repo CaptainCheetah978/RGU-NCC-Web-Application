@@ -2,6 +2,7 @@
 
 import { SignJWT } from "jose";
 import { getCallerSession } from "@/lib/server-auth";
+import { Permissions } from "@/lib/permissions";
 
 const getSecret = () => {
     // In production, use a dedicated JWT_SECRET.
@@ -24,7 +25,7 @@ export async function generateVerificationToken(cadetId: string, accessToken?: s
         }
 
         const isOwner = caller.userId === cadetId;
-        const isAdmin = ["ANO", "SUO"].includes(caller.role);
+        const isAdmin = Permissions.CAN_MANAGE_USERS.has(caller.role);
 
         if (!isOwner && !isAdmin) {
             return { error: "Forbidden: Cannot generate token for another user" };

@@ -1,11 +1,12 @@
 "use client";
 
 import { RefObject, useRef } from "react";
-import { Cadet } from "@/types";
+import { Cadet, Role } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { getWingAwareRank } from "@/lib/utils";
 
 interface CadetsTableProps {
     cadets: Cadet[];
@@ -74,7 +75,7 @@ export function CadetsTable({ cadets, canEdit, isANO, onView, onEdit, onDelete }
                                     </td>
                                     <td className="p-3 w-1/4 flex flex-col justify-center truncate">
                                         <div className="flex flex-col truncate">
-                                            <span className="font-bold text-gray-900 dark:text-slate-200">{cadet.rank}</span>
+                                            <span className="font-bold text-gray-900 dark:text-slate-200">{getWingAwareRank(cadet.rank as Role, cadet.wing)}</span>
                                             <span className="text-xs text-zinc-800 dark:text-slate-300 font-bold underline decoration-primary/10 truncate">
                                                 {cadet.regimentalNumber}
                                             </span>

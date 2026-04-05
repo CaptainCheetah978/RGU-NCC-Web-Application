@@ -2,12 +2,10 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
+import { Permissions } from "@/lib/permissions";
 import { CreateCadetSchema, UpdatePinSchema } from "@/lib/schemas";
 import { Role, Wing, Gender } from "@/types";
 import { revalidatePath } from "next/cache";
-
-/** Roles that are allowed to create or manage cadet accounts */
-const CADET_MANAGE_ROLES: Role[] = [Role.ANO, Role.SUO];
 
 interface CreateCadetFormData {
     name: string;
@@ -29,7 +27,7 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
     if (!session) {
         return { success: false, error: "Unauthorized: you must be logged in." };
     }
-    if (!CADET_MANAGE_ROLES.includes(session.role)) {
+    if (!Permissions.CAN_MANAGE_USERS.has(session.role)) {
         return { success: false, error: `Forbidden: your role (${session.role}) cannot create cadet accounts.` };
     }
 
@@ -132,7 +130,7 @@ export async function updateCadetPin(cadetId: string, newPin: string, accessToke
     if (!session) {
         return { success: false, error: "Unauthorized: you must be logged in." };
     }
-    if (!CADET_MANAGE_ROLES.includes(session.role)) {
+    if (!Permissions.CAN_MANAGE_USERS.has(session.role)) {
         return { success: false, error: `Forbidden: your role (${session.role}) cannot update PINs.` };
     }
 
@@ -168,9 +166,8 @@ export async function updateCadetPin(cadetId: string, newPin: string, accessToke
 }
 
 export async function getCadetPin(cadetId: string, accessToken: string): Promise<string | null> {
-    // Only ANO/SUO can view PINs
     const session = await getCallerSession(accessToken);
-    if (!session || !CADET_MANAGE_ROLES.includes(session.role)) return null;
+    if (!session || !Permissions.CAN_MANAGE_USERS.has(session.role)) return null;
 
     // Validate the ID is a valid UUID before querying
     const uuidCheck = UpdatePinSchema.shape.cadetId.safeParse(cadetId);

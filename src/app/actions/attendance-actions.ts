@@ -3,10 +3,8 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
 import { MarkAttendanceSchema } from "@/lib/schemas";
-import { Role } from "@/types";
+import { Permissions } from "@/lib/permissions";
 
-/** Roles allowed to mark attendance */
-const ATTENDANCE_ROLES: Role[] = [Role.ANO, Role.SUO, Role.UO, Role.SGT];
 
 type ActionResult = { success: boolean; error?: string };
 
@@ -70,7 +68,7 @@ export async function markAttendanceAction(
 ): Promise<ActionResult> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
-    if (!ATTENDANCE_ROLES.includes(session.role))
+    if (!Permissions.CAN_MANAGE_ATTENDANCE.has(session.role))
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     const parsed = MarkAttendanceSchema.safeParse(data);

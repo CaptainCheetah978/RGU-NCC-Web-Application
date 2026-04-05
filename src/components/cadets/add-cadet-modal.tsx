@@ -5,6 +5,7 @@ import { Gender, Role, Wing } from "@/types";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getWingAwareRank } from "@/lib/utils";
 
 export interface CadetFormState {
     name: string;
@@ -58,8 +59,11 @@ export function AddCadetModal({ isOpen, onClose, formData, onChange, onSubmit, i
                             value={formData.rank}
                             onChange={(e) => onChange({ rank: e.target.value as Role })}
                         >
-                            {Object.values(Role).filter(r => r !== Role.ANO).map(r => (
-                                <option key={r} value={r}>{r}</option>
+                            {Object.values(Role)
+                                .filter(r => r !== Role.ANO)
+                                .filter(r => formData.wing === Wing.NAVY ? r !== Role.CQMS : true)
+                                .map(r => (
+                                <option key={r} value={r}>{getWingAwareRank(r, formData.wing)}</option>
                             ))}
                         </select>
                     </div>

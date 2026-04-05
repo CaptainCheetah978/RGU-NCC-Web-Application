@@ -1,11 +1,14 @@
 export enum Role {
-    ANO = "ANO", // Associate NCC Officer (Super Admin)
-    SUO = "SUO", // Senior Under Officer (Admin)
-    UO = "UO",   // Under Officer (Moderator)
-    SGT = "SGT", // Sergeant (Moderator)
-    CPL = "CPL", // Corporal (User)
-    LCPL = "LCPL", // Lance Corporal (User)
-    CADET = "CADET", // Cadet (User)
+    ANO = 'ANO',
+    CTO = 'CTO',
+    CSUO = 'CSUO', // Formerly SUO
+    CJUO = 'CJUO', // Formerly UO
+    CSM = 'CSM',
+    CQMS = 'CQMS',
+    SGT = 'SGT',
+    CPL = 'CPL',
+    LCPL = 'LCPL',
+    CADET = 'CADET'
 }
 
 export enum Wing {

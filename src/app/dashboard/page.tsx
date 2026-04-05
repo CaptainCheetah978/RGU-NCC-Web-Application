@@ -53,29 +53,29 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <InfoCard
-                    title="Total Cadets"
-                    value={stats.totalCadets}
+                    title={stats.totalCadetsLine}
+                    value={stats.totalCadetsValue}
                     icon={Users}
                     color="blue"
                     delay={0.1}
                 />
                 <InfoCard
-                    title="Attendance Rate"
-                    value={stats.attendanceRate}
+                    title={stats.attendanceRateLine}
+                    value={stats.attendanceRateValue}
                     icon={CheckCircle}
                     color="green"
                     delay={0.2}
                 />
                 <InfoCard
-                    title="Active Classes"
-                    value={stats.activeClasses}
+                    title={stats.activeClassesLine}
+                    value={stats.activeClassesValue}
                     icon={Calendar}
                     color="orange"
                     delay={0.3}
                 />
                 <InfoCard
                     title="Unread Notes"
-                    value={stats.unreadNotes}
+                    value={stats.unreadNotesValue}
                     icon={MessageSquare}
                     color="red"
                     delay={0.4}

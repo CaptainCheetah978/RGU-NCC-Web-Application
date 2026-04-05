@@ -3,7 +3,8 @@
 import { useCadetData } from "@/lib/cadet-context";
 import { useActivityData } from "@/lib/activity-context";
 import { useAuth } from "@/lib/auth-context";
-import { Certificate, Role } from "@/types";
+import { Certificate } from "@/types";
+import { Permissions } from "@/lib/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -73,8 +74,8 @@ export function CertificatesSection({ userId, isReadOnly = false }: { userId: st
         if (!user) return false;
         // Owner can delete
         if (user.id === cert.userId) return true;
-        // ANO can delete anyone's
-        return user.role === Role.ANO;
+        // ANO/CTO/CSUO can delete anyone's
+        return Permissions.CAN_MANAGE_USERS.has(user.role);
     };
 
     const handleDelete = (cert: Certificate) => {

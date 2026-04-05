@@ -119,8 +119,8 @@ export default function FilesPage() {
     // Safe early return AFTER all hooks
     if (!user) return null;
 
-    const canUpload = [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
-    const canDelete = [Role.ANO, Role.SUO].includes(user.role);
+    const canUpload = [Role.ANO, Role.CSUO, Role.CJUO, Role.SGT].includes(user.role);
+    const canDelete = [Role.ANO, Role.CSUO].includes(user.role);
 
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -2,10 +2,8 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
-import { Role } from "@/types";
 
-/** Roles allowed to post announcements */
-const ANNOUNCEMENT_ROLES: Role[] = [Role.ANO, Role.SUO];
+import { Permissions } from "@/lib/permissions";
 
 type ActionResult = { success: boolean; error?: string };
 
@@ -24,7 +22,7 @@ export async function addAnnouncementAction(
 ): Promise<ActionResult> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
-    if (!ANNOUNCEMENT_ROLES.includes(session.role))
+    if (!Permissions.CAN_POST_ANNOUNCEMENTS.has(session.role))
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     try {
@@ -60,7 +58,7 @@ export async function deleteAnnouncementAction(
 ): Promise<ActionResult> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
-    if (!ANNOUNCEMENT_ROLES.includes(session.role))
+    if (!Permissions.CAN_POST_ANNOUNCEMENTS.has(session.role))
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     try {

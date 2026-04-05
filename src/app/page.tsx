@@ -150,7 +150,7 @@ export default function LoginPage() {
 
   const tabs = [
     { id: Role.ANO, label: "ANO", icon: Shield, color: "from-red-600 to-red-800" },
-    { id: Role.SUO, label: "SUO", icon: User, color: "from-blue-600 to-blue-800" },
+    { id: Role.CSUO, label: "CSUO", icon: User, color: "from-blue-600 to-blue-800" },
     { id: Role.CADET, label: "Cadet", icon: User, color: "from-green-600 to-green-800" }
   ];
   const activeColor = tabs.find(t => t.id === activeTab)?.color || "from-blue-600 to-blue-800";

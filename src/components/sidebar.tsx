@@ -3,7 +3,8 @@
 import { useAuth } from "@/lib/auth-context";
 import { useDashboardStats } from "@/lib/dashboard-stats";
 import { useTheme } from "@/lib/theme-context";
-import { Role } from "@/types";
+
+import { Permissions } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
@@ -37,7 +38,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
     if (!user) return null;
 
-    const unreadNotes = getStats().unreadNotes;
+    const unreadNotes = getStats().unreadNotesValue;
 
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [] }, // All
@@ -45,25 +46,25 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             name: "Classes",
             href: "/dashboard/classes",
             icon: CalendarCheck,
-            roles: [Role.ANO, Role.SUO, Role.UO, Role.SGT]
+            roles: Array.from(Permissions.CAN_MANAGE_CLASSES)
         },
         {
             name: "Attendance",
             href: "/dashboard/attendance",
             icon: Users,
-            roles: [Role.ANO, Role.SUO, Role.UO, Role.SGT, Role.CPL]
+            roles: Array.from(Permissions.CAN_MANAGE_ATTENDANCE)
         },
         {
             name: "Cadet Registry",
             href: "/dashboard/cadets",
             icon: Shield,
-            roles: [Role.ANO, Role.SUO]
+            roles: Array.from(Permissions.CAN_MANAGE_USERS)
         },
         {
             name: "Performance",
             href: "/dashboard/performance",
             icon: TrendingUp,
-            roles: [Role.ANO, Role.SUO, Role.UO, Role.SGT]
+            roles: Array.from(Permissions.CAN_VIEW_FULL_ROSTER)
         },
         {
             name: "Files & Media",
@@ -87,7 +88,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             name: "Activity Log",
             href: "/dashboard/activity",
             icon: History,
-            roles: [Role.ANO] // ANO only
+            roles: Array.from(Permissions.CAN_VIEW_ACTIVITY_LOG)
         },
         {
             name: "My Profile",

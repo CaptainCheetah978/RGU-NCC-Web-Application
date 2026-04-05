@@ -5,11 +5,12 @@ import { useCadetData } from "@/lib/cadet-context";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import { Role, AttendanceRecord } from "@/types";
+import { Permissions } from "@/lib/permissions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, Clock, Search, Shield } from "lucide-react";
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn, getWingAwareRank } from "@/lib/utils";
 import { AttendanceExport } from "@/components/attendance/export-button";
 import { PdfExportButton } from "@/components/attendance/pdf-export-button";
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -80,7 +81,7 @@ function AttendanceContent() {
     // Offline sync is now handled centrally in TrainingContext to prevent race conditions.
     // We only keep a status check here if needed for UI indicators.
 
-    const canMark = user && [Role.ANO, Role.SUO, Role.UO, Role.SGT].includes(user.role);
+    const canMark = user && Permissions.CAN_MANAGE_ATTENDANCE.has(user.role);
 
     const selectedClass = useMemo(
         () => classes.find(c => c.id === effectiveClassId),
@@ -144,6 +145,20 @@ function AttendanceContent() {
     }
 
     if (!user) return null;
+
+    const isStaff = Permissions.CAN_MANAGE_ATTENDANCE.has(user.role);
+
+    if (!isStaff) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 h-[calc(100vh-140px)]">
+                <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-full mb-4">
+                    <Shield className="w-12 h-12 text-red-500" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Permission Denied</h3>
+                <p className="text-gray-700 dark:text-slate-400 mt-2 max-w-sm text-center font-medium">You do not have permission to view the full attendance register. Please contact your ANO if you believe this is an error.</p>
+            </div>
+        );
+    }
 
     const getStatus = (cadetId: string) => classAttendanceMap.get(cadetId) ?? null;
 
@@ -369,11 +384,12 @@ function AttendanceContent() {
                                             <div className="px-6 py-3 text-sm w-[15%]">
                                                 <span className={cn(
                                                     "px-2.5 py-1 rounded-md text-xs font-semibold border inline-block whitespace-nowrap",
-                                                    cadet.role === Role.SUO ? "bg-amber-50 text-amber-700 border-amber-100 ring-1 ring-amber-500/10" :
-                                                        cadet.role === Role.UO ? "bg-gray-100 text-gray-700 border-gray-200 ring-1 ring-gray-500/10" :
-                                                            "bg-primary/5 text-primary border-primary/10"
+                                                    cadet.role === Role.CSUO ? "bg-amber-50 text-amber-700 border-amber-100 ring-1 ring-amber-500/10" :
+                                                        cadet.role === Role.CJUO ? "bg-gray-100 text-gray-700 border-gray-200 ring-1 ring-gray-500/10" :
+                                                        (cadet.role === Role.CSM || cadet.role === Role.CQMS) ? "bg-purple-50 text-purple-700 border-purple-200 ring-1 ring-purple-500/10" :
+                                                                "bg-primary/5 text-primary border-primary/10"
                                                 )}>
-                                                    {cadet.role}
+                                                    {getWingAwareRank(cadet.role as Role, cadet.wing)}
                                                 </span>
                                             </div>
                                             <div className="px-6 py-3 w-[25%] flex justify-center items-center">
