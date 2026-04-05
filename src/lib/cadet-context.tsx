@@ -82,12 +82,16 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
         queryKey: ["profiles"],
         queryFn: fetchProfiles,
         enabled: !!user,
+        staleTime: 5 * 60 * 1000,      // 5 min — profile roster is stable
+        refetchOnWindowFocus: false,
     });
 
     const certificatesQuery = useQuery({
         queryKey: ["certificates"],
         queryFn: fetchCertificates,
         enabled: !!user,
+        staleTime: 5 * 60 * 1000,      // 5 min — certificates change rarely
+        refetchOnWindowFocus: false,
     });
 
     const addCadetMutation = useMutation({

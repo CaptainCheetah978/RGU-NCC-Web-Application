@@ -27,11 +27,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Track whether user has been loaded at least once — prevents transient
     // null states during token refreshes from triggering login redirects.
     const userLoadedRef = React.useRef(false);
+    // Prevent concurrent profile fetches (e.g., loginWithPassword + onAuthStateChange racing)
+    const isFetchingRef = React.useRef(false);
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_OUT') {
                 userLoadedRef.current = false;
+                isFetchingRef.current = false;
                 setUser(null);
                 setIsLoading(false);
                 // Hard redirect — clears all React state and re-renders from scratch
@@ -41,7 +44,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Skip redundant profile fetch if user is already loaded and this
             // is just a background token refresh.
-            if (userLoadedRef.current && event === 'TOKEN_REFRESHED') {
+            if (userLoadedRef.current && (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN')) {
+                setIsLoading(false);
+                return;
+            }
+
+            // Skip this event-driven fetch if loginWithPassword is already
+            // fetching the profile explicitly — prevents a concurrent race.
+            if (isFetchingRef.current) {
                 return;
             }
 
@@ -58,7 +68,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchProfile = async (userId: string, timeoutMs = 12000, retries = 1): Promise<User | null> => {
+    const fetchProfile = async (userId: string, timeoutMs = 8000, retries = 1): Promise<User | null> => {
+        // Prevent concurrent fetches — if already in progress, wait for it
+        if (isFetchingRef.current) return null;
+        isFetchingRef.current = true;
+
         // Race against a timeout so login never spins forever on a slow connection
         try {
             let data;
@@ -106,15 +120,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (data) {
                 // Map Supabase profile to our App User type
+                const profileData = data as Record<string, unknown>;
                 const appUser: User = {
-                    id: data.id,
-                    name: data.full_name || 'Unknown User',
-                    role: (data.role as Role) || Role.CADET,
-                    regimentalNumber: data.regimental_number,
-                    avatarUrl: data.avatar_url,
-                    unitId: data.unit_id,
-                    unitName: data.unit_name,
-                    unitNumber: data.unit_number,
+                    id: profileData.id as string,
+                    name: (profileData.full_name as string) || 'Unknown User',
+                    role: ((profileData.role as Role) || Role.CADET),
+                    regimentalNumber: profileData.regimental_number as string | undefined,
+                    avatarUrl: profileData.avatar_url as string | undefined,
+                    unitId: profileData.unit_id as string | undefined,
+                    unitName: profileData.unit_name as string | undefined,
+                    unitNumber: profileData.unit_number as string | undefined,
                 };
                 setUser(appUser);
                 userLoadedRef.current = true;
@@ -122,6 +137,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
         } catch (error) {
             console.error('Unexpected error fetching profile:', error);
+        } finally {
+            isFetchingRef.current = false;
         }
         return null;
     };

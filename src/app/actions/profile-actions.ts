@@ -65,17 +65,34 @@ const ADMIN_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
 export async function getProfileByIdAction(userId: string) {
     if (!isUUID(userId)) return null;
 
+    // Try with the full column set first (includes newer schema columns)
     const { data, error } = await supabaseAdmin
         .from('profiles')
         .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email, unit_id')
         .eq('id', userId)
         .single();
     
-    if (error) {
-        console.error("getProfileByIdAction error:", error);
+    if (!error) return data;
+
+    // PGRST116 = "no rows found" — profile genuinely doesn't exist, don't retry
+    if (error.code === 'PGRST116') {
+        console.warn(`getProfileByIdAction: no profile row found for user ${userId}`);
         return null;
     }
-    return data;
+
+    // Any other error (e.g. unknown column — migration not applied yet) — fall back to core columns
+    console.warn('getProfileByIdAction full-column query failed, trying core fallback:', error.message);
+    const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+        .from('profiles')
+        .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number')
+        .eq('id', userId)
+        .single();
+
+    if (fallbackError) {
+        console.error('getProfileByIdAction fallback also failed:', fallbackError);
+        return null;
+    }
+    return fallbackData;
 }
 
 // ── Get All Profiles (admin-bypasses RLS, scoped to caller's unit) ───────────
@@ -88,15 +105,25 @@ export async function getAllProfilesAction(
 
     let query = supabaseAdmin.from("profiles").select(PROFILE_READ_COLUMNS);
 
-    // Multi-tenancy: scope to the caller's unit
+    // Multi-tenancy: scope to the caller's unit if available
     if (session.unitId) {
         query = query.eq("unit_id", session.unitId);
-    } else {
-        query = query.eq("id", session.userId);
     }
+    // If no unitId, we're in single-unit mode — return all profiles (no filter needed)
 
     const { data, error } = await query;
-    if (error) return { success: false, error: error.message };
+    if (error) {
+        // If the error is about unit_id column not existing, retry without filter
+        if (error.message?.includes("unit_id") || error.code === '42703') {
+            console.warn("getAllProfilesAction: unit_id column not found, fetching all profiles");
+            const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+                .from("profiles")
+                .select(PROFILE_READ_COLUMNS);
+            if (fallbackError) return { success: false, error: fallbackError.message };
+            return { success: true, data: (fallbackData as ProfileRow[]) || [] };
+        }
+        return { success: false, error: error.message };
+    }
     return { success: true, data: (data as ProfileRow[]) || [] };
 }
 
@@ -115,11 +142,25 @@ export async function getAllCertificatesAction(
     let profileQuery = supabaseAdmin.from("profiles").select("id");
     if (session.unitId) {
         profileQuery = profileQuery.eq("unit_id", session.unitId);
-    } else {
-        profileQuery = profileQuery.eq("id", session.userId);
     }
-    const { data: profileIds, error: profileErr } = await profileQuery;
-    if (profileErr) return { success: false, error: profileErr.message };
+    // If no unitId, we're in single-unit mode — fetch all profile IDs
+
+    let profileIds;
+    const { data: profileData, error: profileErr } = await profileQuery;
+    if (profileErr) {
+        // If unit_id column doesn't exist, retry without filter
+        if (profileErr.message?.includes("unit_id") || profileErr.code === '42703') {
+            console.warn("getAllCertificatesAction: unit_id column not found, fetching all");
+            const { data: fallbackIds, error: fallbackErr } = await supabaseAdmin
+                .from("profiles").select("id");
+            if (fallbackErr) return { success: false, error: fallbackErr.message };
+            profileIds = fallbackIds;
+        } else {
+            return { success: false, error: profileErr.message };
+        }
+    } else {
+        profileIds = profileData;
+    }
 
     const ids = (profileIds || []).map((p: { id: string }) => p.id);
     if (ids.length === 0) return { success: true, data: [] };
@@ -181,29 +222,57 @@ export async function ensureUserProfileAction(accessToken: string) {
 
     const isANO = user.email?.startsWith('ano_') || false;
 
-    // 1. Get a default unit ID to assign (first available unit)
-    const { data: defaultUnit } = await supabaseAdmin
-        .from('units')
-        .select('id')
-        .limit(1)
-        .single();
+    // Build the upsert payload with only guaranteed-to-exist core columns
+    const profilePayload: Record<string, unknown> = {
+        id: user.id,
+        full_name: isANO ? 'Associate NCC Officer' : 'New User',
+        role: isANO ? Role.ANO : Role.CADET,
+        updated_at: new Date().toISOString(),
+    };
 
-    const { data: newProfile, error: createError } = await supabaseAdmin
+    // Try to resolve a unit_id — but treat a missing 'units' table as non-fatal
+    try {
+        const { data: defaultUnit } = await supabaseAdmin
+            .from('units')
+            .select('id')
+            .limit(1)
+            .single();
+        if (defaultUnit?.id) profilePayload.unit_id = defaultUnit.id;
+    } catch {
+        console.warn('ensureUserProfileAction: units table not available, skipping unit_id assignment');
+    }
+
+    // Try to include email — non-fatal if column doesn't exist yet
+    if (user.email) profilePayload.email = user.email;
+
+    // First try the full upsert; if it fails due to unknown columns, retry with core fields only
+    let newProfile: Record<string, unknown> | null = null;
+    const { data: upsertData, error: createError } = await supabaseAdmin
         .from('profiles')
-        .upsert({
-            id: user.id,
-            full_name: isANO ? 'Associate NCC Officer' : 'New User',
-            role: isANO ? Role.ANO : Role.CADET,
-            email: user.email,
-            unit_id: defaultUnit?.id,
-            updated_at: new Date().toISOString(),
-        })
+        .upsert(profilePayload)
         .select()
         .single();
 
-    if (createError) {
-        console.error("ensureUserProfileAction error:", createError);
-        throw new Error("Failed to auto-create profile");
+    if (!createError) {
+        newProfile = upsertData;
+    } else {
+        console.warn('ensureUserProfileAction full upsert failed, retrying with core fields only:', createError.message);
+        const corePayload = {
+            id: user.id,
+            full_name: profilePayload.full_name,
+            role: profilePayload.role,
+            updated_at: profilePayload.updated_at,
+        };
+        const { data: coreData, error: coreError } = await supabaseAdmin
+            .from('profiles')
+            .upsert(corePayload)
+            .select()
+            .single();
+        if (coreError) {
+            console.error('ensureUserProfileAction core upsert also failed:', coreError);
+            throw new Error('Failed to auto-create profile');
+        }
+        newProfile = coreData;
     }
 
     return newProfile;

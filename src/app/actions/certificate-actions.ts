@@ -47,15 +47,24 @@ export async function addCertificateAction(
             if (!count) return { success: false, error: "User not found." };
         }
 
-        const { error } = await supabaseAdmin.from("certificates").insert({
+        const insertPayload: Record<string, unknown> = {
             user_id: data.userId,
             name: trimmedName,
             type: data.type,
             file_data: data.fileData,
             upload_date: uploadDate.toISOString(),
-            unit_id: session.unitId,
-        });
-        if (error) return { success: false, error: error.message };
+        };
+        if (session.unitId) insertPayload.unit_id = session.unitId;
+
+        let insertError;
+        const { error } = await supabaseAdmin.from("certificates").insert(insertPayload);
+        insertError = error;
+        if (insertError && (insertError.message?.includes("unit_id") || insertError.code === '42703')) {
+            delete insertPayload.unit_id;
+            const { error: retry } = await supabaseAdmin.from("certificates").insert(insertPayload);
+            insertError = retry;
+        }
+        if (insertError) return { success: false, error: insertError.message };
         return { success: true };
     } catch (e: unknown) {
         return {
@@ -112,10 +121,22 @@ export async function getCertificatesAction(accessToken: string): Promise<{ succ
 
     try {
         // Multi-tenancy: fetch only certificates for caller's unit
-        const { data, error } = await supabaseAdmin
-            .from("certificates")
-            .select("id, user_id, name, type, file_data, upload_date")
-            .eq("unit_id", session.unitId);
+        let data, error;
+        if (session.unitId) {
+            const result = await supabaseAdmin
+                .from("certificates")
+                .select("id, user_id, name, type, file_data, upload_date")
+                .eq("unit_id", session.unitId);
+            data = result.data; error = result.error;
+        }
+
+        // If no unitId or unit_id column error, fetch all
+        if (!session.unitId || (error && (error.message?.includes("unit_id") || error.code === '42703'))) {
+            const result = await supabaseAdmin
+                .from("certificates")
+                .select("id, user_id, name, type, file_data, upload_date");
+            data = result.data; error = result.error;
+        }
 
         if (error) return { success: false, error: error.message };
         return { success: true, data: data || [] };

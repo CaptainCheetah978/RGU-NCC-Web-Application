@@ -29,28 +29,46 @@ export async function getCallerSession(
         const { data: { user }, error } = await supabaseAdmin.auth.getUser(accessToken);
         if (error || !user) return null;
 
-        // Look up the user's role and unit from the profiles table
+        // Try full column set first (includes unit_id from migration 005)
         const { data: profile, error: profileErr } = await supabaseAdmin
             .from("profiles")
             .select("role, full_name, unit_id")
             .eq("id", user.id)
             .single();
 
-        if (profileErr) {
-            console.error("getCallerSession profile error:", profileErr);
+        if (!profileErr && profile?.role) {
+            return { 
+                userId: user.id, 
+                role: profile.role as Role,
+                unitId: profile.unit_id,
+                userName: profile.full_name || undefined
+            };
+        }
+
+        // PGRST116 = "no rows" — profile genuinely missing, can't recover
+        if (profileErr?.code === 'PGRST116') {
+            console.error("getCallerSession: no profile row for user:", user.id);
             return null;
         }
 
-        if (!profile?.role) {
-            console.error("getCallerSession profile missing role for user:", user.id);
+        // Any other error (e.g., unit_id column doesn't exist) — fallback to core columns
+        console.warn("getCallerSession full query failed, trying core fallback:", profileErr?.message);
+        const { data: fallback, error: fallbackErr } = await supabaseAdmin
+            .from("profiles")
+            .select("role, full_name")
+            .eq("id", user.id)
+            .single();
+
+        if (fallbackErr || !fallback?.role) {
+            console.error("getCallerSession fallback also failed:", fallbackErr?.message);
             return null;
         }
 
         return { 
             userId: user.id, 
-            role: profile.role as Role,
-            unitId: profile.unit_id,
-            userName: profile.full_name || undefined
+            role: fallback.role as Role,
+            unitId: undefined, // column doesn't exist yet — single-tenant mode
+            userName: fallback.full_name || undefined
         };
     } catch (e: unknown) {
         console.error("getCallerSession unexpected error:", e);

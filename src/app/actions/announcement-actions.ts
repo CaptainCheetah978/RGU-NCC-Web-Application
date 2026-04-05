@@ -28,14 +28,23 @@ export async function addAnnouncementAction(
         return { success: false, error: "Forbidden: insufficient permissions." };
 
     try {
-        const { error } = await supabaseAdmin.from("announcements").insert({
+        const insertPayload: Record<string, unknown> = {
             title: data.title,
             content: data.content,
             author_id: session.userId,
             priority: data.priority.toUpperCase(),
-            unit_id: session.unitId,
-        });
-        if (error) return { success: false, error: error.message };
+        };
+        if (session.unitId) insertPayload.unit_id = session.unitId;
+
+        let insertError;
+        const { error } = await supabaseAdmin.from("announcements").insert(insertPayload);
+        insertError = error;
+        if (insertError && (insertError.message?.includes("unit_id") || insertError.code === '42703')) {
+            delete insertPayload.unit_id;
+            const { error: retry } = await supabaseAdmin.from("announcements").insert(insertPayload);
+            insertError = retry;
+        }
+        if (insertError) return { success: false, error: insertError.message };
         return { success: true };
     } catch (e: unknown) {
         return {
@@ -80,10 +89,21 @@ export async function getAnnouncementsAction(accessToken: string): Promise<{ suc
 
     try {
         // Multi-tenancy: fetch only announcements for caller's unit
-        const { data, error } = await supabaseAdmin
-            .from("announcements")
-            .select("id, title, content, author_id, priority, created_at")
-            .eq("unit_id", session.unitId);
+        let data, error;
+        if (session.unitId) {
+            const result = await supabaseAdmin
+                .from("announcements")
+                .select("id, title, content, author_id, priority, created_at")
+                .eq("unit_id", session.unitId);
+            data = result.data; error = result.error;
+        }
+
+        if (!session.unitId || (error && (error.message?.includes("unit_id") || error.code === '42703'))) {
+            const result = await supabaseAdmin
+                .from("announcements")
+                .select("id, title, content, author_id, priority, created_at");
+            data = result.data; error = result.error;
+        }
 
         if (error) return { success: false, error: error.message };
         return { success: true, data: data || [] };

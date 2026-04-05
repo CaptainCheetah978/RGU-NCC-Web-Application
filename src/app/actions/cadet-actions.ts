@@ -79,24 +79,37 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
         const userId = authData.user.id;
 
         // ── 4. Create Profile ───────────────────────────────────────────────────
-        const { error: profileError } = await supabaseAdmin
+        const profilePayload: Record<string, unknown> = {
+            id: userId,
+            full_name: name,
+            role: rank,
+            regimental_number: regimentalNumber,
+            wing: wing,
+            gender: gender,
+            unit_number: unitNumber,
+            unit_name: unitName,
+            enrollment_year: enrollmentYear,
+            blood_group: bloodGroup || null,
+            access_pin: pin,
+            status: status || 'active',
+            updated_at: new Date().toISOString(),
+        };
+        if (session.unitId) profilePayload.unit_id = session.unitId;
+
+        let profileError;
+        const { error: upsertErr } = await supabaseAdmin
             .from('profiles')
-            .upsert({
-                id: userId,
-                full_name: name,
-                role: rank,
-                regimental_number: regimentalNumber,
-                wing: wing,
-                gender: gender,
-                unit_number: unitNumber,
-                unit_name: unitName,
-                enrollment_year: enrollmentYear,
-                blood_group: bloodGroup || null,
-                access_pin: pin,
-                status: status || 'active',
-                unit_id: session.unitId,
-                updated_at: new Date().toISOString(),
-            });
+            .upsert(profilePayload);
+        profileError = upsertErr;
+
+        // If unit_id column doesn't exist, retry without it
+        if (profileError && (profileError.message?.includes("unit_id") || profileError.code === '42703')) {
+            delete profilePayload.unit_id;
+            const { error: retryErr } = await supabaseAdmin
+                .from('profiles')
+                .upsert(profilePayload);
+            profileError = retryErr;
+        }
 
         if (profileError) {
             // Roll back auth user if profile creation fails

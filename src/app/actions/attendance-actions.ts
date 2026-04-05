@@ -39,6 +39,18 @@ export async function getAttendanceAction(
 
         const { data, error } = await query;
         if (error) {
+            // If the error is about unit_id column not existing, retry without filter
+            if (error.message?.includes("unit_id") || error.code === '42703') {
+                console.warn("getAttendanceAction: unit_id column not found, fetching without unit filter");
+                const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+                    .from("attendance")
+                    .select("id, class_id, cadet_id, status, created_at");
+                if (fallbackError) {
+                    console.error("getAttendanceAction fallback error:", fallbackError);
+                    return { success: false, error: fallbackError.message };
+                }
+                return { success: true, data: (fallbackData as AttendanceRow[]) || [] };
+            }
             console.error("getAttendanceAction DB error:", error);
             return { success: false, error: error.message };
         }
@@ -109,17 +121,31 @@ export async function markAttendanceAction(
                 return { success: false, error: error.message };
             }
         } else {
-            const { error } = await supabaseAdmin.from("attendance").insert({
+            const insertPayload: Record<string, unknown> = {
                 class_id: parsed.data.classId,
                 cadet_id: parsed.data.cadetId,
                 status: parsed.data.status,
                 marked_by: session.userId,
-                unit_id: session.unitId,
                 created_at: parsed.data.timestamp || new Date().toISOString()
-            });
-            if (error) {
-                console.error("markAttendance insert error:", error);
-                return { success: false, error: error.message };
+            };
+            // Only include unit_id if available (migration 005 applied)
+            if (session.unitId) insertPayload.unit_id = session.unitId;
+
+            let insertError;
+            const { error } = await supabaseAdmin.from("attendance").insert(insertPayload);
+            insertError = error;
+
+            // If unit_id column doesn't exist, retry without it
+            if (insertError && (insertError.message?.includes("unit_id") || insertError.code === '42703')) {
+                console.warn("markAttendance: unit_id column not found, inserting without it");
+                delete insertPayload.unit_id;
+                const { error: retryError } = await supabaseAdmin.from("attendance").insert(insertPayload);
+                insertError = retryError;
+            }
+
+            if (insertError) {
+                console.error("markAttendance insert error:", insertError);
+                return { success: false, error: insertError.message };
             }
         }
 

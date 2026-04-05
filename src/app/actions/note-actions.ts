@@ -29,15 +29,24 @@ export async function sendNoteAction(
     if (!session) return { success: false, error: "Unauthorized." };
 
     try {
-        const { error } = await supabaseAdmin.from("notes").insert({
+        const insertPayload: Record<string, unknown> = {
             sender_id: session.userId,
             recipient_id: data.recipientId,
             subject: data.subject,
             content: data.content,
             is_read: false,
-            unit_id: session.unitId,
-        });
-        if (error) return { success: false, error: error.message };
+        };
+        if (session.unitId) insertPayload.unit_id = session.unitId;
+
+        let insertError;
+        const { error } = await supabaseAdmin.from("notes").insert(insertPayload);
+        insertError = error;
+        if (insertError && (insertError.message?.includes("unit_id") || insertError.code === '42703')) {
+            delete insertPayload.unit_id;
+            const { error: retry } = await supabaseAdmin.from("notes").insert(insertPayload);
+            insertError = retry;
+        }
+        if (insertError) return { success: false, error: insertError.message };
         return { success: true };
     } catch (e: unknown) {
         return {
@@ -139,7 +148,7 @@ export async function forwardNoteToANOAction(
         const senderName = senderProfile?.full_name ?? "Unknown";
 
         // Insert the forwarded copy
-        const { error: insertError } = await supabaseAdmin.from("notes").insert({
+        const fwdPayload: Record<string, unknown> = {
             sender_id: session.userId,
             recipient_id: anoId,
             subject: `[Forwarded] ${originalNote.subject}`,
@@ -148,9 +157,18 @@ export async function forwardNoteToANOAction(
             forwarded_to_ano: true,
             original_sender_id: originalNote.sender_id,
             original_sender_name: senderName,
-            unit_id: session.unitId,
-        });
-        if (insertError) return { success: false, error: insertError.message };
+        };
+        if (session.unitId) fwdPayload.unit_id = session.unitId;
+
+        let fwdError;
+        const { error: insertError } = await supabaseAdmin.from("notes").insert(fwdPayload);
+        fwdError = insertError;
+        if (fwdError && (fwdError.message?.includes("unit_id") || fwdError.code === '42703')) {
+            delete fwdPayload.unit_id;
+            const { error: retry } = await supabaseAdmin.from("notes").insert(fwdPayload);
+            fwdError = retry;
+        }
+        if (fwdError) return { success: false, error: fwdError.message };
 
         // Mark the original note as forwarded
         const { error: updateError } = await supabaseAdmin
@@ -231,20 +249,37 @@ export async function getNotesAction(accessToken: string): Promise<{ success: bo
     if (!session) return { success: false, error: "Unauthorized." };
 
     try {
-        // Multi-tenancy: fetch notes where caller is sender or recipient, 
-        // OR if ANO, fetch all notes for the unit
-        const query = supabaseAdmin
-            .from("notes")
-            .select("id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name")
-            .eq("unit_id", session.unitId);
+        // Multi-tenancy: fetch notes for caller's unit (or all if no unit_id)
+        let data, error;
 
-        const { Role } = await import("@/types");
-        if (session.role !== Role.ANO) {
-            // Non-ANOs only see notes they are involved in
-            query.or(`sender_id.eq.${session.userId},recipient_id.eq.${session.userId}`);
+        if (session.unitId) {
+            const result = await supabaseAdmin
+                .from("notes")
+                .select("id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name")
+                .eq("unit_id", session.unitId);
+            data = result.data; error = result.error;
         }
 
-        const { data, error } = await query;
+        // Fallback: no unitId or unit_id column doesn't exist
+        if (!session.unitId || (error && (error.message?.includes("unit_id") || error.code === '42703'))) {
+            // In single-unit mode, non-ANOs filter by their own involvement
+            const { Role } = await import("@/types");
+            let query = supabaseAdmin
+                .from("notes")
+                .select("id, sender_id, recipient_id, subject, content, is_read, created_at, forwarded_to_ano, original_sender_id, original_sender_name");
+            if (session.role !== Role.ANO) {
+                query = query.or(`sender_id.eq.${session.userId},recipient_id.eq.${session.userId}`);
+            }
+            const result = await query;
+            data = result.data; error = result.error;
+        } else {
+            // Unit-scoped, apply role filter
+            const { Role } = await import("@/types");
+            if (session.role !== Role.ANO && data) {
+                data = data.filter(n => n.sender_id === session.userId || n.recipient_id === session.userId);
+            }
+        }
+
         if (error) return { success: false, error: error.message };
         return { success: true, data: data || [] };
     } catch (e: unknown) {

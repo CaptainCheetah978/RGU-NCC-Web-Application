@@ -12,9 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AttendanceExport } from "@/components/attendance/export-button";
 import { PdfExportButton } from "@/components/attendance/pdf-export-button";
-import { queueAttendanceOffline, getOfflineAttendanceQueue, clearOfflineQueue } from "@/lib/offline-sync";
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useQueryClient } from '@tanstack/react-query';
 import { PageLoader } from "@/components/ui/page-loader";
 import { ErrorState } from "@/components/ui/error-state";
 import { useRef } from "react";
@@ -51,7 +49,7 @@ function AttendanceContent() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const isOnline = useNetworkStatus();
-    const queryClient = useQueryClient();
+
 
     const searchParams = useSearchParams();
     const classIdParam = searchParams.get("classId");

@@ -131,12 +131,16 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
         queryKey: ["classes"],
         queryFn: fetchClasses,
         enabled: !!user,
+        staleTime: 5 * 60 * 1000,      // 5 min — classes don't change often
+        refetchOnWindowFocus: false,
     });
 
     const attendanceQuery = useQuery({
         queryKey: ["attendance"],
         queryFn: fetchAttendance,
         enabled: !!user,
+        staleTime: 30 * 1000,           // 30s — attendance is more dynamic
+        refetchOnWindowFocus: false,
     });
 
     const addClassMutation = useMutation({
