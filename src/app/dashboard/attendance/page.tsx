@@ -317,7 +317,7 @@ function AttendanceContent() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="font-bold text-sm text-gray-900 dark:text-white truncate">{cadet.name}</div>
-                                                    <div className="text-[10px] text-gray-500 dark:text-slate-500 truncate">{cadet.regimentalNumber || cadet.role}</div>
+                                                    <div className="text-[10px] text-gray-500 dark:text-slate-500 truncate">{cadet.regimentalNumber || getWingAwareRank(cadet.role, cadet.wing)}</div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5 shrink-0">

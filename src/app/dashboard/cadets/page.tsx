@@ -10,10 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Search, UserPlus, Trash2, Key, Edit2, LayoutGrid, List as ListIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { cn, getGenderClassification, getWingAwareRank } from "@/lib/utils";
+import { cn, getWingAwareRank } from "@/lib/utils";
 
 import { CertificatesSection } from "@/components/profile/certificates-section";
-import { createCadetAccount, updateCadetPin, getCadetPin } from "@/app/actions/cadet-actions";
+import { createCadetAccount, updateCadetPin } from "@/app/actions/cadet-actions";
 import { useToast } from "@/lib/toast-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import Image from "next/image";
@@ -23,31 +23,7 @@ import { CadetsTable } from "@/components/cadets/cadets-table";
 import { useCadetFilter } from "@/components/cadets/use-cadet-filter";
 import { Modal } from "@/components/ui/modal";
 
-// Lazy PIN loader — fetches PIN on demand via server action, never from cached client data
-function PinDisplay({ cadetId }: { cadetId: string }) {
-    const [pin, setPin] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        getAccessToken().then(token => {
-            if (token) getCadetPin(cadetId, token).then(p => { setPin(p); setLoading(false); });
-            else setLoading(false);
-        });
-    }, [cadetId]);
-
-    if (loading) return <p className="text-xs text-gray-400 animate-pulse">Loading PIN...</p>;
-    if (!pin) return null;
-
-    return (
-        <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800/50 flex items-center justify-between">
-            <div>
-                <span className="block text-xs font-bold text-amber-700 dark:text-amber-400 uppercase">Login PIN</span>
-                <span className="text-xs text-amber-600 dark:text-amber-400/70">Share this with the cadet securely.</span>
-            </div>
-            <span className="font-mono text-xl font-bold text-amber-900 dark:text-amber-300 tracking-widest">{pin}</span>
-        </div>
-    );
-}
 
 export default function CadetsPage() {
     const { cadets, updateCadet, deleteCadet, refreshProfiles } = useCadetData();
@@ -135,10 +111,7 @@ export default function CadetsPage() {
     const handlePinEdit = async (cadet: Cadet) => {
         setEditingCadet(cadet);
         setIsPinModalOpen(true);
-        // Fetch current PIN on demand via server action
-        const token = await getAccessToken();
-        const pin = await getCadetPin(cadet.id, token || "");
-        setNewPin(pin || "");
+        setNewPin(""); // Reset to empty; security prevents viewing existing PIN
     };
 
     const handleView = (cadet: Cadet) => {
@@ -364,7 +337,7 @@ export default function CadetsPage() {
                                                         </div>
                                                         <div>
                                                             <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-blue-400 transition-colors text-lg flex items-center gap-2">
-                                                                {cadet.rank} {cadet.name}
+                                                                {getWingAwareRank(cadet.rank as Role, cadet.wing)} {cadet.name}
                                                                 {cadet.status === 'alumni' && (
                                                                     <span className="text-[10px] uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
                                                                 )}
@@ -449,7 +422,7 @@ export default function CadetsPage() {
             <Modal isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title="Update Access PIN">
                 <form onSubmit={handlePinUpdate} className="space-y-4">
                     <p className="text-sm text-gray-500 dark:text-slate-400">
-                        Set a new 4-digit PIN for {editingCadet?.rank} {editingCadet?.name}. They will use this to login.
+                        Set a new 4-digit PIN for {getWingAwareRank(editingCadet?.rank as Role, editingCadet?.wing)} {editingCadet?.name}. They will use this to login.
                     </p>
                     <Input
                         label="New PIN"
@@ -475,7 +448,7 @@ export default function CadetsPage() {
                                 {viewingCadet.avatarUrl ? <Image src={viewingCadet.avatarUrl} alt={viewingCadet.name} width={96} height={96} className="w-full h-full object-cover" /> : viewingCadet.name.charAt(0)}
                             </div>
                             <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2 flex-wrap">
-                                {viewingCadet.rank} {viewingCadet.name}
+                                {getWingAwareRank(viewingCadet.rank as Role, viewingCadet.wing)} {viewingCadet.name}
                                 {viewingCadet.status === 'alumni' && (
                                     <span className="text-xs uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
                                 )}
@@ -507,9 +480,7 @@ export default function CadetsPage() {
                             <CertificatesSection userId={viewingCadet.id} isReadOnly={!isANO} />
                         </div>
 
-                        {canEdit && (
-                            <PinDisplay cadetId={viewingCadet.id} />
-                        )}
+
                     </div>
                 )}
             </Modal>

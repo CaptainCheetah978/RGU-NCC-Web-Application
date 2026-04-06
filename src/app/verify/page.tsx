@@ -6,13 +6,14 @@ import { Shield, CheckCircle2, XCircle, User, Award } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { verifyCadetById, verifyCadetByToken, type VerifyResult } from "@/app/actions/verify-actions";
-import { cn, getColorOfTheDay } from "@/lib/utils";
-import { Wing } from "@/types";
+import { cn, getColorOfTheDay, getWingAwareRank, getGenderClassification } from "@/lib/utils";
+import { Wing, Role } from "@/types";
 
 
 interface VerifiedPerson {
     name: string;
     role: string;
+    gender?: string;
     regimentalNumber?: string;
     unitNumber?: string;
     unitName?: string;
@@ -120,7 +121,7 @@ function VerifyContent() {
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 tracking-tight">{person.name}</h3>
                                     <span className="inline-block px-2.5 py-0.5 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase mt-1 border border-primary/20">
-                                        {person.role}
+                                        {getWingAwareRank(person.role as Role, person.wing as Wing)}
                                     </span>
                                 </div>
                             </div>
@@ -139,7 +140,9 @@ function VerifyContent() {
                                         <span className="flex items-center text-gray-500 font-medium">
                                             <Shield className="w-4 h-4 mr-2 text-primary/40" /> NCC Wing
                                         </span>
-                                        <span className="font-bold text-gray-900 uppercase">{person.wing}</span>
+                                        <span className="font-bold text-gray-900 uppercase">
+                                            {person.wing} - {getGenderClassification(person.gender)}
+                                        </span>
                                     </div>
                                 )}
                                 {person.unitNumber && (

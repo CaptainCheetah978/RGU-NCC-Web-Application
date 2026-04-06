@@ -11,6 +11,20 @@ export enum Role {
     CADET = 'CADET'
 }
 
+/**
+ * Normalizes legacy rank strings (e.g. UO, SUO) from the database to their
+ * current enum-compatible equivalents (CJUO, CSUO).
+ */
+export function normalizeRole(role: string | null | undefined): Role {
+    if (!role) return Role.CADET;
+    const r = role.toUpperCase();
+    if (r === 'UO') return Role.CJUO;
+    if (r === 'SUO') return Role.CSUO;
+    // Check if it's already a valid Role enum value
+    if (Object.values(Role).includes(r as Role)) return r as Role;
+    return Role.CADET;
+}
+
 export enum Wing {
     ARMY = "Army",
     AIR = "Air",
@@ -28,7 +42,6 @@ export interface User {
     role: Role;
     regimentalNumber?: string;
     avatarUrl?: string;
-    pin?: string;
     unitId?: string;
     unitName?: string;
     unitNumber?: string;
@@ -41,7 +54,6 @@ export interface Cadet extends User {
     battalion?: string;
     unitNumber: string;
     unitName?: string;
-    access_pin?: string; // Visible PIN for ANO/SUO
     enrollmentYear: number;
     bloodGroup?: string;
     status: "active" | "alumni";

@@ -58,12 +58,28 @@ export default function LoginPage() {
 
     try {
       await loginWithPassword(pseudoEmail, formData.pin);
-      // Success — reset counter
+      // Success!
       failCountRef.current = 0;
       setLockoutRemaining(0);
       setSubmitting(false);
+      return;
     } catch (err: unknown) {
-      // All login failures — invalid credentials, email not confirmed, etc.
+      // If modern prefix (csuo/cjuo) failed, try legacy fallback (suo/uo)
+      if (activeTab === Role.CSUO || activeTab === Role.CJUO) {
+        const legacyPrefix = activeTab === Role.CSUO ? "suo" : "uo";
+        const legacyEmail = `${legacyPrefix}_${cleanUsername}@nccrgu.internal`;
+        try {
+          await loginWithPassword(legacyEmail, formData.pin);
+          // Success with legacy email!
+          failCountRef.current = 0;
+          setLockoutRemaining(0);
+          setSubmitting(false);
+          return;
+        } catch (legacyErr) {
+          // If BOTH failed, continue to the original error handler
+        }
+      }
+
       setError(err instanceof Error ? err.message : "Invalid credentials. Contact your ANO.");
       // Increment failed attempts
       failCountRef.current += 1;

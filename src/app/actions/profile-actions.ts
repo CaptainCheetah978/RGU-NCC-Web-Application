@@ -58,7 +58,6 @@ const SELF_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
 // Fields that ANO/SUO may also update on any profile.
 const ADMIN_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
     ...SELF_UPDATE_ALLOWED,
-    "access_pin",
     "role",
     "unit_id",
 ]);

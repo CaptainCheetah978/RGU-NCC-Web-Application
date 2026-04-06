@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCadetData } from "@/lib/cadet-context";
 import { useDashboardStats } from "@/lib/dashboard-stats";
 import { supabase } from "@/lib/supabase-client";
-import { getColorOfTheDay } from "@/lib/utils";
+import { getColorOfTheDay, getWingAwareRank, getGenderClassification, getGenderAbbreviation } from "@/lib/utils";
 import { generateVerificationToken } from "@/app/actions/jwt-actions";
 import { Role, Wing, Cadet, User } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -465,7 +465,7 @@ export default function ProfilePage() {
                                                     {/* Rank & Regt No Row */}
                                                     <div className="relative pt-2.5">
                                                         <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Rank</p>
-                                                        <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.role || "N/A"}</p>
+                                                        <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{getWingAwareRank(currentUser.role, currentUser.wing)}</p>
                                                     </div>
                                                     <div className="relative pt-2.5">
                                                         <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Regt. No</p>
@@ -475,7 +475,7 @@ export default function ProfilePage() {
                                                     {/* Wing & Blood Group Row */}
                                                     <div className="relative pt-2.5">
                                                         <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Wing</p>
-                                                        <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.wing || "N/A"}</p>
+                                                        <p className="text-[11px] font-bold text-gray-800 border-b border-gray-200 pb-0.5 leading-none uppercase">{currentUser.wing ? `${currentUser.wing} (${getGenderAbbreviation(currentUser.gender)})` : "N/A"}</p>
                                                     </div>
                                                     <div className="relative pt-2.5">
                                                         <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest absolute top-0 left-0 leading-none">Blood Group</p>
