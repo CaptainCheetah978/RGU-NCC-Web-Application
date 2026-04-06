@@ -6,19 +6,23 @@ import { Shield, CheckCircle2, XCircle, User, Award } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { verifyCadetById, verifyCadetByToken, type VerifyResult } from "@/app/actions/verify-actions";
-import { getColorOfTheDay } from "@/lib/utils";
+import { cn, getColorOfTheDay } from "@/lib/utils";
+import { Wing } from "@/types";
+
 
 interface VerifiedPerson {
     name: string;
     role: string;
     regimentalNumber?: string;
-    wing?: string;
     unitNumber?: string;
     unitName?: string;
     bloodGroup?: string;
     enrollmentYear?: string;
     avatarUrl?: string;
+    wing?: Wing;
 }
+
+
 
 function VerifyContent() {
     const searchParams = useSearchParams();
@@ -42,8 +46,9 @@ function VerifyContent() {
         verificationPromise.then((result: VerifyResult) => {
             if (!isMounted) return;
             if (result.found && result.person) {
-                setPerson(result.person);
+                setPerson(result.person as unknown as VerifiedPerson);
             } else if (result.error) {
+
                 setErrorMsg(result.error);
             }
             setLoading(false);
@@ -77,13 +82,31 @@ function VerifyContent() {
                 {checked && person ? (
                     /* Verified Card */
                     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-                        <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4 flex items-center space-x-3">
-                            <CheckCircle2 className="w-7 h-7 text-white" />
+                        <div className={cn(
+                            "px-6 py-4 flex items-center space-x-3 transition-colors duration-500",
+                            person.wing === Wing.NAVY ? "bg-[#002147]" : 
+                            person.wing === Wing.AIR ? "bg-sky-400" : 
+                            "bg-gradient-to-r from-emerald-600 to-emerald-800"
+                        )}>
+                            <CheckCircle2 className={cn(
+                                "w-7 h-7",
+                                person.wing === Wing.AIR ? "text-slate-900" : "text-white"
+                            )} />
                             <div>
-                                <h2 className="text-white font-bold text-lg">Identity Verified</h2>
-                                <p className="text-green-100 text-xs font-medium">This NCC ID card is authentic and valid.</p>
+                                <h2 className={cn(
+                                    "font-bold text-lg",
+                                    person.wing === Wing.AIR ? "text-slate-900" : "text-white"
+                                )}>Identity Verified</h2>
+                                <p className={cn(
+                                    "text-xs font-medium",
+                                    person.wing === Wing.NAVY ? "text-blue-100" : 
+                                    person.wing === Wing.AIR ? "text-sky-900" : 
+                                    "text-emerald-100"
+                                )}>This NCC ID card is authentic and valid.</p>
                             </div>
                         </div>
+
+
 
                         <div className="p-6 space-y-4">
                             <div className="flex items-center space-x-4">

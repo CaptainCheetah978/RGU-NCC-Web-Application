@@ -66,3 +66,19 @@ export function getWingAwareRank(rank: Role, wing?: Wing): string {
 
     return rank;
 }
+
+/**
+ * Returns the official NCC classification for a given gender.
+ */
+export function getGenderClassification(gender: string | null | undefined): string {
+    const g = String(gender || "").toLowerCase();
+    return g === 'male' || g === 'sd' || g === 'sda' ? "Senior Division (SD)" : "Senior Wing (SW)";
+}
+
+/**
+ * Returns the official NCC abbreviation for a given gender.
+ */
+export function getGenderAbbreviation(gender: string | null | undefined): string {
+    const g = String(gender || "").toLowerCase();
+    return g === 'male' || g === 'sd' || g === 'sda' ? "SD" : "SW";
+}

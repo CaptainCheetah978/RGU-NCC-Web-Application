@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Search, UserPlus, Trash2, Key, Edit2, LayoutGrid, List as ListIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { cn, getGenderClassification, getWingAwareRank } from "@/lib/utils";
+
 import { CertificatesSection } from "@/components/profile/certificates-section";
 import { createCadetAccount, updateCadetPin, getCadetPin } from "@/app/actions/cadet-actions";
 import { useToast } from "@/lib/toast-context";
@@ -334,11 +336,22 @@ export default function CadetsPage() {
                                         transition={{ delay: Math.min(i * 0.03, 0.3) }}
                                     >
                                         <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
+                                            <div className={cn(
+                                                    "absolute top-0 left-0 right-0 h-1",
+                                                    cadet.wing === Wing.ARMY ? "bg-emerald-600" : 
+                                                    cadet.wing === Wing.NAVY ? "bg-[#002147]" : 
+                                                    "bg-sky-400"
+                                                )} />
                                             <div className="p-6 flex-1 flex flex-col">
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center space-x-4">
                                                         <div className="relative shrink-0">
-                                                            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center">
+                                                            <div className={cn(
+                                                                    "w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-700 overflow-hidden border-2 shadow-sm flex items-center justify-center transition-transform group-hover:scale-105",
+                                                                    cadet.wing === Wing.ARMY ? "border-emerald-500/20" : 
+                                                                    cadet.wing === Wing.NAVY ? "border-[#002147]/20" : 
+                                                                    "border-sky-400/20"
+                                                                )}>
                                                                 {cadet.avatarUrl ? (
                                                                     <Image src={cadet.avatarUrl} alt={cadet.name} width={64} height={64} className="object-cover" />
                                                                 ) : (
