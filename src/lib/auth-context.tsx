@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, Role } from "@/types";
+import { User, Role, normalizeRole } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 import { ensureUserProfileAction, getProfileByIdAction } from "@/app/actions/profile-actions";
@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const appUser: User = {
                     id: profileData.id as string,
                     name: (profileData.full_name as string) || 'Unknown User',
-                    role: ((profileData.role as Role) || Role.CADET),
+                    role: normalizeRole(profileData.role as string),
                     regimentalNumber: profileData.regimental_number as string | undefined,
                     avatarUrl: profileData.avatar_url as string | undefined,
                     unitId: profileData.unit_id as string | undefined,

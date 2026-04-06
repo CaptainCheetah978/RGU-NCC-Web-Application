@@ -5,9 +5,10 @@ import { getCallerSession } from "@/lib/server-auth";
 import { Permissions } from "@/lib/permissions";
 
 const getSecret = () => {
-    // In production, use a dedicated JWT_SECRET.
-    // Fallback to SUPABASE_SERVICE_ROLE_KEY to avoid breaking existing deployments without extra setup.
-    const secret = process.env.JWT_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "fallback_dev_secret_only";
+    const secret = process.env.JWT_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!secret) {
+        throw new Error("CRITICAL: JWT Security Secret is missing from environment. Production verification is disabled to prevent spoofing.");
+    }
     return new TextEncoder().encode(secret);
 };
 

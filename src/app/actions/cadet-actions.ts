@@ -76,7 +76,6 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
 
         const userId = authData.user.id;
 
-        // ── 4. Create Profile ───────────────────────────────────────────────────
         const profilePayload: Record<string, unknown> = {
             id: userId,
             full_name: name,
@@ -88,7 +87,6 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
             unit_name: unitName,
             enrollment_year: enrollmentYear,
             blood_group: bloodGroup || null,
-            access_pin: pin,
             status: status || 'active',
             updated_at: new Date().toISOString(),
         };
@@ -150,12 +148,6 @@ export async function updateCadetPin(cadetId: string, newPin: string, accessToke
         );
         if (authError) return { success: false, error: `Auth update failed: ${authError.message}` };
 
-        const { error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .update({ access_pin: parsed.data.newPin })
-            .eq('id', parsed.data.cadetId);
-        if (profileError) return { success: false, error: `Profile update failed: ${profileError.message}` };
-
         revalidatePath('/dashboard/cadets');
         return { success: true };
 
@@ -165,27 +157,7 @@ export async function updateCadetPin(cadetId: string, newPin: string, accessToke
     }
 }
 
-export async function getCadetPin(cadetId: string, accessToken: string): Promise<string | null> {
-    const session = await getCallerSession(accessToken);
-    if (!session || !Permissions.CAN_MANAGE_USERS.has(session.role)) return null;
 
-    // Validate the ID is a valid UUID before querying
-    const uuidCheck = UpdatePinSchema.shape.cadetId.safeParse(cadetId);
-    if (!uuidCheck.success) return null;
-
-    try {
-        const { data, error } = await supabaseAdmin
-            .from("profiles")
-            .select("access_pin")
-            .eq("id", cadetId)
-            .single();
-
-        if (error || !data) return null;
-        return data.access_pin || null;
-    } catch {
-        return null;
-    }
-}
 
 export async function deleteCadetAction(
     cadetId: string,

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cadet, Certificate, Role, User, AttendanceRecord, Note, Wing, Gender } from "@/types";
+import { Cadet, Certificate, Role, User, AttendanceRecord, Note, Wing, Gender, normalizeRole } from "@/types";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import { requireAccessToken } from "@/lib/require-access-token";
@@ -44,10 +44,10 @@ async function fetchProfiles(): Promise<(User & Partial<Cadet>)[]> {
     return result.data.map((p) => ({
         id: p.id,
         name: p.full_name || "Unknown",
-        role: (p.role as Role) || Role.CADET,
+        role: normalizeRole(p.role),
         regimentalNumber: p.regimental_number ?? undefined,
         wing: p.wing as Wing ?? undefined,
-        rank: p.rank as Role ?? undefined,
+        rank: normalizeRole(p.rank ?? p.role as string),
         avatarUrl: p.avatar_url ?? undefined,
         enrollmentYear: p.enrollment_year ?? undefined,
         bloodGroup: p.blood_group ?? undefined,
@@ -110,7 +110,6 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
                 unit_name: cadet.unitName,
                 enrollment_year: cadet.enrollmentYear,
                 blood_group: cadet.bloodGroup,
-                access_pin: cadet.access_pin,
                 status: cadet.status || "active",
             }, token);
             if (!result.success) throw new Error(result.error || "Failed to add cadet profile");
@@ -134,7 +133,6 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
             if (updates.enrollmentYear !== undefined) payload.enrollment_year = updates.enrollmentYear;
             if (updates.bloodGroup !== undefined) payload.blood_group = updates.bloodGroup;
             if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
-            if (updates.access_pin !== undefined) payload.access_pin = updates.access_pin;
             if (updates.status !== undefined) payload.status = updates.status;
             if (Object.keys(payload).length === 0) return;
 

@@ -11,7 +11,7 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { Role } from "@/types";
+import { Role, normalizeRole } from "@/types";
 
 /**
  * Verifies the caller's access token and returns their user id and role.
@@ -39,7 +39,7 @@ export async function getCallerSession(
         if (!profileErr && profile?.role) {
             return { 
                 userId: user.id, 
-                role: profile.role as Role,
+                role: normalizeRole(profile.role),
                 unitId: profile.unit_id,
                 userName: profile.full_name || undefined
             };
@@ -66,7 +66,7 @@ export async function getCallerSession(
 
         return { 
             userId: user.id, 
-            role: fallback.role as Role,
+            role: normalizeRole(fallback.role),
             unitId: undefined, // column doesn't exist yet — single-tenant mode
             userName: fallback.full_name || undefined
         };

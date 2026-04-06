@@ -7,6 +7,8 @@ import { useCommunicationData } from "@/lib/communication-context";
 import { useAuth } from "@/lib/auth-context";
 
 import { Permissions } from "@/lib/permissions";
+import { getWingAwareRank } from "@/lib/utils";
+import { Role } from "@/types";
 
 
 export interface DashboardStats {
@@ -39,7 +41,8 @@ export function useDashboardStats() {
 
             if (!isStaff) {
                 totalCadetsLine = "My Rank";
-                totalCadetsValue = userRole || "CADET";
+                const currentUserRecord = cadets.find(c => c.id === userId);
+                totalCadetsValue = getWingAwareRank(userRole as Role, currentUserRecord?.wing) || userRole || "CADET";
             }
 
             // 2. Second Card: Unit Attendance (Staff) vs My Attendance (Cadet)
