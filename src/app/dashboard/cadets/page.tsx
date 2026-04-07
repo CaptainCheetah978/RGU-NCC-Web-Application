@@ -47,7 +47,7 @@ export default function CadetsPage() {
         regimentalNumber: "",
         rank: Role.CADET,
         wing: Wing.ARMY,
-        gender: Gender.MALE,
+        gender: Gender.SD,
         unitNumber: "30",
         unitName: "Assam BN NCC",
         enrollmentYear: new Date().getFullYear(),
@@ -273,14 +273,15 @@ export default function CadetsPage() {
                         aria-label="Filter by Rank"
                     >
                         <option value="ALL">All Ranks</option>
-                        <option value={Role.CSUO}>CSUO</option>
-                        <option value={Role.CJUO}>CJUO</option>
-                        <option value={Role.CSM}>CSM</option>
-                        <option value={Role.CQMS}>CQMS</option>
-                        <option value={Role.SGT}>SGT</option>
-                        <option value={Role.CPL}>CPL</option>
-                        <option value={Role.LCPL}>LCPL</option>
-                        <option value={Role.CADET}>Cadet</option>
+                        <option value={Role.CSUO}>CSUO / SCC / SUO</option>
+                        <option value={Role.CJUO}>CJUO / CUO / CC</option>
+                        <option value={Role.CWO}>CWO</option>
+                        <option value={Role.CSM}>CSM / CPO</option>
+                        <option value={Role.CQMS}>CQMS / CPO</option>
+                        <option value={Role.SGT}>SGT / PO</option>
+                        <option value={Role.CPL}>CPL / LEADING</option>
+                        <option value={Role.LCPL}>LCPL / ABLE</option>
+                        <option value={Role.CADET}>Cadet / AB</option>
                     </select>
                 </div>
             </div>
@@ -331,8 +332,8 @@ export default function CadetsPage() {
                                                                     <span className="text-xl font-bold text-zinc-500 dark:text-slate-500">{cadet.name.charAt(0)}</span>
                                                                 )}
                                                             </div>
-                                                            <span className="absolute -bottom-2 -right-2 text-lg">
-                                                                {cadet.gender === Gender.MALE ? "👮‍♂️" : "👮‍♀️"}
+                                                            <span className="absolute -bottom-2 -right-2 bg-white dark:bg-slate-800 border-2 border-gray-100 dark:border-slate-700 rounded-lg px-2 py-0.5 text-[10px] font-black shadow-sm text-gray-700 dark:text-slate-300">
+                                                                {cadet.gender}
                                                             </span>
                                                         </div>
                                                         <div>

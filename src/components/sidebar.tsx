@@ -18,7 +18,8 @@ import {
     History,
     Sun,
     Moon,
-    TrendingUp
+    TrendingUp,
+    X
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -127,7 +128,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                         onClick={() => setIsOpen(false)}
                         aria-label="Close sidebar"
                     >
-                        ✕
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 

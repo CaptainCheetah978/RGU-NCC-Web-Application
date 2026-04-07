@@ -3,6 +3,7 @@ export enum Role {
     CTO = 'CTO',
     CSUO = 'CSUO', // Formerly SUO
     CJUO = 'CJUO', // Formerly UO
+    CWO = 'CWO',
     CSM = 'CSM',
     CQMS = 'CQMS',
     SGT = 'SGT',
@@ -20,9 +21,22 @@ export function normalizeRole(role: string | null | undefined): Role {
     const r = role.toUpperCase();
     if (r === 'UO') return Role.CJUO;
     if (r === 'SUO') return Role.CSUO;
+    if (r === 'WO' || r === 'CWO') return Role.CWO;
     // Check if it's already a valid Role enum value
     if (Object.values(Role).includes(r as Role)) return r as Role;
     return Role.CADET;
+}
+
+/**
+ * Normalizes legacy gender/classification strings from the database 
+ * to their official NCC equivalents (SD/SW).
+ */
+export function normalizeGender(gender: string | null | undefined): Gender {
+    if (!gender) return Gender.SD;
+    const g = gender.toUpperCase();
+    if (g === 'SD' || g === 'MALE') return Gender.SD;
+    if (g === 'SW' || g === 'FEMALE') return Gender.SW;
+    return Gender.SD;
 }
 
 export enum Wing {
@@ -32,8 +46,8 @@ export enum Wing {
 }
 
 export enum Gender {
-    MALE = "Male",
-    FEMALE = "Female",
+    SD = "SD",
+    SW = "SW",
 }
 
 export interface User {

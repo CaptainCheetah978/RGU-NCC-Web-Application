@@ -93,7 +93,7 @@ CREATE POLICY "Update own profile" ON profiles
 -- ANO/SUO can update any profile (assign ranks, edit cadets)
 CREATE POLICY "Admin update all" ON profiles
   FOR UPDATE USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO'))
   );
 
 
@@ -105,7 +105,7 @@ CREATE POLICY "View announcements" ON announcements
 -- ANO/SUO can manage announcements (insert, update, delete)
 CREATE POLICY "ANO/SUO Manage announcements" ON announcements
   FOR ALL USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO', 'UO', 'CJUO', 'CWO', 'CUO'))
   );
 
 
@@ -117,7 +117,7 @@ CREATE POLICY "View classes" ON classes
 -- ANO/SUO/UO can manage classes
 CREATE POLICY "Manage classes" ON classes
   FOR ALL USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO', 'UO'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO', 'UO', 'CJUO', 'CWO', 'CUO'))
   );
 
 
@@ -129,13 +129,13 @@ CREATE POLICY "View own attendance" ON attendance
 -- ANO/SUO can view all attendance
 CREATE POLICY "ANO/SUO View all attendance" ON attendance
   FOR SELECT USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO', 'UO', 'SGT'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO', 'UO', 'CJUO', 'CWO', 'CUO', 'SGT', 'CSM', 'CQMS', 'PO'))
   );
 
 -- ANO/SUO/UO/SGT can manage attendance (insert, update, delete)
 CREATE POLICY "Manage attendance" ON attendance
   FOR ALL USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'SUO', 'UO', 'SGT'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO', 'UO', 'CJUO', 'CWO', 'CUO', 'SGT', 'CSM', 'CQMS', 'PO'))
   );
 
 
@@ -173,7 +173,7 @@ CREATE POLICY "ANO manages all certificates" ON certificates
 -- SUO can view all certificates
 CREATE POLICY "SUO views all certificates" ON certificates
   FOR SELECT USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role = 'SUO')
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO', 'SCC'))
   );
 
 

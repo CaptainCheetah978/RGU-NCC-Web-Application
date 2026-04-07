@@ -2,6 +2,7 @@
 
 import { FormEvent } from "react";
 import { Cadet, Role } from "@/types";
+import { getWingAwareRank } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,8 +43,10 @@ export function EditCadetModal({ isOpen, onClose, formData, onChange, onSubmit, 
                             value={formData.role || Role.CADET}
                             onChange={(e) => onChange({ role: e.target.value as Role })}
                         >
-                            {Object.values(Role).map(r => (
-                                <option key={r} value={r}>{r}</option>
+                            {Object.values(Role)
+                                .filter(r => r !== Role.ANO && r !== Role.CTO)
+                                .map(r => (
+                                <option key={r} value={r}>{getWingAwareRank(r, formData.wing)}</option>
                             ))}
                         </select>
                     </div>
