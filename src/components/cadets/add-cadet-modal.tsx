@@ -118,8 +118,8 @@ export function AddCadetModal({ isOpen, onClose, formData, onChange, onSubmit, i
                             value={formData.gender}
                             onChange={(e) => onChange({ gender: e.target.value as Gender })}
                         >
-                            <option value={Gender.MALE}>Male</option>
-                            <option value={Gender.FEMALE}>Female</option>
+                            <option value={Gender.SD}>Senior Division (SD)</option>
+                            <option value={Gender.SW}>Senior Wing (SW)</option>
                         </select>
                     </div>
                     <Input

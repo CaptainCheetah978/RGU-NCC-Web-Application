@@ -42,13 +42,27 @@ export function getColorOfTheDay(): { name: string; hex: string } {
  * Transforms an underlying database rank into its Wing-appropriate title.
  */
 export function getWingAwareRank(rank: Role, wing?: Wing): string {
-    if (!wing || wing === Wing.ARMY || wing === Wing.AIR) {
-        return rank;
+    // Air Force mapping
+    if (wing === Wing.AIR) {
+        switch (rank) {
+            case Role.CJUO:
+                return "CUO"; // Cadet Under Officer
+            case Role.CWO:
+                return "CWO"; // Cadet Warrant Officer
+            case Role.LCPL:
+                return "LFC"; // Leading Flight Cadet
+            default:
+                return rank;
+        }
     }
     
     // Navy mapping
     if (wing === Wing.NAVY) {
         switch (rank) {
+            case Role.CSUO:
+                return "SCC"; // Senior Cadet Captain
+            case Role.CJUO:
+                return "CC"; // Cadet Captain
             case Role.CSM:
             case Role.CQMS:
                 return "CPO"; // Cadet Petty Officer
@@ -59,11 +73,11 @@ export function getWingAwareRank(rank: Role, wing?: Wing): string {
             case Role.LCPL:
                 return "ABLE CADET"; 
             default:
-                // ANO, CTO, CSUO, CJUO, CADET stay the same as standard NCC abbreviations
                 return rank;
         }
     }
 
+    // Army (Default) - Keep standard CSUO/CJUO labels
     return rank;
 }
 
@@ -72,7 +86,7 @@ export function getWingAwareRank(rank: Role, wing?: Wing): string {
  */
 export function getGenderClassification(gender: string | null | undefined): string {
     const g = String(gender || "").toLowerCase();
-    return g === 'male' || g === 'sd' || g === 'sda' ? "Senior Division (SD)" : "Senior Wing (SW)";
+    return g === 'male' || g === 'sd' ? "Senior Division (SD)" : "Senior Wing (SW)";
 }
 
 /**
@@ -80,5 +94,5 @@ export function getGenderClassification(gender: string | null | undefined): stri
  */
 export function getGenderAbbreviation(gender: string | null | undefined): string {
     const g = String(gender || "").toLowerCase();
-    return g === 'male' || g === 'sd' || g === 'sda' ? "SD" : "SW";
+    return g === 'male' || g === 'sd' ? "SD" : "SW";
 }

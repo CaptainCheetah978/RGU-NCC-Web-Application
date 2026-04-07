@@ -6,16 +6,20 @@ import { z } from "zod";
 
 // ─── Primitives ────────────────────────────────────────────────────────────────
 
-const RoleEnum = z.enum(["ANO", "CTO", "CSUO", "CJUO", "CSM", "CQMS", "SGT", "CPL", "LCPL", "CADET"]);
+const RoleEnum = z.enum(["ANO", "CTO", "CSUO", "CJUO", "CWO", "CSM", "CQMS", "SGT", "CPL", "LCPL", "CADET"]);
 const WingEnum = z.enum(["Army", "Air", "Navy"]);
-const GenderEnum = z.enum(["Male", "Female"]);
+const GenderEnum = z.enum(["SD", "SW"]);
 
-// PIN: 4-12 characters, digits or alphanumeric
+// PIN: 4-12 characters, digits or alphanumeric — Blacklisting notoriously weak PINs
+const WeakPins = ["1234", "0000", "1111", "123456", "2222", "3333", "4444", "5555", "6666", "7777", "8888", "9999", "qwerty", "password"];
 const PinSchema = z
     .string()
     .min(4, "PIN must be at least 4 characters")
     .max(12, "PIN must be at most 12 characters")
-    .regex(/^[a-zA-Z0-9]+$/, "PIN must only contain letters and numbers");
+    .regex(/^[a-zA-Z0-9]+$/, "PIN must only contain letters and numbers")
+    .refine((val) => !WeakPins.includes(val.toLowerCase()), {
+        message: "This PIN is too common and insecure. Please use a unique combination.",
+    });
 
 // ─── Cadet Creation ────────────────────────────────────────────────────────────
 

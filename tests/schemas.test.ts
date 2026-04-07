@@ -8,18 +8,38 @@ describe('CreateCadetSchema Validation', () => {
       regimentalNumber: 'AS21SDA123456',
       rank: 'CSUO',
       wing: 'Army',
-      gender: 'Male',
+      gender: 'SD',
       unitNumber: '30',
       unitName: 'Assam Bn NCC',
       enrollmentYear: 2021,
       bloodGroup: 'B+',
-      pin: '1234'
+      pin: 'A92B'
     }
     const result = CreateCadetSchema.safeParse(validCadet)
     if (!result.success) {
       console.error(result.error)
     }
     expect(result.success).toBe(true)
+  })
+
+  it('should reject a weak or common PIN', () => {
+    const cadetWithWeakPin = {
+      name: 'Aditya Singh',
+      regimentalNumber: 'AS21SDA123456',
+      rank: 'CSUO',
+      wing: 'Army',
+      gender: 'SD',
+      unitNumber: '30',
+      unitName: 'Assam Bn NCC',
+      enrollmentYear: 2021,
+      bloodGroup: 'B+',
+      pin: '1234' // Blacklisted!
+    }
+    const result = CreateCadetSchema.safeParse(cadetWithWeakPin)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].message).toContain("too common and insecure")
+    }
   })
 
   it('should reject a cadet object with missing required fields', () => {
@@ -37,7 +57,7 @@ describe('CreateCadetSchema Validation', () => {
       regimentalNumber: 'AS21SDA123456',
       rank: 'CSUO',
       wing: 'Army',
-      gender: 'Male',
+      gender: 'SD',
       unitNumber: '30',
       unitName: 'Assam Bn NCC',
       enrollmentYear: 2021,

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cadet, Certificate, Role, User, AttendanceRecord, Note, Wing, Gender, normalizeRole } from "@/types";
+import { Cadet, Certificate, Role, User, AttendanceRecord, Note, Wing, Gender, normalizeRole, normalizeGender } from "@/types";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import { requireAccessToken } from "@/lib/require-access-token";
@@ -51,7 +51,7 @@ async function fetchProfiles(): Promise<(User & Partial<Cadet>)[]> {
         avatarUrl: p.avatar_url ?? undefined,
         enrollmentYear: p.enrollment_year ?? undefined,
         bloodGroup: p.blood_group ?? undefined,
-        gender: p.gender as Gender ?? undefined,
+        gender: normalizeGender(p.gender),
         unitName: p.unit_name ?? undefined,
         unitNumber: p.unit_number ?? undefined,
         status: (p.status as "active" | "alumni") || "active",
