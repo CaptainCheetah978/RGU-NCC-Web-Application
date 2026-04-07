@@ -16,7 +16,7 @@
 </p>
 
 > [!NOTE]
-> **OPEN SOURCE LICENSE**: This project is licensed under the [Apache License 2.0](./LICENSE). You are free to use, modify, and distribute the source code. All original authorship and attribution to the **RGU-NCC Team** must be preserved in all copies and derivative works.
+> **OPEN SOURCE LICENSE**: This project is licensed under the [Apache License 2.0](./LICENSE). You are free to use, modify, and distribute the source code. All original authorship and attribution to the **Aditya Singh** must be preserved in all copies and derivative works.
 
 A role-based Cadet Management System built with Next.js 16 and Supabase. Features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
 
