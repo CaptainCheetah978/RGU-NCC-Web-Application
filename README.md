@@ -12,8 +12,11 @@
   <img src="https://img.shields.io/badge/Vercel-Deployed-success?style=for-the-badge&logo=vercel" alt="Vercel Deployed" />
   <img src="https://img.shields.io/badge/Next.js%2016-Black?style=for-the-badge&logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/Supabase-Database-3FC68D?style=for-the-badge&logo=supabase" alt="Supabase" />
-  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License" />
+  <img src="https://img.shields.io/badge/License-Apache_2.0-blue?style=for-the-badge&logo=apache" alt="Apache 2.0" />
 </p>
+
+> [!NOTE]
+> **OPEN SOURCE LICENSE**: This project is licensed under the [Apache License 2.0](./LICENSE). You are free to use, modify, and distribute the source code. All original authorship and attribution to the **RGU-NCC Team** must be preserved in all copies and derivative works.
 
 A role-based Cadet Management System built with Next.js 16 and Supabase. Features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
 
