@@ -75,8 +75,8 @@ export default function LoginPage() {
           setLockoutRemaining(0);
           setSubmitting(false);
           return;
-        } catch (legacyErr) {
-          // If BOTH failed, continue to the original error handler
+        } catch (error) {
+          console.error("Auto-login error:", error);
         }
       }
 

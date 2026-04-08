@@ -10,7 +10,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useToast } from "@/lib/toast-context";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { PageLoader } from "@/components/ui/page-loader";
+import { SheetSkeleton } from "@/components/attendance/sheet-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 
 export default function SheetPage() {
@@ -158,7 +158,7 @@ export default function SheetPage() {
     }
 
     if (isLoading) {
-        return <PageLoader />;
+        return <SheetSkeleton />;
     }
 
     return (

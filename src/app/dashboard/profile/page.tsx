@@ -4,9 +4,9 @@ import { useAuth } from "@/lib/auth-context";
 import { useCadetData } from "@/lib/cadet-context";
 import { useDashboardStats } from "@/lib/dashboard-stats";
 import { supabase } from "@/lib/supabase-client";
-import { getColorOfTheDay, getWingAwareRank, getGenderClassification, getGenderAbbreviation } from "@/lib/utils";
+import { getColorOfTheDay, getWingAwareRank, getGenderAbbreviation } from "@/lib/utils";
 import { generateVerificationToken } from "@/app/actions/jwt-actions";
-import { Role, Wing, Cadet, User } from "@/types";
+import { Role, Wing, User, Cadet } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -16,16 +16,13 @@ import { toPng } from "html-to-image";
 import { QRCodeSVG } from "qrcode.react";
 import { AttendanceHistory } from "@/components/profile/attendance-history";
 import { CertificatesSection } from "@/components/profile/certificates-section";
+import { PageLoader } from "@/components/ui/page-loader";
 import Image from "next/image";
 
 export default function ProfilePage() {
-    const { user, updatePin } = useAuth();
-    const { updateCadet, currentUserProfile } = useCadetData();
+    const { user, updatePin, isLoading: isAuthLoading } = useAuth();
+    const { updateCadet, currentUserProfile, isLoading: isDataLoading } = useCadetData();
     const getStats = useDashboardStats();
-    
-    // Get the most up-to-date user data directly from context
-    const currentUser = currentUserProfile as (User & Partial<Cadet>);
-    const stats = getStats();
 
     const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
     const [uploadError, setUploadError] = useState("");
@@ -42,17 +39,21 @@ export default function ProfilePage() {
     const [currentTime, setCurrentTime] = useState<string>("");
     const [qrToken, setQrToken] = useState<string>("");
     const [isStaticQR, setIsStaticQR] = useState(false);
+    const [hasEverLoaded, setHasEverLoaded] = useState(false);
 
     // Dynamic QR: Fetch a short-lived, signed JWT every 25 seconds
     useEffect(() => {
-        if (!currentUser?.id) return;
+        if (user) {
+            setHasEverLoaded(true);
+        }
+        if (!currentUserProfile?.id) return;
 
         let isMounted = true;
         
         const fetchQrToken = async () => {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                const res = await generateVerificationToken(currentUser.id, session?.access_token);
+                const res = await generateVerificationToken(currentUserProfile.id, session?.access_token);
                 if (res.token && isMounted) {
                     setQrToken(res.token);
                 }
@@ -68,7 +69,7 @@ export default function ProfilePage() {
             isMounted = false;
             clearInterval(tokenInterval);
         };
-    }, [currentUser?.id]);
+    }, [currentUserProfile?.id, user]);
 
     // Live ticking clock for visual liveness (defeats static screenshots)
     useEffect(() => {
@@ -82,6 +83,13 @@ export default function ProfilePage() {
         return () => clearInterval(timer);
     }, []);
 
+    if (isAuthLoading || (isDataLoading && !currentUserProfile)) {
+        return <PageLoader />;
+    }
+    
+    // Get the most up-to-date user data directly from context
+    const currentUser = currentUserProfile as (User & Partial<Cadet>);
+    const stats = getStats();
     const dailyColor = getColorOfTheDay();
 
     if (!currentUser) return <div className="p-8 text-center">Loading profile...</div>;
@@ -104,6 +112,7 @@ export default function ProfilePage() {
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        if ((isAuthLoading || isDataLoading) && !hasEverLoaded) return;
         if (!file || !user) return;
 
         if (!file.type.startsWith("image/")) {
@@ -588,7 +597,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Change PIN — ANO only */}
-                    {currentUser.role === Role.ANO && (
+                    {currentUserProfile && currentUserProfile.role === Role.ANO && (
                         <Card className="border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base flex items-center space-x-2">
@@ -643,8 +652,8 @@ export default function ProfilePage() {
                     )}
 
                     {/* Attendance History & Certificates */}
-                    <AttendanceHistory cadetId={currentUser.id} />
-                    <CertificatesSection userId={currentUser.id} />
+                    <AttendanceHistory cadetId={currentUserProfile?.id || ''} />
+                    <CertificatesSection userId={currentUserProfile?.id || ''} />
                 </div>
             </div>
 

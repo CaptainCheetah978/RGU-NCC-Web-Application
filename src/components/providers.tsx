@@ -14,8 +14,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
         defaultOptions: {
             queries: {
-                staleTime: 30_000, // 30s — avoid redundant refetches on mount
-                refetchOnWindowFocus: false, // Don't refetch when user switches tabs
+                // High-performance caching for "Instant Feel"
+                staleTime: 1000 * 60 * 5, // 5 minutes — show cached data instantly on revisit
+                gcTime: 1000 * 60 * 30, // 30 minutes — keep data in memory to prevent refetch-blinks
+                refetchOnWindowFocus: false, // Prevents sudden UI shifts when switching browser tabs
+                refetchOnReconnect: true, // Auto-sync as soon as the user gets network back
+                retry: 2, // Minor retry buffer for flaky network
             },
         },
     }));

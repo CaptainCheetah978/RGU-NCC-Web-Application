@@ -3,8 +3,9 @@
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { useAuth } from "@/lib/auth-context";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function DashboardLayout({
     children,
@@ -13,34 +14,28 @@ export default function DashboardLayout({
 }) {
     const { user, isLoading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    
     // Once the user loads successfully at least once, don't redirect on
     // transient null states caused by background token refreshes.
-    const hasEverLoaded = useRef(false);
+    const [hasEverLoaded, setHasEverLoaded] = useState(false);
 
-    useEffect(() => {
-        if (user) {
-            hasEverLoaded.current = true;
-        }
-    }, [user]);
+    // Modern React adjustment pattern: adjust state during render if it depends on props/other state
+    if (user && !hasEverLoaded) {
+        setHasEverLoaded(true);
+    }
 
     useEffect(() => {
         // Only redirect if auth has finished loading AND user is null AND
         // we never had a user in this session (prevents flash redirects
         // during Supabase token refresh cycles).
-        if (!isLoading && !user && !hasEverLoaded.current) {
+        if (!isLoading && !user && !hasEverLoaded) {
             router.replace("/");
         }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, router, hasEverLoaded]);
 
-    if (isLoading) return (
-        <div className="flex h-screen w-full items-center justify-center bg-slate-950">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                <p className="text-slate-400 text-sm font-medium">Loading session…</p>
-            </div>
-        </div>
-    );
+    if (isLoading && !hasEverLoaded) return null;
 
     if (!user) return null;
 
@@ -60,9 +55,15 @@ export default function DashboardLayout({
                     />
                     {/* Dark mode ambient glow top-right */}
                     <div className="hidden md:block absolute top-0 right-0 w-[500px] h-[300px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
-                    <div className="relative z-10">
+                    <motion.div
+                        key={pathname}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className="relative z-10"
+                    >
                         {children}
-                    </div>
+                    </motion.div>
                 </main>
             </div>
         </div>

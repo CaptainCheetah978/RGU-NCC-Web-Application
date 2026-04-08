@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cadet, Certificate, Role, User, AttendanceRecord, Note, Wing, Gender, normalizeRole, normalizeGender } from "@/types";
+import { Cadet, Certificate, Role, User, AttendanceRecord, Note, Wing, normalizeRole, normalizeGender } from "@/types";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import { requireAccessToken } from "@/lib/require-access-token";

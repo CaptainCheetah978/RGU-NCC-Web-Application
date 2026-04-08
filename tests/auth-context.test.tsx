@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { AuthProvider, useAuth } from '../src/lib/auth-context'
 import React from 'react'
@@ -44,18 +44,21 @@ vi.mock('@/app/actions/profile-actions', () => ({
 // Set up default onAuthStateChange that properly fires INITIAL_SESSION
 beforeEach(() => {
   vi.clearAllMocks()
+
   // Default: simulate no active session — fire INITIAL_SESSION with null
   mockOnAuthStateChange.mockImplementation((callback: (event: string, session: null) => void) => {
     Promise.resolve().then(() => callback('INITIAL_SESSION', null))
     return { data: { subscription: { unsubscribe: vi.fn() } } }
   })
+
   // getSession is still used by signupWithPassword and loginWithPassword flows
   mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
-  
+
   // By default window replace mock
   if (typeof window !== 'undefined') {
     Object.defineProperty(window, 'location', {
       writable: true,
+      configurable: true,
       value: { replace: vi.fn() }
     })
   }
@@ -76,7 +79,7 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper })
 
     expect(result.current.isLoading).toBe(true)
-    
+
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
       expect(result.current.user).toBeNull()
@@ -108,7 +111,7 @@ describe('AuthContext', () => {
 
     // Call login
     const promise = result.current.loginWithPassword('test@nccrgu.internal', '1234')
-    
+
     await promise
 
     // Verify it attempted secure password login first (pin + salt)

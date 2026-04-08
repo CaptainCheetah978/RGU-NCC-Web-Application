@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
 import { generateUuid } from "@/lib/utils";
-import { PageLoader } from "@/components/ui/page-loader";
+import { ClassesSkeleton } from "@/components/training/classes-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 
 export default function ClassesPage() {
@@ -42,7 +42,7 @@ export default function ClassesPage() {
     }
 
     if (trainingLoading) {
-        return <PageLoader />;
+        return <ClassesSkeleton />;
     }
 
     if (!user) return null;

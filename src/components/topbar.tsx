@@ -9,7 +9,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface TopbarProps {
@@ -23,6 +23,22 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     const [showNotifications, setShowNotifications] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+    const pathname = usePathname();
+    const [isNavigating, setIsNavigating] = useState(false);
+    const [lastPathname, setLastPathname] = useState(pathname);
+
+    // Provide 0ms feedback on navigation - modern React adjustment pattern
+    if (pathname !== lastPathname) {
+        setLastPathname(pathname);
+        setIsNavigating(true);
+    }
+
+    useEffect(() => {
+        if (isNavigating) {
+            const timer = setTimeout(() => setIsNavigating(false), 800);
+            return () => clearTimeout(timer);
+        }
+    }, [isNavigating]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -56,6 +72,20 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
     return (
         <header className="h-16 border-b border-gray-200/80 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 w-full shadow-sm dark:shadow-slate-900/30">
+             {/* Top Velocity Progress Bar */}
+             <AnimatePresence mode="wait">
+                {isNavigating && (
+                    <motion.div
+                        key="progress-bar"
+                        initial={{ width: "0%", opacity: 1 }}
+                        animate={{ width: "100%", opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                        className="absolute top-0 left-0 h-[3px] bg-primary z-50 shadow-[0_0_15px_rgba(var(--primary),0.6)]"
+                    />
+                )}
+            </AnimatePresence>
+
             <div className="flex items-center space-x-4">
                 <button
                     onClick={onMenuClick}
@@ -107,7 +137,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                         )}
                     </button>
 
-                    <AnimatePresence>
+                    <AnimatePresence mode="wait">
                         {showNotifications && (
                             <motion.div
                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}

@@ -14,7 +14,7 @@ import { cn, getWingAwareRank } from "@/lib/utils";
 import { AttendanceExport } from "@/components/attendance/export-button";
 import { PdfExportButton } from "@/components/attendance/pdf-export-button";
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { PageLoader } from "@/components/ui/page-loader";
+import { AttendanceSkeleton } from "@/components/attendance/attendance-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { useRef } from "react";
 
@@ -141,7 +141,7 @@ function AttendanceContent() {
     }
 
     if (isLoading) {
-        return <PageLoader />;
+        return <AttendanceSkeleton />;
     }
 
     if (!user) return null;

@@ -22,13 +22,12 @@ import { EditCadetModal } from "@/components/cadets/edit-cadet-modal";
 import { CadetsTable } from "@/components/cadets/cadets-table";
 import { useCadetFilter } from "@/components/cadets/use-cadet-filter";
 import { Modal } from "@/components/ui/modal";
-
-
+import { RegistrySkeleton } from "@/components/cadets/registry-skeleton";
 
 export default function CadetsPage() {
-    const { cadets, updateCadet, deleteCadet, refreshProfiles } = useCadetData();
+    const { cadets, updateCadet, deleteCadet, refreshProfiles, isLoading: isDataLoading } = useCadetData();
     const { logActivity } = useActivityData();
-    const { user } = useAuth();
+    const { user, isLoading: isAuthLoading } = useAuth();
     const { showToast } = useToast();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,7 +72,6 @@ export default function CadetsPage() {
     } = useCadetFilter(cadets);
 
     // --- Logic: Auto-update Unit based on Wing ---
-    // This provides smart defaults while allowing manual override
     useEffect(() => {
         if (formData.wing === Wing.ARMY) {
             setFormData(prev => ({ ...prev, unitName: "Assam Bn NCC", unitNumber: "30" }));
@@ -84,12 +82,14 @@ export default function CadetsPage() {
         }
     }, [formData.wing]);
 
+    if (isAuthLoading || (isDataLoading && cadets.length === 0)) {
+        return <RegistrySkeleton />;
+    }
+
     if (!user) return null;
 
     const canEdit = user && Permissions.CAN_MANAGE_USERS.has(user.role);
     const isANO = user.role === Role.ANO;
-
-    // --- Handlers ---
 
     const handleEdit = (cadet: Cadet) => {
         setEditingCadet(cadet);
@@ -111,7 +111,7 @@ export default function CadetsPage() {
     const handlePinEdit = async (cadet: Cadet) => {
         setEditingCadet(cadet);
         setIsPinModalOpen(true);
-        setNewPin(""); // Reset to empty; security prevents viewing existing PIN
+        setNewPin("");
     };
 
     const handleView = (cadet: Cadet) => {
@@ -232,8 +232,6 @@ export default function CadetsPage() {
 
             {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-slate-800/80 p-4 rounded-2xl border border-gray-100 dark:border-slate-700/60 shadow-sm">
-
-                {/* Status Toggle (Active / Alumni) */}
                 <div className="flex bg-gray-100 dark:bg-slate-700/50 p-1 rounded-xl">
                     <button
                         onClick={() => setFilterStatus("active")}
@@ -260,17 +258,15 @@ export default function CadetsPage() {
                     <Input
                         placeholder="Search by name, regimental number, or rank..."
                         className="pl-10"
-                        aria-label="Search by name, regimental number, or rank"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
                 <div className="flex gap-2">
                     <select
-                        className="px-4 py-2 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer text-sm font-medium"
+                        className="px-4 py-2 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-xl outline-none cursor-pointer text-sm font-medium"
                         value={filterRole}
                         onChange={(e) => setFilterRole(e.target.value)}
-                        aria-label="Filter by Rank"
                     >
                         <option value="ALL">All Ranks</option>
                         <option value={Role.CSUO}>CSUO / SCC / SUO</option>
@@ -293,9 +289,6 @@ export default function CadetsPage() {
                         <UserPlus className="w-10 h-10 text-gray-400 dark:text-slate-500" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">No cadets found</h3>
-                    <p className="text-gray-700 dark:text-slate-400 mt-2 max-w-md mx-auto font-medium">
-                        No results match your search or filter. Try adjusting terms or enroll a new cadet to get started.
-                    </p>
                 </div>
             ) : (
                 <>
@@ -309,7 +302,7 @@ export default function CadetsPage() {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: Math.min(i * 0.03, 0.3) }}
                                     >
-                                        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
+                                        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 overflow-hidden hover:shadow-xl transition-all h-full flex flex-col relative group">
                                             <div className={cn(
                                                     "absolute top-0 left-0 right-0 h-1",
                                                     cadet.wing === Wing.ARMY ? "bg-emerald-600" : 
@@ -326,58 +319,35 @@ export default function CadetsPage() {
                                                                     cadet.wing === Wing.NAVY ? "border-[#002147]/20" : 
                                                                     "border-sky-400/20"
                                                                 )}>
-                                                                {cadet.avatarUrl ? (
-                                                                    <Image src={cadet.avatarUrl} alt={cadet.name} width={64} height={64} className="object-cover" />
-                                                                ) : (
-                                                                    <span className="text-xl font-bold text-zinc-500 dark:text-slate-500">{cadet.name.charAt(0)}</span>
-                                                                )}
+                                                                {cadet.avatarUrl ? <Image src={cadet.avatarUrl} alt={cadet.name} width={64} height={64} className="object-cover" /> : <span className="text-xl font-bold text-zinc-500">{cadet.name.charAt(0)}</span>}
                                                             </div>
-                                                            <span className="absolute -bottom-2 -right-2 bg-white dark:bg-slate-800 border-2 border-gray-100 dark:border-slate-700 rounded-lg px-2 py-0.5 text-[10px] font-black shadow-sm text-gray-700 dark:text-slate-300">
-                                                                {cadet.gender}
-                                                            </span>
+                                                            <span className="absolute -bottom-2 -right-2 bg-white dark:bg-slate-800 border-2 border-gray-100 dark:border-slate-700 rounded-lg px-2 py-0.5 text-[10px] font-black shadow-sm">{cadet.gender}</span>
                                                         </div>
                                                         <div>
-                                                            <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-blue-400 transition-colors text-lg flex items-center gap-2">
+                                                            <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors text-lg flex items-center gap-2">
                                                                 {getWingAwareRank(cadet.rank as Role, cadet.wing)} {cadet.name}
-                                                                {cadet.status === 'alumni' && (
-                                                                    <span className="text-[10px] uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
-                                                                )}
                                                             </h3>
-                                                            <p className="text-sm text-gray-700 dark:text-slate-300 font-bold decoration-primary/20 underline underline-offset-4">
-                                                                {cadet.regimentalNumber || "N/A"}
-                                                            </p>
+                                                            <p className="text-sm text-gray-700 dark:text-slate-300 font-bold underline underline-offset-4 decoration-primary/20">{cadet.regimentalNumber || "N/A"}</p>
                                                         </div>
                                                     </div>
                                                 </div>
-
                                                 <div className="space-y-2 mb-4">
-                                                    <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
-                                                        <span className="w-24 text-zinc-800 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Unit</span>
-                                                        <span className="font-bold truncate">{cadet.unitNumber} {cadet.unitName}</span>
+                                                    <div className="flex items-center text-sm">
+                                                        <span className="w-24 text-zinc-800 dark:text-slate-400 text-xs uppercase font-black">Unit</span>
+                                                        <span className="font-bold">{cadet.unitNumber} {cadet.unitName}</span>
                                                     </div>
-                                                    <div className="flex items-center text-sm text-gray-800 dark:text-slate-300">
-                                                        <span className="w-24 text-zinc-800 dark:text-slate-400 text-xs uppercase font-black tracking-wider">Batches</span>
-                                                        <span className="font-bold bg-primary/5 dark:bg-slate-700 px-2 py-0.5 rounded text-xs text-primary dark:text-slate-300">{cadet.enrollmentYear}</span>
+                                                    <div className="flex items-center text-sm">
+                                                        <span className="w-24 text-zinc-800 dark:text-slate-400 text-xs uppercase font-black">Batches</span>
+                                                        <span className="font-bold bg-primary/5 px-2 py-0.5 rounded text-xs text-primary">{cadet.enrollmentYear}</span>
                                                     </div>
                                                 </div>
-
-                                                <div className="flex gap-2 border-t border-gray-100 dark:border-slate-700/60 pt-4 mt-2 mt-auto">
-                                                    <Button variant="ghost" size="sm" className="flex-1 text-xs" onClick={() => handleView(cadet)}>
-                                                        View Profile
-                                                    </Button>
-                                                    {canEdit && (
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => handleEdit(cadet)} aria-label={`Edit ${cadet.name}`}>
-                                                            <Edit2 className="w-4 h-4" />
-                                                        </Button>
-                                                    )}
+                                                <div className="flex gap-2 border-t border-gray-100 dark:border-slate-700/60 pt-4 mt-auto">
+                                                    <Button variant="ghost" size="sm" className="flex-1 text-xs" onClick={() => handleView(cadet)}>View Profile</Button>
+                                                    {canEdit && <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => handleEdit(cadet)}><Edit2 className="w-4 h-4" /></Button>}
                                                     {isANO && (
                                                         <>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-500" onClick={() => handlePinEdit(cadet)} aria-label={`Update PIN for ${cadet.name}`}>
-                                                                <Key className="w-4 h-4" />
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(cadet)} aria-label={`Delete ${cadet.name}`}>
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-500" onClick={() => handlePinEdit(cadet)}><Key className="w-4 h-4" /></Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(cadet)}><Trash2 className="w-4 h-4" /></Button>
                                                         </>
                                                     )}
                                                 </div>
@@ -388,100 +358,39 @@ export default function CadetsPage() {
                             </div>
                         </div>
                     ) : (
-                        <CadetsTable
-                            cadets={filteredCadets}
-                            canEdit={canEdit}
-                            isANO={isANO}
-                            onView={handleView}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
+                        <CadetsTable cadets={filteredCadets} canEdit={canEdit} isANO={isANO} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
                     )}
                 </>
             )}
 
-            {/* --- MODALS --- */}
-            <AddCadetModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                formData={formData}
-                onChange={(updates) => setFormData({ ...formData, ...updates })}
-                onSubmit={handleSubmit}
-                isLoading={isLoading}
-            />
-
-            <EditCadetModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                formData={editFormData}
-                onChange={(updates) => setEditFormData({ ...editFormData, ...updates })}
-                onSubmit={handleUpdate}
-                isLoading={isLoading}
-            />
-
-            {/* PIN Modal */}
+            <AddCadetModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} formData={formData} onChange={(updates) => setFormData({ ...formData, ...updates })} onSubmit={handleSubmit} isLoading={isLoading} />
+            <EditCadetModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} formData={editFormData} onChange={(updates) => setEditFormData({ ...editFormData, ...updates })} onSubmit={handleUpdate} isLoading={isLoading} />
             <Modal isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title="Update Access PIN">
                 <form onSubmit={handlePinUpdate} className="space-y-4">
-                    <p className="text-sm text-gray-500 dark:text-slate-400">
-                        Set a new 4-digit PIN for {getWingAwareRank(editingCadet?.rank as Role, editingCadet?.wing)} {editingCadet?.name}. They will use this to login.
-                    </p>
-                    <Input
-                        label="New PIN"
-                        value={newPin}
-                        onChange={(e) => setNewPin(e.target.value)}
-                        maxLength={4}
-                        placeholder="1234"
-                        className="text-center text-2xl tracking-[0.5em] font-mono"
-                    />
-                    <div className="pt-4 flex justify-end gap-3">
-                        <Button type="button" variant="ghost" onClick={() => setIsPinModalOpen(false)}>Cancel</Button>
-                        <Button type="submit" isLoading={isLoading}>Update PIN</Button>
-                    </div>
+                    <Input label="New PIN" value={newPin} onChange={(e) => setNewPin(e.target.value)} maxLength={4} placeholder="1234" className="text-center text-2xl tracking-[0.5em] font-mono" />
+                    <div className="pt-4 flex justify-end gap-3"><Button type="button" variant="ghost" onClick={() => setIsPinModalOpen(false)}>Cancel</Button><Button type="submit" isLoading={isLoading}>Update PIN</Button></div>
                 </form>
             </Modal>
-
-            {/* View Modal - Detailed */}
             <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Cadet Profile">
                 {viewingCadet && (
                     <div className="space-y-6">
-                        <div className="flex flex-col items-center justify-center text-center pb-6 border-b border-gray-100 dark:border-slate-700/60 relative">
-                            <div className="w-24 h-24 rounded-2xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-3xl font-bold text-gray-400 dark:text-slate-500 overflow-hidden mb-3 border-4 border-white dark:border-slate-600 shadow-lg">
+                        <div className="flex flex-col items-center justify-center text-center pb-6 border-b border-gray-100 dark:border-slate-700/60">
+                            <div className="w-24 h-24 rounded-2xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-3xl font-bold overflow-hidden mb-3 border-4 border-white dark:border-slate-600 shadow-lg">
                                 {viewingCadet.avatarUrl ? <Image src={viewingCadet.avatarUrl} alt={viewingCadet.name} width={96} height={96} className="w-full h-full object-cover" /> : viewingCadet.name.charAt(0)}
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2 flex-wrap">
-                                {getWingAwareRank(viewingCadet.rank as Role, viewingCadet.wing)} {viewingCadet.name}
-                                {viewingCadet.status === 'alumni' && (
-                                    <span className="text-xs uppercase font-black tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400 px-2 py-0.5 rounded-full ring-1 ring-amber-200 dark:ring-amber-800">Alumni</span>
-                                )}
-                            </h3>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{getWingAwareRank(viewingCadet.rank as Role, viewingCadet.wing)} {viewingCadet.name}</h3>
                             <p className="text-zinc-700 dark:text-slate-300 font-mono bg-gray-100 dark:bg-slate-700 px-3 py-1 rounded-full text-xs mt-2">{viewingCadet.regimentalNumber}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                                <span className="block text-xs text-gray-700 dark:text-slate-400 uppercase font-black">Unit</span>
-                                <span className="font-bold text-gray-900 dark:text-slate-200">{viewingCadet.unitNumber} {viewingCadet.unitName}</span>
-                            </div>
-                            <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                                <span className="block text-xs text-gray-700 dark:text-slate-400 uppercase font-black">Wing</span>
-                                <span className="font-bold text-gray-900 dark:text-slate-200">{viewingCadet.wing}</span>
-                            </div>
-                            <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                                <span className="block text-xs text-gray-700 dark:text-slate-400 uppercase font-black">Enrolled</span>
-                                <span className="font-bold text-gray-900 dark:text-slate-200">{viewingCadet.enrollmentYear}</span>
-                            </div>
-                            <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                                <span className="block text-xs text-gray-700 dark:text-slate-400 uppercase font-black">Blood Group</span>
-                                <span className="font-bold text-gray-900 dark:text-slate-200">{viewingCadet.bloodGroup}</span>
-                            </div>
+                            <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg"><span className="block text-xs uppercase font-black text-slate-400">Unit</span><span className="font-bold">{viewingCadet.unitNumber} {viewingCadet.unitName}</span></div>
+                            <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg"><span className="block text-xs uppercase font-black text-slate-400">Wing</span><span className="font-bold">{viewingCadet.wing}</span></div>
+                            <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg"><span className="block text-xs uppercase font-black text-slate-400">Enrolled</span><span className="font-bold">{viewingCadet.enrollmentYear}</span></div>
+                            <div className="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg"><span className="block text-xs uppercase font-black text-slate-400">Blood Group</span><span className="font-bold">{viewingCadet.bloodGroup}</span></div>
                         </div>
-
-                        {/* Certificates Section */}
                         <div className="pt-2">
-                            <h4 className="font-bold text-gray-900 dark:text-white mb-3 text-sm uppercase tracking-wider">Certificates</h4>
-                            <CertificatesSection userId={viewingCadet.id} isReadOnly={!isANO} />
+                             <h4 className="font-bold text-gray-900 dark:text-white mb-3 text-sm uppercase tracking-wider">Certificates</h4>
+                             <CertificatesSection userId={viewingCadet.id} isReadOnly={!isANO} />
                         </div>
-
-
                     </div>
                 )}
             </Modal>
