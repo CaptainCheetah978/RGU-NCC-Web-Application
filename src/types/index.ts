@@ -50,6 +50,17 @@ export enum Gender {
     SW = "SW",
 }
 
+export interface UnitBranding {
+    id: string;
+    name: string;
+    number?: string;
+    institution_name?: string;
+    logo_url?: string;
+    secondary_logo_url?: string;
+    primary_color?: string;
+    branding_config?: Record<string, unknown>;
+}
+
 export interface User {
     id: string;
     name: string;
@@ -59,6 +70,7 @@ export interface User {
     unitId?: string;
     unitName?: string;
     unitNumber?: string;
+    unitBranding?: UnitBranding;
 }
 
 export interface Cadet extends User {

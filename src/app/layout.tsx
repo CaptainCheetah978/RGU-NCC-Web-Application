@@ -6,8 +6,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "NCC Royal Global University",
-  description: "Official Cadet Management System for NCC RGU Unit",
+  title: "NCC CMS - Developed by SUO Aditya Singh",
+  description: "A role-based Cadet Management System for the National Cadet Corps, developed by SUO Aditya Singh (https://github.com/CaptainCheetah978).",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon-192x192.png",
@@ -19,6 +19,7 @@ import { Providers } from "@/components/providers";
 import { PWARegistration } from "@/components/pwa-registration";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Watermark } from "@/components/watermark";
 
 export default function RootLayout({
   children,
@@ -32,6 +33,7 @@ export default function RootLayout({
         <PWARegistration />
         <Analytics />
         <SpeedInsights />
+        <Watermark />
       </body>
     </html>
   );

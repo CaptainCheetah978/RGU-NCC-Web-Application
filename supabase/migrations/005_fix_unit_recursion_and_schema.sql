@@ -4,7 +4,7 @@
 -- It ensures unit_id exists and fixes the RLS infinite loop.
 -- ============================================================
 
--- 1. Create the Units table if it doesn't exist
+-- ── 1. SCHEMA RESTORATION (Multi-Unit Foundation) ──────
 CREATE TABLE IF NOT EXISTS units (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
@@ -12,29 +12,46 @@ CREATE TABLE IF NOT EXISTS units (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Insert the default battalion unit
-INSERT INTO units (name, number)
-VALUES ('30 Assam Bn NCC', '30')
+-- Insert the default battalion
+INSERT INTO units (name, number) 
+VALUES ('30 Assam Bn NCC', '30') 
 ON CONFLICT (name) DO NOTHING;
 
--- 3. Add the unit_id column to profiles securely
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='unit_id') THEN
-        ALTER TABLE profiles ADD COLUMN unit_id UUID REFERENCES units(id);
-    END IF;
-END $$;
+-- Add unit_id columns securely
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS unit_id UUID REFERENCES units(id);
+ALTER TABLE classes ADD COLUMN IF NOT EXISTS unit_id UUID REFERENCES units(id);
+ALTER TABLE attendance ADD COLUMN IF NOT EXISTS unit_id UUID REFERENCES units(id);
+ALTER TABLE announcements ADD COLUMN IF NOT EXISTS unit_id UUID REFERENCES units(id);
 
--- 4. Assign all existing profiles to the first available unit (Prevents lockout)
+-- ── 2. DATA CALIBRATION (Bypassing the Lock) ───────────
+-- Disable the 7-day lock temporarily to allow legacy data migration
+ALTER TABLE attendance DISABLE TRIGGER lock_old_attendance;
+
+-- Populate all old data with the default unit (30 Assam Bn)
 UPDATE profiles SET unit_id = (SELECT id FROM units LIMIT 1) WHERE unit_id IS NULL;
+UPDATE classes SET unit_id = (SELECT id FROM units LIMIT 1) WHERE unit_id IS NULL;
+UPDATE attendance SET unit_id = (SELECT id FROM units LIMIT 1) WHERE unit_id IS NULL;
+UPDATE announcements SET unit_id = (SELECT id FROM units LIMIT 1) WHERE unit_id IS NULL;
 
--- 5. RE-STRUCTURE RLS POLICIES (Bypass Recursion)
--- We drop the old ones to be 100% clean.
-DROP POLICY IF EXISTS "Unit profiles" ON profiles;
+-- Re-enable the 7-day lock
+ALTER TABLE attendance ENABLE TRIGGER lock_old_attendance;
+
+-- ── 3. SECURITY LOCKDOWN (Nuclear Cleanup) ───────────
+-- This ensures no "already exists" errors when re-running
 DROP POLICY IF EXISTS "Public profiles" ON profiles;
+DROP POLICY IF EXISTS "Isolated Profiles" ON profiles;
 DROP POLICY IF EXISTS "Self view profiles" ON profiles;
+DROP POLICY IF EXISTS "Unit profiles" ON profiles;
+DROP POLICY IF EXISTS "ANO global view" ON profiles; 
+DROP POLICY IF EXISTS "Isolated Classes" ON classes;
+DROP POLICY IF EXISTS "View classes" ON classes;
+DROP POLICY IF EXISTS "Isolated Announcements" ON announcements;
+DROP POLICY IF EXISTS "View announcements" ON announcements;
+DROP POLICY IF EXISTS "Admin Class Management" ON classes;
+DROP POLICY IF EXISTS "Manage classes" ON classes;
 
--- A. The Direct Path: Users can ALWAYS see themselves (breaks the recursion)
+-- ── 4. RE-ESTABLISH ISOLATION (Recursion-Free) ────────
+-- A. The Direct Path: Users can ALWAYS see themselves (Breaks the recursion index)
 CREATE POLICY "Self view profiles" ON profiles
     FOR SELECT USING (id = auth.uid());
 
@@ -42,21 +59,30 @@ CREATE POLICY "Self view profiles" ON profiles
 CREATE POLICY "Unit profiles" ON profiles
     FOR SELECT USING (
       unit_id IS NOT NULL AND 
-      unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = auth.uid())
+      unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid()))
     );
 
--- 6. Ensure unit_id is added to other critical tables if missing
--- (Classes)
-DO $$ BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='classes' AND column_name='unit_id') THEN
-        ALTER TABLE classes ADD COLUMN unit_id UUID REFERENCES units(id);
-        UPDATE classes SET unit_id = (SELECT id FROM units LIMIT 1) WHERE unit_id IS NULL;
-    END IF;
-END $$;
--- (Attendance)
-DO $$ BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='attendance' AND column_name='unit_id') THEN
-        ALTER TABLE attendance ADD COLUMN unit_id UUID REFERENCES units(id);
-        UPDATE attendance SET unit_id = (SELECT id FROM units LIMIT 1) WHERE unit_id IS NULL;
-    END IF;
-END $$;
+-- C. The ANO Path: ANOs can see everyone globally
+CREATE POLICY "ANO global view" ON profiles
+    FOR SELECT USING (
+        (SELECT p.role FROM profiles p WHERE p.id = (select auth.uid())) = 'ANO'
+    );
+
+-- D. Isolated Classes & Announcements
+CREATE POLICY "Isolated Classes" ON classes 
+FOR SELECT USING (unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid())));
+
+CREATE POLICY "Isolated Announcements" ON announcements 
+FOR SELECT USING (unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid())));
+
+-- E. Admin Class Management
+CREATE POLICY "Admin Class Management" ON classes
+  FOR ALL 
+  USING (
+    unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid())) AND
+    (SELECT p.role FROM profiles p WHERE p.id = (select auth.uid())) IN ('ANO', 'CTO', 'CSUO', 'CJUO', 'CWO', 'CUO')
+  );
+
+-- ── 5. FINAL PIN DELETE ───────────────────────────────
+-- Permanently delete the plaintext PIN column (Supabase Auth uses hashed PINs now)
+ALTER TABLE profiles DROP COLUMN IF EXISTS access_pin;

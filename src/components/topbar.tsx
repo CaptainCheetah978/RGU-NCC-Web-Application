@@ -17,7 +17,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ onMenuClick }: TopbarProps) {
-    const { user } = useAuth();
+    const { user, unitBranding } = useAuth();
     const { messageableUsers } = useCadetData();
     const { notes, markNoteAsRead, markAllAsRead } = useCommunicationData();
     const [showNotifications, setShowNotifications] = useState(false);
@@ -105,9 +105,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                     <h1 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight sm:hidden">
                         Dashboard
                     </h1>
-                    {user?.unitName && (
+                    {(unitBranding?.name || user?.unitName) && (
                         <span className="text-[10px] font-bold text-primary/70 dark:text-blue-400/70 uppercase tracking-widest -mt-0.5 hidden sm:block">
-                            {user.unitName} {user.unitNumber && `(${user.unitNumber})`}
+                            {unitBranding?.name || user?.unitName} {(unitBranding?.number || user?.unitNumber) && `(${unitBranding?.number || user?.unitNumber})`}
                         </span>
                     )}
                 </div>

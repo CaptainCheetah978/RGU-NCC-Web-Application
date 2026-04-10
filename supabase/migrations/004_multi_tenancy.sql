@@ -119,5 +119,6 @@ CREATE POLICY "ANO/SUO Manage announcements" ON announcements
 
 -- Partition Profiles (Users can see everyone in their UNIT)
 DROP POLICY IF EXISTS "Public profiles" ON profiles;
+DROP POLICY IF EXISTS "Unit profiles" ON profiles;
 CREATE POLICY "Unit profiles" ON profiles
     FOR SELECT USING (unit_id = get_my_unit_id());

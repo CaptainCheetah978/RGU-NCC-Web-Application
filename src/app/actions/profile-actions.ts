@@ -68,7 +68,7 @@ export async function getProfileByIdAction(userId: string) {
     // Try with the full column set first (includes newer schema columns)
     const { data, error } = await supabaseAdmin
         .from('profiles')
-        .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number, email, unit_id')
+        .select('*, unit:units(*)')
         .eq('id', userId)
         .single();
     

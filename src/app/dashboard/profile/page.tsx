@@ -20,7 +20,7 @@ import { PageLoader } from "@/components/ui/page-loader";
 import Image from "next/image";
 
 export default function ProfilePage() {
-    const { user, updatePin, isLoading: isAuthLoading } = useAuth();
+    const { user, updatePin, isLoading: isAuthLoading, unitBranding } = useAuth();
     const { updateCadet, currentUserProfile, isLoading: isDataLoading } = useCadetData();
     const getStats = useDashboardStats();
 
@@ -96,6 +96,7 @@ export default function ProfilePage() {
 
     // Helper function to format unit name for display
     const getFormattedUnit = (wing: Wing | undefined, unitNumber: string | undefined, unitName?: string): string => {
+        if (unitBranding) return unitBranding.name;
         if (!unitNumber) return "NCC Unit, RGU";
         const name = unitName || (wing === Wing.ARMY ? "Assam BN NCC" : wing === Wing.AIR ? "Assam Air Sqn NCC" : "Assam Naval Unit NCC");
         return `${unitNumber} ${name}`;
@@ -425,6 +426,13 @@ export default function ProfilePage() {
                                     {/* Wrapping outer container specifically to be snapshotted with beautiful white padding, shadows, and rounded corners! */}
                                     <div ref={idCardRef} className="bg-white p-6 shrink-0 flex items-center justify-center rounded-3xl">
                                         <div className="w-[500px] h-[312px] shrink-0 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100/50 relative overflow-hidden flex flex-col p-px ring-1 ring-gray-900/5">
+                                            {/* Digital Watermark - SUO Aditya Singh, NER Dte. */}
+                                            <div className="absolute bottom-1 right-1 z-[40] opacity-[0.03] pointer-events-none select-none no-print">
+                                                <p className="text-[5px] font-black text-black uppercase tracking-tighter leading-none">
+                                                    Auth: SUO Aditya Singh, NER Dte.
+                                                </p>
+                                            </div>
+
                                             {/* Holographic shimmer overlay — visual liveness, defeats screenshots */}
                                             <div className="id-shimmer absolute inset-0 z-[16] pointer-events-none rounded-2xl overflow-hidden" />
 
@@ -434,14 +442,28 @@ export default function ProfilePage() {
                                             {/* Header Section */}
                                             <div className="p-1 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 relative z-10 pl-8">
                                                 <div className="w-11 h-11 flex items-center justify-center">
-                                                    <Image src="/ncc-logo.png" width={44} height={44} className="object-contain" alt="NCC" />
+                                                    <Image 
+                                                        src={unitBranding?.logo_url || "/ncc-logo.png"} 
+                                                        width={44} 
+                                                        height={44} 
+                                                        className="object-contain" 
+                                                        alt="Unit Logo" 
+                                                    />
                                                 </div>
                                                 <div className="text-center flex-1 mx-4">
-                                                    <h3 className="text-[13px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">The Assam Royal Global University</h3>
+                                                    <h3 className="text-[13px] font-extrabold text-[#002147] leading-tight uppercase tracking-tight">
+                                                        {unitBranding?.institution_name || "The Assam Royal Global University"}
+                                                    </h3>
                                                     <p className="text-[10px] font-bold text-red-700 tracking-[0.2em] leading-tight uppercase mt-0.5">National Cadet Corps</p>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 pr-2">
-                                                    <Image src="/rgu-logo.png" width={44} height={44} className="w-11 h-11 object-contain" alt="RGU" />
+                                                    <Image 
+                                                        src={unitBranding?.secondary_logo_url || "/rgu-logo.png"} 
+                                                        width={44} 
+                                                        height={44} 
+                                                        className="w-11 h-11 object-contain" 
+                                                        alt="Institution Logo" 
+                                                    />
                                                     {/* Ticking clock — visual liveness proof */}
                                                     {currentTime && (
                                                         <span className="text-[8px] font-mono font-black text-gray-500 tracking-tight leading-none whitespace-nowrap">{currentTime}</span>
@@ -536,7 +558,9 @@ export default function ProfilePage() {
                                                     <div className="flex flex-col items-center">
                                                         <p className="text-[10px] italic font-serif text-gray-600 mb-0.5 leading-none">s/d-</p>
                                                         <div className="w-28 border-b border-gray-300 mb-1" />
-                                                        <p className="text-[10px] font-extrabold text-gray-800 uppercase leading-none">ANO, RGU NCC</p>
+                                                        <p className="text-[10px] font-extrabold text-gray-800 uppercase leading-none">
+                                                            ANO, {unitBranding?.name || "RGU NCC"}
+                                                        </p>
                                                         <p className="text-[8px] font-bold text-gray-600 uppercase mt-0.5 tracking-wider">Digital Signature</p>
                                                     </div>
                                                 </div>
@@ -548,7 +572,7 @@ export default function ProfilePage() {
                                                     Verify: {typeof window !== 'undefined' ? window.location.host : 'ncc-rgu.app'}/verify
                                                 </p>
                                                 <p className="text-[6px] text-white/50 font-black uppercase tracking-[0.1em] leading-none">
-                                                    Verification Engine by RGU-NCC
+                                                    Verification Engine by {unitBranding?.name || "RGU-NCC"}
                                                 </p>
                                             </div>
                                         </div>

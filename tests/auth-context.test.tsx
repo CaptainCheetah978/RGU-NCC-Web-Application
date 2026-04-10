@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { AuthProvider, useAuth } from '../src/lib/auth-context'
 import React from 'react'
@@ -22,6 +22,7 @@ const mockGetUser = vi.fn()
 const mockSupabaseFrom = vi.fn()
 const mockGetProfileByIdAction = vi.fn()
 const mockEnsureUserProfileAction = vi.fn()
+const mockGetUnitBrandingAction = vi.fn()
 
 vi.mock('@/lib/supabase-client', () => ({
   supabase: {
@@ -39,6 +40,10 @@ vi.mock('@/lib/supabase-client', () => ({
 vi.mock('@/app/actions/profile-actions', () => ({
   getProfileByIdAction: (...args: unknown[]) => mockGetProfileByIdAction(...args),
   ensureUserProfileAction: (...args: unknown[]) => mockEnsureUserProfileAction(...args),
+}))
+
+vi.mock('@/app/actions/unit-actions', () => ({
+  getUnitBrandingAction: (...args: unknown[]) => mockGetUnitBrandingAction(...args),
 }))
 
 // Set up default onAuthStateChange that properly fires INITIAL_SESSION
@@ -62,6 +67,9 @@ beforeEach(() => {
       value: { replace: vi.fn() }
     })
   }
+
+  // Default: return null for unit branding initialization
+  mockGetUnitBrandingAction.mockResolvedValue(null)
 })
 
 describe('AuthContext', () => {
@@ -122,13 +130,13 @@ describe('AuthContext', () => {
 
     // Verify user profile is loaded
     await waitFor(() => {
-      expect(result.current.user).toEqual({
+      expect(result.current.user).toEqual(expect.objectContaining({
         id: 'test-user-id',
         name: 'Test Cadet',
         role: 'CADET',
         regimentalNumber: 'AS20SDA100000',
         avatarUrl: undefined
-      })
+      }))
     })
   })
 

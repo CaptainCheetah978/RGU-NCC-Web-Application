@@ -1,7 +1,7 @@
 {
-    "name": "NCC RGU Cadet Management",
-    "short_name": "NCC RGU",
-    "description": "Cadet Management System for NCC RGU Unit",
+    "name": "NCC Cadet Management System",
+    "short_name": "NCC CMS",
+    "description": "Cadet Management System developed by SUO Aditya Singh (https://github.com/CaptainCheetah978)",
     "start_url": "/dashboard",
     "display": "standalone",
     "background_color": "#0f172a",

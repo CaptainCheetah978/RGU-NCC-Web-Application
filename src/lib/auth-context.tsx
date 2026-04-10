@@ -1,10 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, Role, normalizeRole } from "@/types";
+import { User, Role, normalizeRole, UnitBranding } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 import { ensureUserProfileAction, getProfileByIdAction } from "@/app/actions/profile-actions";
+import { getUnitBrandingAction } from "@/app/actions/unit-actions";
 
 interface AuthContextType {
     user: User | null;
@@ -16,12 +17,14 @@ interface AuthContextType {
     resetPin: (email: string) => Promise<void>;
     updatePin: (newPin: string) => Promise<void>;
     isLoading: boolean;
+    unitBranding: UnitBranding | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
+    const [unitBranding, setUnitBranding] = useState<UnitBranding | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     // Track whether user has been loaded at least once — prevents transient
@@ -36,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 userLoadedRef.current = false;
                 isFetchingRef.current = false;
                 setUser(null);
+                // Don't clear unitBranding on logout, we still need it for the login page
                 setIsLoading(false);
                 // Hard redirect — clears all React state and re-renders from scratch
                 window.location.replace('/');
@@ -61,12 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 await fetchProfile(session.user.id);
             } else {
                 setUser(null);
+                // Fetch default unit branding for unauthenticated state (Login page)
+                if (!unitBranding) {
+                    const branding = await getUnitBrandingAction();
+                    setUnitBranding(branding);
+                }
             }
             setIsLoading(false);
         });
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, [unitBranding]);
 
     const fetchProfile = async (userId: string, timeoutMs = 8000, retries = 1): Promise<User | null> => {
         // Prevent concurrent fetches — if already in progress, wait for it
@@ -128,10 +137,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     regimentalNumber: profileData.regimental_number as string | undefined,
                     avatarUrl: profileData.avatar_url as string | undefined,
                     unitId: profileData.unit_id as string | undefined,
-                    unitName: profileData.unit_name as string | undefined,
                     unitNumber: profileData.unit_number as string | undefined,
+                    unitBranding: profileData.unit as UnitBranding | undefined,
                 };
                 setUser(appUser);
+                // Keep global branding in sync with the logged-in user's unit
+                if (appUser.unitBranding) {
+                    setUnitBranding(appUser.unitBranding);
+                }
                 userLoadedRef.current = true;
                 return appUser;
             }
@@ -306,7 +319,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, verifyOtp, loginWithPassword, signupWithPassword, logout, resetPin, updatePin, isLoading }}>
+        <AuthContext.Provider value={{ user, login, verifyOtp, loginWithPassword, signupWithPassword, logout, resetPin, updatePin, isLoading, unitBranding }}>
             {children}
         </AuthContext.Provider>
     );

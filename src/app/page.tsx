@@ -12,7 +12,7 @@ import { Role } from "@/types";
 type LoginStep = "login" | "forgot-email" | "forgot-otp" | "forgot-newpin" | "forgot-done";
 
 export default function LoginPage() {
-  const { loginWithPassword, resetPin, updatePin, verifyOtp } = useAuth();
+  const { loginWithPassword, resetPin, updatePin, verifyOtp, unitBranding } = useAuth();
   const [activeTab, setActiveTab] = useState<Role>(Role.CADET);
   const [formData, setFormData] = useState({ username: "", pin: "" });
   const [error, setError] = useState("");
@@ -181,12 +181,28 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="flex justify-center items-center space-x-4 mb-6">
-            <Image src="/ncc-logo.png" alt="NCC" width={64} height={64} className="w-16 h-16 object-contain drop-shadow-2xl" />
+            <Image 
+              src={unitBranding?.logo_url || "/ncc-logo.png"} 
+              alt="Unit Logo" 
+              width={64} 
+              height={64} 
+              className="w-16 h-16 object-contain drop-shadow-2xl" 
+            />
             <div className="h-12 w-[1px] bg-white/20"></div>
-            <Image src="/rgu-logo.png" alt="RGU" width={64} height={64} className="w-16 h-16 object-contain drop-shadow-2xl" />
+            <Image 
+              src={unitBranding?.secondary_logo_url || "/rgu-logo.png"} 
+              alt="Institution Logo" 
+              width={64} 
+              height={64} 
+              className="w-16 h-16 object-contain drop-shadow-2xl" 
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">NCC Management</h1>
-          <p className="text-zinc-300 text-sm mt-1 font-bold">Royal Global University Unit</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            {unitBranding?.name || "30 Assam Bn NCC (your unit name here)"}
+          </h1>
+          <p className="text-zinc-300 text-sm mt-1 font-bold">
+            {unitBranding?.institution_name || "(your institution name here)"}
+          </p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
