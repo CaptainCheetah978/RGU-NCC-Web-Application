@@ -4,7 +4,7 @@
   <img src="public/rgu-logo.png" alt="RGU Logo" width="120" />
 </p>
 
-# NCC RGU Cadet Management System
+# National Cadet Corps Cadet Management System
 
 <p align="center">
   <img src="https://github.com/CaptainCheetah978/RGU-NCC-Web-Application/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
@@ -16,9 +16,9 @@
 </p>
 
 > [!NOTE]
-> **OPEN SOURCE LICENSE**: This project is licensed under the [Apache License 2.0](./LICENSE). You are free to use, modify, and distribute the source code. All original authorship and attribution to the **Aditya Singh** must be preserved in all copies and derivative works.
+> **OPEN SOURCE LICENSE**: This project is licensed under the [Apache License 2.0](./LICENSE). You are free to use, modify, and distribute the source code. All original authorship and attribution to **[Aditya Singh](https://github.com/CaptainCheetah978)** must be preserved in all copies and derivative works.
 
-A role-based Cadet Management System built with Next.js 16 and Supabase. Features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
+A role-based Cadet Management System developed by **[SUO Aditya Singh](https://github.com/CaptainCheetah978)**. This platform features real-time dashboards, QR verification, and administrative tools tailored for the National Cadet Corps.
 
 ## Tech Stack
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Actions)
@@ -133,29 +133,22 @@ Create a `.env.local` file in the project root. You will need a Supabase project
 NEXT_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-api-key"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key" # Never expose this to the client!
-
-# Branding Variables (Allows you to white-label the app)
-NEXT_PUBLIC_UNIT_NAME="NCC RGU"
-NEXT_PUBLIC_INSTITUTION_NAME="Royal Global University"
 ```
 
 **3. Initialize Database**
 - Open your Supabase Dashboard and navigate to the **SQL Editor**.
-- Execute the migration files in `supabase/migrations/` in the following recommended order:
-  1. `add_missing_columns.sql` — Ensures core profile schema.
-  2. `supabase-policies.sql` — Sets up base Row Level Security.
-  3. `001_data_integrity.sql` — Foreign keys, cascade deletes, and attendance locks.
-  4. `002_alumni_status.sql` — Lifecycle management enums.
-  5. `003_delete_demo_cadets.sql` [Optional] — Surgically removes demo placeholder data.
-  6. `004_multi_tenancy.sql` — Injects unit-scoped multi-tenancy and RLS isolation.
-  7. `005_fix_unit_recursion_and_schema.sql` — Resolves recursion loops in Unit profile fetches.
-  8. `fix_rls_performance.sql` — Optimized policy lookups (includes support for CWO, CSM, CQMS, and SCC).
-  9. `pending_migrations.sql` — Notes, logs, and bucket-specific storage policies.
+- Execute the migration files in `supabase/migrations/` in the following **required** order:
+  1. `001_data_integrity.sql` — Core constraints, foreign keys, and attendance locks.
+  2. `002_alumni_status.sql` — Lifecycle management enums for graduates.
+  3. `003_delete_demo_cadets.sql` [Optional] — Surgically removes demo placeholder data.
+  4. `004_multi_tenancy.sql` — Injects core unit partitioning and RLS isolation.
+  5. `005_fix_unit_recursion_and_schema.sql` — Hardens security and resolves RLS recursion loops.
+  6. `006_dynamic_branding_and_watermarks.sql` — The dynamic branding engine and security watermark schema.
 
-- Navigate to **Storage** and create a bucket named `files` (set to Private), then apply the storage policy instructions from `pending_migrations.sql`.
+- Navigate to **Storage** and create a bucket named `files` (set to Private). 
 
-> [!NOTE]
-> `clean-slate-policies.sql` is a legacy file and is effectively superseded by `fix_rls_performance.sql`. No need to run both.
+> [!IMPORTANT]
+> **Legacy Files**: `add_missing_columns.sql`, `supabase-policies.sql`, `fix_rls_performance.sql`, `clean-slate-policies.sql`, and `pending_migrations.sql` are **legacy files** and should NOT be run. They have been superseded by the numbered `001`-`006` flow.
 
 **4. Run Development Server**
 ```bash
@@ -195,7 +188,7 @@ If you are planning to contribute, we are looking at:
 - **Directorate-Level Scaling**: Advanced multi-tenant provisioning for large-scale directorate deployments.
 
 ## License & Primary Contact
-Released under the [MIT License](LICENSE).
+Released under the [Apache License 2.0](LICENSE).
 
 **Technical Lead:** [SUO Aditya Singh](https://github.com/CaptainCheetah978) 
 **Unit:** 30 Assam Bn NCC, Guwahati Group, NER Directorate
