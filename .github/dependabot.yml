@@ -1,0 +1,40 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Kolkata"
+    
+    # ── COMMIT LOG MANAGEMENT ──────────────────────────────────────────
+    # This ensures your git history stays clean and professional
+    commit-message:
+      prefix: "chore"
+      include: "scope" # e.g., "chore(deps): update..."
+    
+    # ── REBASE STRATEGY ────────────────────────────────────────────────
+    # Automatically rebases if you make other changes to main
+    rebase-strategy: "auto"
+
+    # ── GROUPED UPDATES (Clinical Noise Reduction) ────────────────────
+    # Bundles all non-breaking updates into a single PR
+    groups:
+      dependencies:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+    # ── LABELS & LIMITS ────────────────────────────────────────────────
+    labels:
+      - "dependencies"
+      - "high-velocity"
+    open-pull-requests-limit: 3 # Lower limit to ensure focus
+
+    # ── SECURITY OVERRIDES ─────────────────────────────────────────────
+    # Security updates always bypass groups and are sent immediately
+    vulnerability-threshold: "low" 
