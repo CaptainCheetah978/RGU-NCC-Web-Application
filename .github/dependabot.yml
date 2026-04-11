@@ -37,4 +37,4 @@ updates:
 
     # ── SECURITY OVERRIDES ─────────────────────────────────────────────
     # Security updates always bypass groups and are sent immediately
-    vulnerability-threshold: "low" 
+    # (Thresholds are managed via Repository Settings > Security)
