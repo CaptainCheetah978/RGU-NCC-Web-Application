@@ -24,10 +24,10 @@
     "html-to-image": "^1.11.13",
     "idb-keyval": "^6.2.2",
     "jose": "^6.2.2",
-    "jspdf": "^4.2.0",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.564.0",
-    "next": "16.1.6",
+    "next": "16.2.3",
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -37,7 +37,11 @@
     "zod": "^4.3.6"
   },
   "overrides": {
-    "dompurify": "3.3.2"
+    "dompurify": "3.3.2",
+    "vite": "8.0.5",
+    "flatted": "3.4.2",
+    "picomatch": "4.0.4",
+    "brace-expansion": "2.0.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -49,7 +53,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "16.2.3",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.0.0",
     "msw": "^2.12.12",
