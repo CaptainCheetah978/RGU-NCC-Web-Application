@@ -1,5 +1,5 @@
 -- ============================================================
--- 007: CLEAN SLATE & BOOTSTRAP
+-- 007: CLEAN SLATE & BOOTSTRAP (Trigger-Safe Version)
 -- Run this in Supabase SQL Editor AFTER deploying the new code.
 -- ============================================================
 -- WARNING: This script will DELETE all user data (profiles,
@@ -27,13 +27,8 @@ DELETE FROM auth.users;
 -- Creates an ANO user with:
 --   Email:    ano_ano@ncc.internal
 --   Password: 1234-ncc-auth  (PIN: 1234)
---
--- IMPORTANT: Change this PIN immediately after first login!
 
--- Insert into auth.users with a known password
--- The password hash below is for '1234-ncc-auth' using bcrypt.
--- We use Supabase's admin API pattern instead:
-
+-- A. Insert into auth.users (Authentication)
 INSERT INTO auth.users (
     id,
     instance_id,
@@ -58,7 +53,17 @@ INSERT INTO auth.users (
     NOW()
 );
 
--- Create the matching profile
+-- B. Sync with Profiles Table (Application)
+-- Path 1: Update the profile if a database trigger already created it
+UPDATE profiles 
+SET 
+    full_name = 'Associate NCC Officer',
+    role = 'ANO',
+    unit_id = (SELECT id FROM units LIMIT 1),
+    updated_at = NOW()
+WHERE id = (SELECT id FROM auth.users WHERE email = 'ano_ano@ncc.internal');
+
+-- Path 2: Manual insert ONLY if no trigger exists
 INSERT INTO profiles (id, full_name, role, unit_id, updated_at)
 SELECT
     u.id,
@@ -67,21 +72,12 @@ SELECT
     (SELECT id FROM units LIMIT 1),
     NOW()
 FROM auth.users u
-WHERE u.email = 'ano_ano@ncc.internal';
+WHERE u.email = 'ano_ano@ncc.internal'
+AND NOT EXISTS (SELECT 1 FROM profiles WHERE id = u.id);
 
 -- ── 4. VERIFY ────────────────────────────────────────────────
--- Run these queries to confirm everything is clean:
+-- Highlight and run these individually if the editor only shows one result:
 
--- Should return 1 row (the new ANO)
-SELECT id, email, raw_user_meta_data->>'role' as role FROM auth.users;
-
--- Should return 1 row (the ANO profile)
-SELECT id, full_name, role, unit_id FROM profiles;
-
--- Should return 0 rows each
-SELECT COUNT(*) as attendance_count FROM attendance;
-SELECT COUNT(*) as notes_count FROM notes;
-SELECT COUNT(*) as certificates_count FROM certificates;
-
--- Should return your unit (preserved!)
-SELECT id, name, number FROM units;
+-- SELECT * FROM auth.users;
+-- SELECT * FROM profiles;
+-- SELECT COUNT(*) as attendance_count FROM attendance;
