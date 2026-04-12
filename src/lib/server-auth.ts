@@ -30,11 +30,13 @@ export async function getCallerSession(
         if (error || !user) return null;
 
         // Try full column set first (includes unit_id from migration 005)
-        const { data: profile, error: profileErr } = await supabaseAdmin
+        const { data: profiles, error: profileErr } = await supabaseAdmin
             .from("profiles")
             .select("role, full_name, unit_id")
             .eq("id", user.id)
-            .single();
+            .limit(1);
+
+        const profile = profiles && profiles.length > 0 ? profiles[0] : null;
 
         if (!profileErr && profile?.role) {
             return { 
@@ -45,19 +47,18 @@ export async function getCallerSession(
             };
         }
 
-        // PGRST116 = "no rows" — profile genuinely missing, can't recover
-        if (profileErr?.code === 'PGRST116') {
-            console.error("getCallerSession: no profile row for user:", user.id);
-            return null;
+        // Handle error safely
+        if (profileErr) {
+            console.warn("getCallerSession full query failed, trying core fallback:", profileErr.message);
         }
 
-        // Any other error (e.g., unit_id column doesn't exist) — fallback to core columns
-        console.warn("getCallerSession full query failed, trying core fallback:", profileErr?.message);
-        const { data: fallback, error: fallbackErr } = await supabaseAdmin
+        const { data: fallbacks, error: fallbackErr } = await supabaseAdmin
             .from("profiles")
             .select("role, full_name")
             .eq("id", user.id)
-            .single();
+            .limit(1);
+
+        const fallback = fallbacks && fallbacks.length > 0 ? fallbacks[0] : null;
 
         if (fallbackErr || !fallback?.role) {
             console.error("getCallerSession fallback also failed:", fallbackErr?.message);
