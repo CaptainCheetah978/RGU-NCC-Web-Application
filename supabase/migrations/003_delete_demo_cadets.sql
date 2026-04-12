@@ -16,11 +16,11 @@ DELETE FROM profiles
 WHERE 
   full_name ILIKE '%DEMO%' 
   OR full_name ILIKE '%TEST%' 
-  OR reg_no ILIKE '%DE-MO%' 
-  OR reg_no ILIKE '%TEST%';
+  OR regimental_number ILIKE '%DE-MO%' 
+  OR regimental_number ILIKE '%TEST%';
 
 -- 2. Verify deletion of any orphaned records (Safety Check)
-DELETE FROM attendance WHERE profile_id IS NULL;
-DELETE FROM certificates WHERE profile_id IS NULL;
+DELETE FROM attendance WHERE cadet_id IS NULL;
+DELETE FROM certificates WHERE user_id IS NULL;
 
 COMMIT;
