@@ -41,11 +41,17 @@ export default function ProfilePage() {
     const [isStaticQR, setIsStaticQR] = useState(false);
     const [hasEverLoaded, setHasEverLoaded] = useState(false);
 
-    // Dynamic QR: Fetch a short-lived, signed JWT every 25 seconds
+    // Track whether the user has been loaded at least once
     useEffect(() => {
         if (user) {
             setHasEverLoaded(true);
         }
+    }, [user]);
+
+    // Dynamic QR: Fetch a short-lived, signed JWT every 25 seconds
+    // NOTE: Only depends on currentUserProfile?.id (a stable string), NOT the user object.
+    // Using the user object here caused the interval to reset every 2-3s due to reference changes.
+    useEffect(() => {
         if (!currentUserProfile?.id) return;
 
         let isMounted = true;
@@ -69,7 +75,7 @@ export default function ProfilePage() {
             isMounted = false;
             clearInterval(tokenInterval);
         };
-    }, [currentUserProfile?.id, user]);
+    }, [currentUserProfile?.id]);
 
     // Live ticking clock for visual liveness (defeats static screenshots)
     useEffect(() => {
