@@ -59,28 +59,28 @@ CREATE POLICY "Self view profiles" ON profiles
 CREATE POLICY "Unit profiles" ON profiles
     FOR SELECT USING (
       unit_id IS NOT NULL AND 
-      unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid()))
+      unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid()) LIMIT 1)
     );
 
 -- C. The ANO Path: ANOs can see everyone globally
 CREATE POLICY "ANO global view" ON profiles
     FOR SELECT USING (
-        (SELECT p.role FROM profiles p WHERE p.id = (select auth.uid())) = 'ANO'
+        (SELECT p.role FROM profiles p WHERE p.id = (select auth.uid()) LIMIT 1) = 'ANO'
     );
 
 -- D. Isolated Classes & Announcements
 CREATE POLICY "Isolated Classes" ON classes 
-FOR SELECT USING (unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid())));
+FOR SELECT USING (unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid()) LIMIT 1));
 
 CREATE POLICY "Isolated Announcements" ON announcements 
-FOR SELECT USING (unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid())));
+FOR SELECT USING (unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid()) LIMIT 1));
 
 -- E. Admin Class Management
 CREATE POLICY "Admin Class Management" ON classes
   FOR ALL 
   USING (
-    unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid())) AND
-    (SELECT p.role FROM profiles p WHERE p.id = (select auth.uid())) IN ('ANO', 'CTO', 'CSUO', 'CJUO', 'CWO', 'CUO')
+    unit_id = (SELECT p.unit_id FROM profiles p WHERE p.id = (select auth.uid()) LIMIT 1) AND
+    (SELECT p.role FROM profiles p WHERE p.id = (select auth.uid()) LIMIT 1) IN ('ANO', 'CTO', 'CSUO', 'CJUO', 'CWO', 'CUO')
   );
 
 -- ── 5. FINAL PIN DELETE ───────────────────────────────

@@ -93,7 +93,7 @@ CREATE POLICY "Update own profile" ON profiles
 -- ANO/SUO can update any profile (assign ranks, edit cadets)
 CREATE POLICY "Admin update all" ON profiles
   FOR UPDATE USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO') LIMIT 1)
   );
 
 
@@ -173,7 +173,7 @@ CREATE POLICY "ANO manages all certificates" ON certificates
 -- SUO can view all certificates
 CREATE POLICY "SUO views all certificates" ON certificates
   FOR SELECT USING (
-    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO', 'SCC'))
+    (select auth.uid()) IN (SELECT id FROM profiles WHERE role IN ('ANO', 'CTO', 'SUO', 'CSUO', 'SCC') LIMIT 1)
   );
 
 
