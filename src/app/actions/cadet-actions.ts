@@ -53,8 +53,8 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
 
     try {
         const cleanRegNo = regimentalNumber.replace(/\s+/g, '').toLowerCase();
-        const pseudoEmail = `${rank.toLowerCase()}_${cleanRegNo}@nccrgu.internal`;
-        const password = `${pin}-ncc-rgu`;
+        const pseudoEmail = `${rank.toLowerCase()}_${cleanRegNo}@ncc.internal`;
+        const password = `${pin}-ncc-auth`;
 
         // ── 3. Create Auth User ─────────────────────────────────────────────────
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -140,7 +140,7 @@ export async function updateCadetPin(cadetId: string, newPin: string, accessToke
     }
 
     try {
-        const password = `${parsed.data.newPin}-ncc-rgu`;
+        const password = `${parsed.data.newPin}-ncc-auth`;
 
         const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
             parsed.data.cadetId,

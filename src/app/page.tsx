@@ -54,7 +54,7 @@ export default function LoginPage() {
     }
 
     const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
-    const pseudoEmail = `${activeTab.toLowerCase()}_${cleanUsername}@nccrgu.internal`;
+    const pseudoEmail = `${activeTab.toLowerCase()}_${cleanUsername}@ncc.internal`;
 
     try {
       await loginWithPassword(pseudoEmail, formData.pin);
@@ -67,7 +67,7 @@ export default function LoginPage() {
       // If modern prefix (csuo/cjuo) failed, try legacy fallback (suo/uo)
       if (activeTab === Role.CSUO || activeTab === Role.CJUO) {
         const legacyPrefix = activeTab === Role.CSUO ? "suo" : "uo";
-        const legacyEmail = `${legacyPrefix}_${cleanUsername}@nccrgu.internal`;
+        const legacyEmail = `${legacyPrefix}_${cleanUsername}@ncc.internal`;
         try {
           await loginWithPassword(legacyEmail, formData.pin);
           // Success with legacy email!

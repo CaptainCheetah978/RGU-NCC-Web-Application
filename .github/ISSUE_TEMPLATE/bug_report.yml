@@ -1,0 +1,106 @@
+name: Bug Report
+description: Report a bug in the NCC Cadet Management System
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug. Please fill in the details below so we can investigate.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device Type
+      options:
+        - Desktop
+        - Mobile (Android)
+        - Mobile (iOS)
+        - Tablet
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Safari
+        - Firefox
+        - Edge
+        - PWA (Installed App)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: User Role
+      description: What role were you logged in as?
+      options:
+        - ANO (Associate NCC Officer)
+        - CSUO / CUO / CJUO
+        - Cadet
+        - Not logged in (public page)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected Module
+      options:
+        - Login / Authentication
+        - Dashboard
+        - Attendance
+        - Digital ID Card
+        - Cadet Registry
+        - Notes / Messaging
+        - Announcements
+        - Training Sheet
+        - Profile / Settings
+        - Verification Page (/verify)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain the problem.
+      placeholder: Drag and drop images here...
+    validations:
+      required: false

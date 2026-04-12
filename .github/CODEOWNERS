@@ -1,0 +1,15 @@
+# CODEOWNERS — Automated Review Routing
+# These paths require review from the project maintainer before merging.
+
+# Authentication & Authorization (Critical Security Paths)
+/src/lib/auth-*           @CaptainCheetah978
+/src/lib/supabase-admin*  @CaptainCheetah978
+/src/lib/server-auth*     @CaptainCheetah978
+/src/app/actions/          @CaptainCheetah978
+
+# Database Schema & Migrations
+/supabase/migrations/     @CaptainCheetah978
+
+# CI/CD & Security Configuration
+/.github/workflows/       @CaptainCheetah978
+SECURITY.md               @CaptainCheetah978

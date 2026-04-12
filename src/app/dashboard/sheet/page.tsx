@@ -135,7 +135,7 @@ export default function SheetPage() {
             rowPageBreak: 'auto',
             didDrawPage: (data) => {
                 // Footer: Verification Engine Watermark for IP Protection
-                const str = "Official Unit Training Records | Verification Engine by RGU-NCC | Generated: " + new Date().toLocaleString();
+                const str = "Official Unit Training Records | Verification Engine by NCC-CMS | Generated: " + new Date().toLocaleString();
                 doc.setFontSize(8);
                 doc.setTextColor(150);
                 const pageSize = doc.internal.pageSize;

@@ -74,10 +74,9 @@ function VerifyContent() {
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center space-x-3 mb-3">
                         <Image src="/ncc-logo.png" alt="NCC" width={40} height={40} className="w-10 h-10 object-contain" />
-                        <Image src="/rgu-logo.png" alt="RGU" width={40} height={40} className="w-10 h-10 object-contain" />
                     </div>
-                    <h1 className="text-white text-xl font-bold tracking-tight">NCC RGU — ID Verification</h1>
-                    <p className="text-slate-400 text-xs mt-1">The Assam Royal Global University • National Cadet Corps</p>
+                    <h1 className="text-white text-xl font-bold tracking-tight">NCC — Digital ID Verification</h1>
+                    <p className="text-slate-400 text-xs mt-1">National Cadet Corps • Digital Identity Verification</p>
                 </div>
 
                 {checked && person ? (
@@ -200,7 +199,7 @@ function VerifyContent() {
                             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
                                 {errorMsg ? errorMsg : (id 
                                     ? "The ID provided in the scan does not match any current cadet or officer in our digital registry." 
-                                    : "No verification ID was detected. Please ensure you are scanning a valid NCC RGU digital ID card.")}
+                                    : "No verification ID was detected. Please ensure you are scanning a valid NCC digital ID card.")}
                             </p>
                             
                             <Link 

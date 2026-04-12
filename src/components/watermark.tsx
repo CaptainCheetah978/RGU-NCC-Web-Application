@@ -12,7 +12,7 @@ export function Watermark() {
     useEffect(() => {
         // Platform Signature in Console
         console.log(
-            "%c NCC RGU Management System %c Powered by SUO Aditya Singh, NER Dte. ",
+            "%c NCC Cadet Management System %c Powered by SUO Aditya Singh, NER Dte. ",
             "color: #fff; background: #2563eb; padding: 4px 8px; border-radius: 4px 0 0 4px; font-weight: bold;",
             "color: #fff; background: #0f172a; padding: 4px 8px; border-radius: 0 4px 4px 0;"
         );

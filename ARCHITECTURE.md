@@ -1,6 +1,6 @@
-# NCC RGU System Architecture
+# National Cadet Corps System Architecture
 
-This document provides a high-level overview of the system architecture, access control, and data flow mechanisms utilized within the NCC RGU Cadet Management System.
+This document provides a high-level overview of the system architecture, access control, and data flow mechanisms utilized within the National Cadet Corps Cadet Management System.
 
 ## Architecture Diagrams
 

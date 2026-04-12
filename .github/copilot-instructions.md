@@ -1,6 +1,6 @@
 # Copilot Coding Agent Instructions
 
-These instructions keep Copilot aligned with the NCC RGU Cadet Management System architecture, data flow, and quality bar.
+These instructions keep Copilot aligned with the NCC Cadet Management System architecture, data flow, and quality bar.
 
 ## Optimization & Data Updates (Critical)
 - **Optimistic UI first:** For creates/deletes, use the snapshot → optimistic update → rollback pattern in `src/lib/data-context.tsx`. Do not wait for server confirmation before updating local state.

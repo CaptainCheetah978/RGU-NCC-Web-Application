@@ -219,7 +219,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true);
         try {
             // 1. Try with the SECURE padded PIN first (New accounts)
-            const securePassword = `${pin}-ncc-rgu`;
+            const securePassword = `${pin}-ncc-auth`;
 
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
@@ -271,7 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true);
         try {
             // Salt/Pad the PIN to meet Supabase's 6-char requirement
-            const securePassword = `${pin}-ncc-rgu`;
+            const securePassword = `${pin}-ncc-auth`;
 
             const { data, error } = await supabase.auth.signUp({
                 email,
@@ -313,7 +313,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updatePin = async (newPin: string) => {
-        const securePassword = `${newPin}-ncc-rgu`;
+        const securePassword = `${newPin}-ncc-auth`;
         const { error } = await supabase.auth.updateUser({ password: securePassword });
         if (error) throw error;
     };

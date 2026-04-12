@@ -176,7 +176,6 @@ Use this if you are deploying the application for a new NCC unit or battalion.
 
 This repo tracks its own issues and design choices:
 - **[Architecture Overview](ARCHITECTURE.md)**: Basic overview of how everything connects.
-- **[Known Issues](KNOWN_ISSUES.md)**: A list of current bugs, technical debt, and missing features.
 - **[Security Policy](SECURITY.md)**: Basic guidelines for vulnerabilities.
 
 ## Upcoming Roadmap

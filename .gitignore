@@ -54,10 +54,8 @@ session_history.md
 # Wiki Documentation (Local-only)
 docs/wiki/
 
-# Executive Reports & Commercial Strategy
-FINAL_REPORT.md
-NCC_RGU_Repository_Review.pdf
-NCC_RGU_Comprehensive_Technical_Report.pdf
+# Archive folder for historical reports & Technical documentation
+/docs/archive/
 
 # Build and Lint logs
 build.txt
@@ -71,4 +69,3 @@ complete_changelog.md
 
 # Supabase local config
 supabase/config.toml
-Comprehensive_NCC Ranks.md

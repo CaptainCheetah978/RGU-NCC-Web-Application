@@ -1,6 +1,6 @@
-# Contributing to the NCC RGU Cadet Management System
+# Contributing to the National Cadet Corps Cadet Management System
 
-First off, thank you for considering contributing to the NCC RGU Cadet Management System! It's people like you that make this tool better for everyone in the NCC community.
+First off, thank you for considering contributing to the National Cadet Corps Cadet Management System! It's people like you that make this tool better for everyone in the NCC community.
 
 Following these guidelines helps to communicate that you respect the time of the developers managing and developing this open-source project. In return, they should reciprocate that respect in addressing your issue, assessing changes, and helping you finalize your pull requests.
 
@@ -49,7 +49,7 @@ The process described here has several goals:
 
 To set up the project locally for development, please refer to the "Quick Start (Local Development)" section in our [README.md](README.md).
 
-If you run into issues during setup (such as Supabase RLS policies or local PWA caching bugs), please check our [FAQ.md](FAQ.md) for troubleshooting steps.
+If you run into issues during setup (such as Supabase RLS policies or local PWA caching bugs), please check the [Architecture Overview](ARCHITECTURE.md) or standard Next.js documentation for troubleshooting steps.
 
 ## Writing style guidelines
 

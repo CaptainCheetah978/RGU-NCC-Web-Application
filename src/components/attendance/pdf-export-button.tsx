@@ -90,7 +90,7 @@ export function PdfExportButton({ classSession, cadets, attendance, className }:
             rowPageBreak: 'auto',
             didDrawPage: (data) => {
                 // Footer: Verification Engine Watermark for IP Protection
-                const str = "Official Report | Verification Engine by RGU-NCC | Generated: " + new Date().toLocaleString();
+                const str = "Official Report for " + unitTitle + " | NCC-CMS | Generated: " + new Date().toLocaleString();
                 doc.setFontSize(8);
                 doc.setTextColor(150);
                 const pageSize = doc.internal.pageSize;
