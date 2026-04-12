@@ -70,29 +70,35 @@ export async function getProfileByIdAction(userId: string) {
         .from('profiles')
         .select('*, unit:units(*)')
         .eq('id', userId)
-        .single();
+        .limit(1);
     
-    if (!error) return data;
+    if (!error && data && data.length > 0) return data[0];
 
-    // PGRST116 = "no rows found" — profile genuinely doesn't exist, don't retry
-    if (error.code === 'PGRST116') {
+    // If there was an error and it's PGRST116 (though limit(1) shouldn't throw it), check safely
+    if (error && error.code === 'PGRST116') {
         console.warn(`getProfileByIdAction: no profile row found for user ${userId}`);
         return null;
     }
 
+    // If no data was found (empty array), return null safely
+    if (!data || data.length === 0) {
+        if (!error) return null; // Genuine "not found"
+        // Otherwise continue to fallback if there was an actual database error
+    }
+
     // Any other error (e.g. unknown column — migration not applied yet) — fall back to core columns
-    console.warn('getProfileByIdAction full-column query failed, trying core fallback:', error.message);
+    console.warn('getProfileByIdAction full-column query failed, trying core fallback:', error?.message);
     const { data: fallbackData, error: fallbackError } = await supabaseAdmin
         .from('profiles')
         .select('id, full_name, role, regimental_number, wing, rank, avatar_url, enrollment_year, blood_group, gender, unit_name, unit_number')
         .eq('id', userId)
-        .single();
+        .limit(1);
 
-    if (fallbackError) {
+    if (fallbackError || !fallbackData || fallbackData.length === 0) {
         console.error('getProfileByIdAction fallback also failed:', fallbackError);
         return null;
     }
-    return fallbackData;
+    return fallbackData[0];
 }
 
 // ── Get All Profiles (admin-bypasses RLS, scoped to caller's unit) ───────────
@@ -235,9 +241,8 @@ export async function ensureUserProfileAction(accessToken: string) {
         const { data: defaultUnit } = await supabaseAdmin
             .from('units')
             .select('id')
-            .limit(1)
-            .single();
-        if (defaultUnit?.id) profilePayload.unit_id = defaultUnit.id;
+            .limit(1);
+        if (defaultUnit && defaultUnit.length > 0) profilePayload.unit_id = defaultUnit[0].id;
     } catch {
         console.warn('ensureUserProfileAction: units table not available, skipping unit_id assignment');
     }
@@ -251,12 +256,12 @@ export async function ensureUserProfileAction(accessToken: string) {
         .from('profiles')
         .upsert(profilePayload)
         .select()
-        .single();
+        .limit(1);
 
-    if (!createError) {
-        newProfile = upsertData;
+    if (!createError && upsertData && upsertData.length > 0) {
+        newProfile = upsertData[0];
     } else {
-        console.warn('ensureUserProfileAction full upsert failed, retrying with core fields only:', createError.message);
+        console.warn('ensureUserProfileAction full upsert failed, retrying with core fields only:', createError?.message);
         const corePayload = {
             id: user.id,
             full_name: profilePayload.full_name,
@@ -267,12 +272,12 @@ export async function ensureUserProfileAction(accessToken: string) {
             .from('profiles')
             .upsert(corePayload)
             .select()
-            .single();
-        if (coreError) {
+            .limit(1);
+        if (coreError || !coreData || coreData.length === 0) {
             console.error('ensureUserProfileAction core upsert also failed:', coreError);
             throw new Error('Failed to auto-create profile');
         }
-        newProfile = coreData;
+        newProfile = coreData[0];
     }
 
     return newProfile;

@@ -18,23 +18,30 @@ export type UnitBranding = {
  * Used for both unauthenticated (login page) and authenticated (dashboard) flows.
  */
 export async function getUnitBrandingAction(unitId?: string): Promise<UnitBranding | null> {
-    let query = supabaseAdmin.from("units").select("*");
+    try {
+        let query = supabaseAdmin.from("units").select("*");
 
-    if (unitId) {
-        query = query.eq("id", unitId);
-    } else {
-        // Default: return the first unit (typically the primary deployment unit)
-        query = query.limit(1);
-    }
+        if (unitId) {
+            query = query.eq("id", unitId);
+        } else {
+            // Default: return the first unit (typically the primary deployment unit)
+            query = query.limit(1);
+        }
 
-    const { data, error } = await query.single();
+        const { data, error } = await query;
 
-    if (error || !data) {
-        console.error("getUnitBrandingAction error:", error?.message);
+        if (error) {
+            console.error("getUnitBrandingAction: database error:", error.message);
+            return null;
+        }
+
+        if (!data || data.length === 0) return null;
+
+        return data[0] as UnitBranding;
+    } catch (err) {
+        console.error("getUnitBrandingAction: unexpected error:", err);
         return null;
     }
-
-    return data as UnitBranding;
 }
 
 /**
@@ -45,8 +52,8 @@ export async function getUnitBrandingByNameAction(name: string): Promise<UnitBra
         .from("units")
         .select("*")
         .eq("name", name)
-        .single();
+        .limit(1);
 
-    if (error || !data) return null;
-    return data as UnitBranding;
+    if (error || !data || data.length === 0) return null;
+    return data[0] as UnitBranding;
 }

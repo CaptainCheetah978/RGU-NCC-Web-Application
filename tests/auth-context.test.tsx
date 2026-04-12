@@ -118,14 +118,14 @@ describe('AuthContext', () => {
     })
 
     // Call login
-    const promise = result.current.loginWithPassword('test@nccrgu.internal', '1234')
+    const promise = result.current.loginWithPassword('test@ncc.internal', '1234')
 
     await promise
 
     // Verify it attempted secure password login first (pin + salt)
     expect(mockSignInWithPassword).toHaveBeenCalledWith({
-      email: 'test@nccrgu.internal',
-      password: '1234-ncc-rgu'
+      email: 'test@ncc.internal',
+      password: '1234-ncc-auth'
     })
 
     // Verify user profile is loaded
@@ -156,7 +156,7 @@ describe('AuthContext', () => {
 
     // Expect login to throw
     await expect(
-      result.current.loginWithPassword('test@nccrgu.internal', 'wrongpin')
+      result.current.loginWithPassword('test@ncc.internal', 'wrongpin')
     ).rejects.toThrow('Invalid credentials')
 
     // Expect user to stay null
