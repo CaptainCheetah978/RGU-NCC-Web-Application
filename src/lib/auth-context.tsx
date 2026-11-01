@@ -40,8 +40,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Race against a timeout so login never spins forever on a slow connection
         try {
-            let data;
+            let data: Record<string, unknown> | null = null;
+
+            // Prefer the authenticated browser client for the caller's own
+            // profile. This keeps login independent of server-only
+            // service-role configuration when RLS permits self reads.
             try {
+                const { data: clientProfile, error: clientProfileError } = await supabase
+                    .from("profiles")
+                    .select("id, full_name, role, regimental_number, avatar_url, unit_id, unit_number")
+                    .eq("id", userId)
+                    .maybeSingle();
+
+                if (!clientProfileError && clientProfile) {
+                    data = clientProfile as Record<string, unknown>;
+                }
+            } catch (clientError) {
+                console.warn("Authenticated profile read failed; trying server profile action:", clientError);
+            }
+
+            if (!data) try {
                 // RACE AGAINST TIMEOUT
                 const timeoutPromise = new Promise<never>((_, reject) =>
                     setTimeout(() => reject(new Error('Profile fetch timed out')), timeoutMs)
@@ -58,13 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     throw new Error("Empty profile result"); // Trigger retry
                 }
                 
-                data = profileResult;
+                data = (profileResult as Record<string, unknown> | null) ?? null;
             } catch (firstError) {
                 // First attempt failed — retry once
                 if (retries > 0) {
                     console.warn('Profile fetch attempt failed, retrying...', firstError);
                     await new Promise(r => setTimeout(r, 1500)); 
-                    data = await getProfileByIdAction(userId);
+                    data = (await getProfileByIdAction(userId)) as Record<string, unknown> | null;
                 } else {
                     throw firstError;
                 }
