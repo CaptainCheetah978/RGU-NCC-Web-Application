@@ -8,7 +8,6 @@ import Image from "next/image";
 import { Shield, User, Lock, ChevronRight, Loader2, Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Role } from "@/types";
-import { supabase } from "@/lib/supabase-client";
 
 type LoginStep = "login" | "forgot-email" | "forgot-otp" | "forgot-newpin" | "forgot-done";
 
@@ -55,31 +54,16 @@ export default function LoginPage() {
     }
 
     const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
-    let loginPrefix = activeTab.toLowerCase();
-
-    // Cadet accounts are created with their actual rank as the email prefix
-    // (for example, sgt_AS20SDA123456@ncc.internal), while the login UI uses
-    // one shared Cadet tab. Resolve that prefix from the profile first.
-    if (activeTab === Role.CADET) {
-      try {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role, rank")
-          .eq("regimental_number", cleanUsername)
-          .maybeSingle();
-        const profilePrefix = profile?.rank || profile?.role;
-        if (typeof profilePrefix === "string" && profilePrefix.trim()) {
-          loginPrefix = profilePrefix.toLowerCase();
-        }
-      } catch (lookupError) {
-        console.warn("Could not resolve cadet login prefix; using cadet fallback:", lookupError);
-      }
-    }
-
-    const pseudoEmail = `${loginPrefix}_${cleanUsername}@ncc.internal`;
+    const loginEmails = activeTab === Role.CADET
+      ? [
+          `cadet_${cleanUsername}@ncc.internal`,
+          ...["csuo", "cjuo", "cwo", "csm", "cqms", "sgt", "cpl", "lcpl"]
+            .map(prefix => `${prefix}_${cleanUsername}@ncc.internal`),
+        ]
+      : [`${activeTab.toLowerCase()}_${cleanUsername}@ncc.internal`];
 
     try {
-      await loginWithPassword(pseudoEmail, formData.pin);
+      await loginWithPassword(loginEmails, formData.pin);
       // Success!
       failCountRef.current = 0;
       setLockoutRemaining(0);
@@ -91,7 +75,7 @@ export default function LoginPage() {
         const legacyPrefix = activeTab === Role.CSUO ? "suo" : "uo";
         const legacyEmail = `${legacyPrefix}_${cleanUsername}@ncc.internal`;
         try {
-          await loginWithPassword(legacyEmail, formData.pin);
+          await loginWithPassword([legacyEmail], formData.pin);
           // Success with legacy email!
           failCountRef.current = 0;
           setLockoutRemaining(0);

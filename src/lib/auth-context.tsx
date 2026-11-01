@@ -11,7 +11,7 @@ interface AuthContextType {
     user: User | null;
     login: (email: string) => Promise<void>;
     verifyOtp: (email: string, token: string, skipRedirect?: boolean) => Promise<void>;
-    loginWithPassword: (email: string, pin: string) => Promise<void>;
+    loginWithPassword: (email: string | string[], pin: string) => Promise<void>;
     signupWithPassword: (email: string, pin: string, name: string, role: Role) => Promise<void>;
     logout: () => Promise<void>;
     resetPin: (email: string) => Promise<void>;
@@ -222,50 +222,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
 
-    const loginWithPassword = async (email: string, pin: string) => {
+    const loginWithPassword = async (emails: string | string[], pin: string) => {
         setIsLoading(true);
         try {
-            // 1. Try with the SECURE padded PIN first (New accounts)
             const securePassword = `${pin}-ncc-auth`;
+            const candidateEmails = Array.isArray(emails) ? emails : [emails];
+            let lastError: unknown = new Error("Invalid credentials.");
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password: securePassword,
-            });
-
-            if (data.user) {
-                // Success!
-                const fetchedUser = await fetchProfile(data.user.id);
-                if (!fetchedUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
-                router.push("/dashboard");
-                return;
-            }
-
-            // 2. If that failed, try with the RAW PIN (Legacy accounts created before fix)
-            if (error) {
-                // Secure login failed — try with the RAW PIN (Legacy accounts created before fix)
-
-                const { data: legacyData } = await supabase.auth.signInWithPassword({
+            for (const email of candidateEmails) {
+                const { data, error } = await supabase.auth.signInWithPassword({
                     email,
-                    password: pin, // Try raw PIN (e.g., '0324')
+                    password: securePassword,
                 });
 
-                if (legacyData.user) {
-                    // Fetch the profile FIRST while the newly-minted session is definitely valid
-                    const fetchedLegacyUser = await fetchProfile(legacyData.user.id);
-                    if (!fetchedLegacyUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
-
-                    // Automatically upgrade their password to the secure format
-                    // Doing this *after* fetching profile prevents JWT rotation race conditions
-                    await supabase.auth.updateUser({ password: securePassword });
-
+                if (data.user) {
+                    const fetchedUser = await fetchProfile(data.user.id);
+                    if (!fetchedUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
                     router.push("/dashboard");
                     return;
                 }
 
-                // If both failed, throw original error
-                throw error;
+                lastError = error || lastError;
+
+                const { data: legacyData, error: legacyError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password: pin,
+                });
+
+                if (legacyData.user) {
+                    const fetchedLegacyUser = await fetchProfile(legacyData.user.id);
+                    if (!fetchedLegacyUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
+                    await supabase.auth.updateUser({ password: securePassword });
+                    router.push("/dashboard");
+                    return;
+                }
+
+                lastError = legacyError || lastError;
             }
+
+            throw lastError;
         } catch (error) {
             console.error("Login error:", error);
             throw error;
