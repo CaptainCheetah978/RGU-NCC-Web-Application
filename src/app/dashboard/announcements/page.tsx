@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Megaphone, Plus, Trash2, AlertTriangle, Clock } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/lib/toast-context";
 
@@ -26,6 +26,12 @@ export default function AnnouncementsPage() {
     const [priority, setPriority] = useState<Announcement["priority"]>("normal");
 
     const [isLoading, setIsLoading] = useState(false);
+    const [now, setNow] = useState(() => Date.now());
+
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 60000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Hooks must be called before any conditional returns.
     // Memoize the sort so it only re-runs when the announcements array changes.
@@ -85,7 +91,7 @@ export default function AnnouncementsPage() {
     };
 
     const timeAgo = (dateStr: string) => {
-        const diff = Date.now() - new Date(dateStr).getTime();
+        const diff = now - new Date(dateStr).getTime();
         const mins = Math.floor(diff / 60000);
         if (mins < 60) return `${mins}m ago`;
         const hrs = Math.floor(mins / 60);

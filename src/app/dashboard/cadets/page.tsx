@@ -8,7 +8,7 @@ import { Permissions } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, UserPlus, Trash2, Key, Edit2, LayoutGrid, List as ListIcon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { cn, getWingAwareRank } from "@/lib/utils";
 
@@ -71,17 +71,6 @@ export default function CadetsPage() {
         filteredCadets,
     } = useCadetFilter(cadets);
 
-    // --- Logic: Auto-update Unit based on Wing ---
-    useEffect(() => {
-        if (formData.wing === Wing.ARMY) {
-            setFormData(prev => ({ ...prev, unitName: "Assam Bn NCC", unitNumber: "30" }));
-        } else if (formData.wing === Wing.AIR) {
-            setFormData(prev => ({ ...prev, unitName: "Assam Air Sqn NCC", unitNumber: "50" }));
-        } else if (formData.wing === Wing.NAVY) {
-            setFormData(prev => ({ ...prev, unitName: "Assam Naval Unit NCC", unitNumber: "48" }));
-        }
-    }, [formData.wing]);
-
     if (isAuthLoading || (isDataLoading && cadets.length === 0)) {
         return <RegistrySkeleton />;
     }
@@ -90,6 +79,18 @@ export default function CadetsPage() {
 
     const canEdit = user && Permissions.CAN_MANAGE_USERS.has(user.role);
     const isANO = user.role === Role.ANO;
+
+    const handleFormChange = (updates: Partial<CadetFormState>) => {
+        const wingDefaults: Partial<CadetFormState> = updates.wing === Wing.ARMY
+            ? { unitName: "Assam Bn NCC", unitNumber: "30" }
+            : updates.wing === Wing.AIR
+                ? { unitName: "Assam Air Sqn NCC", unitNumber: "50" }
+                : updates.wing === Wing.NAVY
+                    ? { unitName: "Assam Naval Unit NCC", unitNumber: "48" }
+                    : {};
+
+        setFormData(prev => ({ ...prev, ...updates, ...wingDefaults }));
+    };
 
     const handleEdit = (cadet: Cadet) => {
         setEditingCadet(cadet);
@@ -363,7 +364,7 @@ export default function CadetsPage() {
                 </>
             )}
 
-            <AddCadetModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} formData={formData} onChange={(updates) => setFormData({ ...formData, ...updates })} onSubmit={handleSubmit} isLoading={isLoading} />
+            <AddCadetModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} formData={formData} onChange={handleFormChange} onSubmit={handleSubmit} isLoading={isLoading} />
             <EditCadetModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} formData={editFormData} onChange={(updates) => setEditFormData({ ...editFormData, ...updates })} onSubmit={handleUpdate} isLoading={isLoading} />
             <Modal isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title="Update Access PIN">
                 <form onSubmit={handlePinUpdate} className="space-y-4">

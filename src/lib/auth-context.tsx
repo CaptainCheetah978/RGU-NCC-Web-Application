@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { User, Role, normalizeRole, UnitBranding } from "@/types";
 import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
@@ -33,51 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Prevent concurrent profile fetches (e.g., loginWithPassword + onAuthStateChange racing)
     const isFetchingRef = React.useRef(false);
 
-    useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_OUT') {
-                userLoadedRef.current = false;
-                isFetchingRef.current = false;
-                setUser(null);
-                // Don't clear unitBranding on logout, we still need it for the login page
-                setIsLoading(false);
-                // Hard redirect — clears all React state and re-renders from scratch
-                window.location.replace('/');
-                return;
-            }
-
-            // Skip redundant profile fetch if user is already loaded and this
-            // is just a background token refresh.
-            if (userLoadedRef.current && (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN')) {
-                setIsLoading(false);
-                return;
-            }
-
-            // Skip this event-driven fetch if loginWithPassword is already
-            // fetching the profile explicitly — prevents a concurrent race.
-            if (isFetchingRef.current) {
-                return;
-            }
-
-            if (session?.user) {
-                // Don't flash loading spinner for background auth events —
-                // only the initial load should show the spinner.
-                await fetchProfile(session.user.id);
-            } else {
-                setUser(null);
-                // Fetch default unit branding for unauthenticated state (Login page)
-                if (!unitBranding) {
-                    const branding = await getUnitBrandingAction();
-                    setUnitBranding(branding);
-                }
-            }
-            setIsLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
-    }, [unitBranding]);
-
-    const fetchProfile = async (userId: string, timeoutMs = 8000, retries = 1): Promise<User | null> => {
+    const fetchProfile = useCallback(async (userId: string, timeoutMs = 8000, retries = 1): Promise<User | null> => {
         // Prevent concurrent fetches — if already in progress, wait for it
         if (isFetchingRef.current) return null;
         isFetchingRef.current = true;
@@ -154,7 +110,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isFetchingRef.current = false;
         }
         return null;
-    };
+    }, []);
+
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_OUT') {
+                userLoadedRef.current = false;
+                isFetchingRef.current = false;
+                setUser(null);
+                setIsLoading(false);
+                window.location.replace('/');
+                return;
+            }
+
+            if (userLoadedRef.current && (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN')) {
+                setIsLoading(false);
+                return;
+            }
+
+            if (isFetchingRef.current) return;
+
+            if (session?.user) {
+                await fetchProfile(session.user.id);
+            } else {
+                setUser(null);
+                if (!unitBranding) {
+                    const branding = await getUnitBrandingAction();
+                    setUnitBranding(branding);
+                }
+            }
+            setIsLoading(false);
+        });
+
+        return () => subscription.unsubscribe();
+    }, [fetchProfile, unitBranding]);
 
     const login = async (email: string) => {
         setIsLoading(true);

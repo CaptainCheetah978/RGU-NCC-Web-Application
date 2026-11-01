@@ -43,7 +43,7 @@ describe('Export Components', () => {
       role: Role.CADET,
       rank: Role.CADET,
       wing: Wing.ARMY,
-      gender: Gender.MALE,
+      gender: Gender.SD,
       unitNumber: '30',
       unitName: 'Assam BN',
       enrollmentYear: 2026,
