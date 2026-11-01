@@ -114,7 +114,12 @@ export default function FilesPage() {
         }
     }, []);
 
-    useEffect(() => { fetchFiles(); }, [fetchFiles]);
+    useEffect(() => {
+        const loadFiles = async () => {
+            await fetchFiles();
+        };
+        void loadFiles();
+    }, [fetchFiles]);
 
     // Safe early return AFTER all hooks
     if (!user) return null;

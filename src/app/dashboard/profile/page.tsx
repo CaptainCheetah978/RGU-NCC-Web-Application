@@ -39,14 +39,7 @@ export default function ProfilePage() {
     const [currentTime, setCurrentTime] = useState<string>("");
     const [qrToken, setQrToken] = useState<string>("");
     const [isStaticQR, setIsStaticQR] = useState(false);
-    const [hasEverLoaded, setHasEverLoaded] = useState(false);
-
-    // Track whether the user has been loaded at least once
-    useEffect(() => {
-        if (user) {
-            setHasEverLoaded(true);
-        }
-    }, [user]);
+    const hasEverLoaded = Boolean(user) || (!isAuthLoading && !isDataLoading);
 
     // Dynamic QR: Fetch a short-lived, signed JWT every 25 seconds
     // NOTE: Only depends on currentUserProfile?.id (a stable string), NOT the user object.
