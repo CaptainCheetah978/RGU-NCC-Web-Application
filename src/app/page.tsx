@@ -54,10 +54,16 @@ export default function LoginPage() {
     }
 
     const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
-    const pseudoEmail = `${activeTab.toLowerCase()}_${cleanUsername}@ncc.internal`;
+    const loginEmails = activeTab === Role.CADET
+      ? [
+          `cadet_${cleanUsername}@ncc.internal`,
+          ...["csuo", "cjuo", "cwo", "csm", "cqms", "sgt", "cpl", "lcpl"]
+            .map(prefix => `${prefix}_${cleanUsername}@ncc.internal`),
+        ]
+      : [`${activeTab.toLowerCase()}_${cleanUsername}@ncc.internal`];
 
     try {
-      await loginWithPassword(pseudoEmail, formData.pin);
+      await loginWithPassword(loginEmails, formData.pin);
       // Success!
       failCountRef.current = 0;
       setLockoutRemaining(0);
@@ -69,7 +75,7 @@ export default function LoginPage() {
         const legacyPrefix = activeTab === Role.CSUO ? "suo" : "uo";
         const legacyEmail = `${legacyPrefix}_${cleanUsername}@ncc.internal`;
         try {
-          await loginWithPassword(legacyEmail, formData.pin);
+          await loginWithPassword([legacyEmail], formData.pin);
           // Success with legacy email!
           failCountRef.current = 0;
           setLockoutRemaining(0);

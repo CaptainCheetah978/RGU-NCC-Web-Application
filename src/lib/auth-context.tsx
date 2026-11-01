@@ -11,7 +11,7 @@ interface AuthContextType {
     user: User | null;
     login: (email: string) => Promise<void>;
     verifyOtp: (email: string, token: string, skipRedirect?: boolean) => Promise<void>;
-    loginWithPassword: (email: string, pin: string) => Promise<void>;
+    loginWithPassword: (email: string | string[], pin: string) => Promise<void>;
     signupWithPassword: (email: string, pin: string, name: string, role: Role) => Promise<void>;
     logout: () => Promise<void>;
     resetPin: (email: string) => Promise<void>;
@@ -40,8 +40,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Race against a timeout so login never spins forever on a slow connection
         try {
-            let data;
+            let data: Record<string, unknown> | null = null;
+
+            // Prefer the authenticated browser client for the caller's own
+            // profile. This keeps login independent of server-only
+            // service-role configuration when RLS permits self reads.
             try {
+                const { data: clientProfile, error: clientProfileError } = await supabase
+                    .from("profiles")
+                    .select("id, full_name, role, regimental_number, avatar_url, unit_id, unit_number")
+                    .eq("id", userId)
+                    .maybeSingle();
+
+                if (!clientProfileError && clientProfile) {
+                    data = clientProfile as Record<string, unknown>;
+                }
+            } catch (clientError) {
+                console.warn("Authenticated profile read failed; trying server profile action:", clientError);
+            }
+
+            if (!data) try {
                 // RACE AGAINST TIMEOUT
                 const timeoutPromise = new Promise<never>((_, reject) =>
                     setTimeout(() => reject(new Error('Profile fetch timed out')), timeoutMs)
@@ -58,13 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     throw new Error("Empty profile result"); // Trigger retry
                 }
                 
-                data = profileResult;
+                data = (profileResult as Record<string, unknown> | null) ?? null;
             } catch (firstError) {
                 // First attempt failed — retry once
                 if (retries > 0) {
                     console.warn('Profile fetch attempt failed, retrying...', firstError);
                     await new Promise(r => setTimeout(r, 1500)); 
-                    data = await getProfileByIdAction(userId);
+                    data = (await getProfileByIdAction(userId)) as Record<string, unknown> | null;
                 } else {
                     throw firstError;
                 }
@@ -204,50 +222,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
 
-    const loginWithPassword = async (email: string, pin: string) => {
+    const loginWithPassword = async (emails: string | string[], pin: string) => {
         setIsLoading(true);
         try {
-            // 1. Try with the SECURE padded PIN first (New accounts)
             const securePassword = `${pin}-ncc-auth`;
+            const candidateEmails = Array.isArray(emails) ? emails : [emails];
+            let lastError: unknown = new Error("Invalid credentials.");
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password: securePassword,
-            });
-
-            if (data.user) {
-                // Success!
-                const fetchedUser = await fetchProfile(data.user.id);
-                if (!fetchedUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
-                router.push("/dashboard");
-                return;
-            }
-
-            // 2. If that failed, try with the RAW PIN (Legacy accounts created before fix)
-            if (error) {
-                // Secure login failed — try with the RAW PIN (Legacy accounts created before fix)
-
-                const { data: legacyData } = await supabase.auth.signInWithPassword({
+            for (const email of candidateEmails) {
+                const { data, error } = await supabase.auth.signInWithPassword({
                     email,
-                    password: pin, // Try raw PIN (e.g., '0324')
+                    password: securePassword,
                 });
 
-                if (legacyData.user) {
-                    // Fetch the profile FIRST while the newly-minted session is definitely valid
-                    const fetchedLegacyUser = await fetchProfile(legacyData.user.id);
-                    if (!fetchedLegacyUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
-
-                    // Automatically upgrade their password to the secure format
-                    // Doing this *after* fetching profile prevents JWT rotation race conditions
-                    await supabase.auth.updateUser({ password: securePassword });
-
+                if (data.user) {
+                    const fetchedUser = await fetchProfile(data.user.id);
+                    if (!fetchedUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
                     router.push("/dashboard");
                     return;
                 }
 
-                // If both failed, throw original error
-                throw error;
+                lastError = error || lastError;
+
+                const { data: legacyData, error: legacyError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password: pin,
+                });
+
+                if (legacyData.user) {
+                    const fetchedLegacyUser = await fetchProfile(legacyData.user.id);
+                    if (!fetchedLegacyUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
+                    await supabase.auth.updateUser({ password: securePassword });
+                    router.push("/dashboard");
+                    return;
+                }
+
+                lastError = legacyError || lastError;
             }
+
+            throw lastError;
         } catch (error) {
             console.error("Login error:", error);
             throw error;
