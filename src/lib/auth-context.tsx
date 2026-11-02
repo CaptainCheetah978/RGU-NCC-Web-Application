@@ -30,17 +30,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Track whether user has been loaded at least once — prevents transient
     // null states during token refreshes from triggering login redirects.
     const userLoadedRef = React.useRef(false);
-    // Prevent concurrent profile fetches (e.g., loginWithPassword + onAuthStateChange racing)
-    const isFetchingRef = React.useRef(false);
+    // Share concurrent profile fetches (e.g., loginWithPassword + onAuthStateChange racing)
+    const profileFetchRef = React.useRef<Promise<User | null> | null>(null);
+    const brandingLoadedRef = React.useRef(false);
 
-    const fetchProfile = useCallback(async (userId: string, timeoutMs = 8000, retries = 1): Promise<User | null> => {
-        // Prevent concurrent fetches — if already in progress, wait for it
-        if (isFetchingRef.current) return null;
-        isFetchingRef.current = true;
+    const fetchProfile = useCallback(async (
+        userId: string,
+        timeoutMs = 8000,
+        retries = 1,
+        sessionAccessToken?: string,
+    ): Promise<User | null> => {
+        // Login and onAuthStateChange can request the same profile at once.
+        // Wait for the existing request instead of treating it as a failed fetch.
+        if (profileFetchRef.current) return profileFetchRef.current;
 
-        // Race against a timeout so login never spins forever on a slow connection
-        try {
+        const fetchPromise = (async () => {
+            // Race against a timeout so login never spins forever on a slow connection
+            try {
             let data: Record<string, unknown> | null = null;
+            let accessToken: string | undefined = sessionAccessToken;
 
             // Prefer the authenticated browser client for the caller's own
             // profile. This keeps login independent of server-only
@@ -59,32 +67,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 console.warn("Authenticated profile read failed; trying server profile action:", clientError);
             }
 
-            if (!data) try {
-                // RACE AGAINST TIMEOUT
-                const timeoutPromise = new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('Profile fetch timed out')), timeoutMs)
-                );
-
-                // BYPASS RLS LOOP: Call the server action instead of the client-side select.
-                // This ensures we always get the profile, even if RLS recursion is broken.
-                const profileResult = await Promise.race([
-                    getProfileByIdAction(userId),
-                    timeoutPromise
-                ]);
-                
-                if (!profileResult && retries > 0) {
-                    throw new Error("Empty profile result"); // Trigger retry
+            if (!data) {
+                if (!accessToken) {
+                    try {
+                        const sessionPromise = supabase.auth.getSession();
+                        const sessionTimeout = new Promise<never>((_, reject) =>
+                            setTimeout(() => reject(new Error("Session lookup timed out")), timeoutMs)
+                        );
+                        const { data: { session } } = await Promise.race([
+                            sessionPromise,
+                            sessionTimeout,
+                        ]);
+                        accessToken = session?.access_token;
+                    } catch (sessionError) {
+                        console.warn("Unable to read the authenticated session for profile loading:", sessionError);
+                    }
                 }
-                
-                data = (profileResult as Record<string, unknown> | null) ?? null;
-            } catch (firstError) {
-                // First attempt failed — retry once
-                if (retries > 0) {
-                    console.warn('Profile fetch attempt failed, retrying...', firstError);
-                    await new Promise(r => setTimeout(r, 1500)); 
-                    data = (await getProfileByIdAction(userId)) as Record<string, unknown> | null;
-                } else {
-                    throw firstError;
+
+                for (let attempt = 0; attempt <= retries && !data; attempt += 1) {
+                    try {
+                        const timeoutPromise = new Promise<never>((_, reject) =>
+                            setTimeout(() => reject(new Error("Profile fetch timed out")), timeoutMs)
+                        );
+                        const profileResult = await Promise.race([
+                            getProfileByIdAction(userId, accessToken || ""),
+                            timeoutPromise,
+                        ]);
+                        data = (profileResult as Record<string, unknown> | null) ?? null;
+                    } catch (profileError) {
+                        if (attempt === retries) throw profileError;
+                        console.warn("Profile fetch attempt failed, retrying...", profileError);
+                        await new Promise((resolve) => setTimeout(resolve, 750));
+                    }
                 }
             }
 
@@ -92,9 +106,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // Profile not found, but user is authenticated.
                 // Attempt to create a default profile (self-healing)
                 try {
-                    const { data: { session: activeSession } } = await supabase.auth.getSession();
-                    if (activeSession?.access_token) {
-                        data = await ensureUserProfileAction(activeSession.access_token);
+                    if (accessToken) {
+                        const profilePromise = ensureUserProfileAction(accessToken);
+                        const profileTimeout = new Promise<never>((_, reject) =>
+                            setTimeout(() => reject(new Error("Profile creation timed out")), timeoutMs)
+                        );
+                        data = await Promise.race([profilePromise, profileTimeout]);
                     }
                 } catch (createError) {
                     console.error("Failed to auto-create profile via action:", createError);
@@ -122,19 +139,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 userLoadedRef.current = true;
                 return appUser;
             }
-        } catch (error) {
-            console.error('Unexpected error fetching profile:', error);
+            } catch (error) {
+                console.error('Unexpected error fetching profile:', error);
+            }
+            return null;
+        })();
+
+        profileFetchRef.current = fetchPromise;
+        try {
+            return await fetchPromise;
         } finally {
-            isFetchingRef.current = false;
+            if (profileFetchRef.current === fetchPromise) {
+                profileFetchRef.current = null;
+            }
         }
-        return null;
     }, []);
 
     useEffect(() => {
+        let disposed = false;
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (disposed) return;
+
             if (event === 'SIGNED_OUT') {
                 userLoadedRef.current = false;
-                isFetchingRef.current = false;
+                profileFetchRef.current = null;
+                brandingLoadedRef.current = false;
                 setUser(null);
                 setIsLoading(false);
                 window.location.replace('/');
@@ -146,22 +176,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            if (isFetchingRef.current) return;
-
             if (session?.user) {
-                await fetchProfile(session.user.id);
-            } else {
+                await fetchProfile(session.user.id, 8000, 1, session.access_token);
+            } else if (event === "INITIAL_SESSION") {
                 setUser(null);
-                if (!unitBranding) {
-                    const branding = await getUnitBrandingAction();
-                    setUnitBranding(branding);
+                if (!brandingLoadedRef.current) {
+                    brandingLoadedRef.current = true;
+                    try {
+                        const branding = await getUnitBrandingAction();
+                        if (!disposed) setUnitBranding(branding);
+                    } catch (brandingError) {
+                        console.error("Failed to load unit branding:", brandingError);
+                    }
                 }
             }
-            setIsLoading(false);
+            if (!disposed) setIsLoading(false);
         });
 
-        return () => subscription.unsubscribe();
-    }, [fetchProfile, unitBranding]);
+        return () => {
+            disposed = true;
+            subscription.unsubscribe();
+        };
+    }, [fetchProfile]);
 
     const login = async (email: string) => {
         setIsLoading(true);
@@ -195,14 +231,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             throw error;
         }
 
-        if (data.user) {
-            const fetchedUser = await fetchProfile(data.user.id);
-            if (!skipRedirect) {
-                if (fetchedUser) {
-                    router.push("/dashboard");
-                } else {
-                    throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
-                }
+        if (!data.user) {
+            throw new Error("Login verification succeeded but no user session was returned. Please try again.");
+        }
+
+        const fetchedUser = await fetchProfile(data.user.id, 8000, 1, data.session?.access_token);
+        if (!skipRedirect) {
+            if (fetchedUser) {
+                router.push("/dashboard");
+            } else {
+                throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
             }
         }
         setIsLoading(false);
@@ -225,8 +263,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const loginWithPassword = async (emails: string | string[], pin: string) => {
         setIsLoading(true);
         try {
+            if (!pin.trim()) throw new Error("Enter your PIN.");
             const securePassword = `${pin}-ncc-auth`;
-            const candidateEmails = Array.isArray(emails) ? emails : [emails];
+            const candidateEmails = (Array.isArray(emails) ? emails : [emails])
+                .map((email) => email.trim().toLowerCase())
+                .filter(Boolean);
+            if (candidateEmails.length === 0) throw new Error("Enter your username.");
             let lastError: unknown = new Error("Invalid credentials.");
 
             for (const email of candidateEmails) {
@@ -236,7 +278,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 });
 
                 if (data.user) {
-                    const fetchedUser = await fetchProfile(data.user.id);
+                    const fetchedUser = await fetchProfile(data.user.id, 8000, 1, data.session?.access_token);
                     if (!fetchedUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
                     router.push("/dashboard");
                     return;
@@ -250,9 +292,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 });
 
                 if (legacyData.user) {
-                    const fetchedLegacyUser = await fetchProfile(legacyData.user.id);
+                    const fetchedLegacyUser = await fetchProfile(legacyData.user.id, 8000, 1, legacyData.session?.access_token);
                     if (!fetchedLegacyUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
-                    await supabase.auth.updateUser({ password: securePassword });
+                    const { error: upgradeError } = await supabase.auth.updateUser({ password: securePassword });
+                    if (upgradeError) {
+                        console.warn("Legacy PIN login succeeded, but password upgrade failed:", upgradeError);
+                    }
                     router.push("/dashboard");
                     return;
                 }
@@ -294,7 +339,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     // Use server action (admin client) to create the profile, bypassing RLS
                     await ensureUserProfileAction(activeSession.access_token);
                 }
-                const fetchedUser = await fetchProfile(data.user.id);
+                const fetchedUser = await fetchProfile(data.user.id, 8000, 1, activeSession?.access_token);
                 if (!fetchedUser) throw new Error("Signup succeeded but your profile could not be loaded. Please contact your ANO.");
                 router.push("/dashboard");
             }
