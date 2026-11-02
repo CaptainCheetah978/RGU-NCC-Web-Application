@@ -41,6 +41,10 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!formData.username.trim() || !formData.pin.trim()) {
+      setError("Enter your username and PIN.");
+      return;
+    }
     setSubmitting(true);
 
     // Check lockout
@@ -70,8 +74,11 @@ export default function LoginPage() {
       setSubmitting(false);
       return;
     } catch (err: unknown) {
-      // If modern prefix (csuo/cjuo) failed, try legacy fallback (suo/uo)
-      if (activeTab === Role.CSUO || activeTab === Role.CJUO) {
+      const profileLoadFailed = err instanceof Error &&
+        err.message.startsWith("Login succeeded but your profile could not be loaded");
+
+      // If modern prefix (csuo/cjuo) failed credentials, try legacy fallback (suo/uo).
+      if (!profileLoadFailed && (activeTab === Role.CSUO || activeTab === Role.CJUO)) {
         const legacyPrefix = activeTab === Role.CSUO ? "suo" : "uo";
         const legacyEmail = `${legacyPrefix}_${cleanUsername}@ncc.internal`;
         try {
@@ -87,6 +94,12 @@ export default function LoginPage() {
       }
 
       setError(err instanceof Error ? err.message : "Invalid credentials. Contact your ANO.");
+      // Profile/server failures are not bad credentials and must not trigger lockout.
+      if (profileLoadFailed) {
+        setSubmitting(false);
+        return;
+      }
+
       // Increment failed attempts
       failCountRef.current += 1;
       if (failCountRef.current >= MAX_ATTEMPTS) {

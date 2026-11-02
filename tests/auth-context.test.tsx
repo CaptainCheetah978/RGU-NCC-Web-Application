@@ -140,6 +140,43 @@ describe('AuthContext', () => {
     })
   })
 
+  it('should share a concurrent profile fetch with the auth state callback', async () => {
+    let resolveProfile: ((profile: Record<string, string>) => void) | undefined
+    mockGetProfileByIdAction.mockImplementation(() => new Promise((resolve) => {
+      resolveProfile = resolve
+    }))
+
+    mockSignInWithPassword.mockResolvedValueOnce({
+      data: { user: { id: 'racing-user-id' } },
+      error: null
+    })
+
+    let authStateCallback: ((event: string, session: { user: { id: string } } | null) => void) | undefined
+    mockOnAuthStateChange.mockImplementation((callback) => {
+      authStateCallback = callback
+      return { data: { subscription: { unsubscribe: vi.fn() } } }
+    })
+
+    const wrapper = createWrapper()
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    const loginPromise = result.current.loginWithPassword('test@ncc.internal', '1234')
+    await waitFor(() => expect(authStateCallback).toBeDefined())
+    authStateCallback?.('SIGNED_IN', { user: { id: 'racing-user-id' } })
+
+    resolveProfile?.({
+      id: 'racing-user-id',
+      full_name: 'Racing Cadet',
+      role: 'CADET',
+    })
+
+    await loginPromise
+    await waitFor(() => {
+      expect(result.current.user?.name).toBe('Racing Cadet')
+    })
+    expect(mockGetProfileByIdAction).toHaveBeenCalledTimes(1)
+  })
+
   it('should throw error on invalid credentials', async () => {
     // Both secure and raw login fail
     mockSignInWithPassword.mockResolvedValue({

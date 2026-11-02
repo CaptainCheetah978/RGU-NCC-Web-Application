@@ -62,8 +62,11 @@ const ADMIN_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
     "unit_id",
 ]);
 
-export async function getProfileByIdAction(userId: string) {
+export async function getProfileByIdAction(userId: string, accessToken: string) {
     if (!isUUID(userId)) return null;
+
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (userError || !user || user.id !== userId) return null;
 
     // Try with the full column set first (includes newer schema columns)
     const { data, error } = await supabaseAdmin
