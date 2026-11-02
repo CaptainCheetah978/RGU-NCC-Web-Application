@@ -1,0 +1,2588 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 8753
+>>
+stream
+0.200025 w
+0 G
+0.06 0.09 0.16 rg
+0. 841.8899999999999864 595.2799999999999727 -28. re
+f
+BT
+/F2 9 Tf
+10.3499999999999996 TL
+1. g
+44. 823.8899999999999864 Td
+(RGU NCC Cadet Management System) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+1. g
+367.4999999999998863 823.8899999999999864 Td
+(Authentication and Profile Remediation Report) Tj
+ET
+0.8 0.84 0.88 RG
+44. 34. m
+551.2799999999999727 34. l
+S
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+44. 18. Td
+(Confidential engineering report | Prepared 02 November 2026) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+526.1599999999999682 18. Td
+(Page 1) Tj
+ET
+0.06 0.09 0.16 rg
+0. 813.8899999999999864 595.2799999999999727 -105. re
+f
+BT
+/F2 26 Tf
+29.8999999999999986 TL
+1. g
+44. 766.8899999999999864 Td
+(Authentication and Profile) Tj
+ET
+BT
+/F2 26 Tf
+29.8999999999999986 TL
+1. g
+44. 734.8899999999999864 Td
+(Remediation Report) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+44. 713.8899999999999864 Td
+(Industry-grade engineering assessment and closure record) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+44. 667.8899999999999864 Td
+(System: RGU NCC Cadet Management System) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+44. 650.8899999999999864 Td
+(Release reference: c8ad8f1 / PR #26) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+44. 633.8899999999999864 Td
+(Assessment date: 02 November 2026) Tj
+ET
+0.09 0.4 0.2 rg
+482.2799999999999727 672.8899999999999864 m
+543.2799999999999727 672.8899999999999864 l
+544.9368542494923986 672.8899999999999864 546.2799999999999727 671.5468542494922985 546.2799999999999727 669.8899999999999864 c
+546.2799999999999727 659.8899999999999864 l
+546.2799999999999727 658.2331457505076742 544.6231457505075468 656.8899999999999864 543.2799999999999727 656.8899999999999864 c
+482.2799999999999727 656.8899999999999864 l
+480.6231457505076037 656.8899999999999864 479.2799999999999727 658.5468542494922985 479.2799999999999727 659.8899999999999864 c
+479.2799999999999727 669.8899999999999864 l
+479.2799999999999727 671.5468542494922985 480.9368542494923418 672.8899999999999864 482.2799999999999727 672.8899999999999864 c
+h
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+486.2799999999999727 661.8899999999999864 Td
+(RESOLVED) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 595.8899999999999864 Td
+(Executive Summary) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 573.8899999999999864 Td
+(The system previously authenticated users successfully but could report that the associated profile could not be) Tj
+T* (loaded. The principal defect was a concurrency race between the password login path and Supabase) Tj
+T* (authentication state callbacks: a second profile request returned null immediately while the first request was still) Tj
+T* (running. This converted a valid login into a false failure and could leave the interface in a misleading state.) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 509.6899999999999977 Td
+(The remediation is complete and merged. The implementation now coordinates concurrent profile requests, uses) Tj
+T* (the authenticated access token for server-side profile reads, bounds all network-dependent profile operations,) Tj
+T* (stabilizes the auth listener lifecycle, preserves legacy PIN migration, and prevents infrastructure/profile failures) Tj
+T* (from consuming credential lockout attempts.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 445.4900000000000091 Td
+(Change Status Overview) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+0.8 0.84 0.88 RG
+0.200025 w
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+44. 423.4900000000000091 105. -21.7749999999999986 re
+f
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+1. g
+50. 410.2649999999999864 Td
+(Area) Tj
+ET
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+149. 423.4900000000000091 58. -21.7749999999999986 re
+f
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+1. g
+155. 410.2649999999999864 Td
+(Status) Tj
+ET
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+207. 423.4900000000000091 285. -21.7749999999999986 re
+f
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+1. g
+213. 410.2649999999999864 Td
+(Engineering outcome) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+1. g
+0.78 G
+0.1 w
+1. g
+44. 401.7150000000000318 105. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 388.4900000000000091 Td
+(Concurrent profile) Tj
+T* (loading) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+149. 401.7150000000000318 58. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+155. 388.4900000000000091 Td
+(FIXED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+207. 401.7150000000000318 285. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+213. 388.4900000000000091 Td
+(In-flight profile requests are shared instead of returning false null failures.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 370.1650000000000205 105. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 356.9399999999999977 Td
+(Profile authorization) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+149. 370.1650000000000205 58. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+155. 356.9399999999999977 Td
+(ADDED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+207. 370.1650000000000205 285. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+213. 356.9399999999999977 Td
+(Server action validates the access token and requires the token subject) Tj
+T* (to match the requested profile ID.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 338.6150000000000091 105. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 325.3899999999999864 Td
+(Timeout and retry) Tj
+T* (behavior) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+149. 338.6150000000000091 58. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+155. 325.3899999999999864 Td
+(FIXED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+207. 338.6150000000000091 285. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+213. 325.3899999999999864 Td
+(Profile reads, session lookup, and profile creation are bounded and) Tj
+T* (retried predictably.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 307.0650000000000546 105. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 293.8400000000000318 Td
+(Auth listener lifecycle) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+149. 307.0650000000000546 58. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+155. 293.8400000000000318 Td
+(FIXED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+207. 307.0650000000000546 285. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+213. 293.8400000000000318 Td
+(Listener is installed once, disposed safely, and no longer depends on) Tj
+T* (branding state changes.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 275.5150000000001 105. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 262.2900000000000773 Td
+(Credential lockout) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+149. 275.5150000000001 58. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+155. 262.2900000000000773 Td
+(FIXED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+207. 275.5150000000001 285. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+213. 262.2900000000000773 Td
+(Only credential failures increment the five-attempt, 60-second lockout;) Tj
+T* (profile/server failures do not.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 243.9650000000001455 105. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 230.7400000000001228 Td
+(Legacy PIN migration) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+149. 243.9650000000001455 58. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+155. 230.7400000000001228 Td
+(HARDENE) Tj
+T* (D) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+207. 243.9650000000001455 285. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+213. 230.7400000000001228 Td
+(Successful legacy login remains usable even if password upgrade needs) Tj
+T* (later retry.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 212.415000000000191 105. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 199.1900000000001683 Td
+(Regression coverage) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+149. 212.415000000000191 58. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+155. 199.1900000000001683 Td
+(ADDED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+207. 212.415000000000191 285. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+213. 199.1900000000001683 Td
+(Concurrent profile-fetch behavior is covered by an automated test.) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+0.78 G
+0. w
+0.8 0.84 0.88 RG
+0.200025 w
+0.8 0.84 0.88 RG
+0.200025 w
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 10236
+>>
+stream
+0.200025 w
+0.8 0.84 0.88 RG
+0.06 0.09 0.16 rg
+0. 841.8899999999999864 595.2799999999999727 -28. re
+f
+BT
+/F2 9 Tf
+10.3499999999999996 TL
+1. g
+44. 823.8899999999999864 Td
+(RGU NCC Cadet Management System) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+1. g
+367.4999999999998863 823.8899999999999864 Td
+(Authentication and Profile Remediation Report) Tj
+ET
+0.8 0.84 0.88 RG
+44. 34. m
+551.2799999999999727 34. l
+S
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+44. 18. Td
+(Confidential engineering report | Prepared 02 November 2026) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+526.1599999999999682 18. Td
+(Page 2) Tj
+ET
+BT
+/F2 23 Tf
+26.4499999999999993 TL
+0.059 0.09 0.165 rg
+44. 759.8899999999999864 Td
+(1. Scope and System Context) Tj
+ET
+0.05 0.45 0.56 rg
+44. 747.8899999999999864 82. -4. re
+f
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+44. 721.8899999999999864 Td
+(Assessment boundary, evidence sources, and authentication architecture) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 783.8899999999999864 Td
+(Scope) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 761.8899999999999864 Td
+(This report covers the browser authentication provider, the login and recovery interface, the server-side profile) Tj
+T* (actions, the Supabase client boundary, and automated validation associated with the remediation. It does not) Tj
+T* (certify external Supabase project configuration, production secrets, database migration execution, email delivery, or) Tj
+T* (end-user device/network conditions.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 697.6900000000000546 Td
+(Evidence reviewed) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 675.6900000000000546 Td
+(A.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 675.6900000000000546 Td
+(Source implementation in src/lib/auth-context.tsx, src/app/page.tsx, and src/app/actions/profile-actions.ts.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 656.1900000000000546 Td
+(B.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 656.1900000000000546 Td
+(Automated tests in tests/auth-context.test.tsx and the repository-wide Vitest suite.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 636.6900000000000546 Td
+(C.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 636.6900000000000546 Td
+(Production build, TypeScript, and ESLint validation executed after the remediation.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 617.1900000000000546 Td
+(D.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 617.1900000000000546 Td
+(Merged pull request #26 and commit c8ad8f1.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 597.6900000000000546 Td
+(Authentication flow) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 575.6900000000000546 Td
+(Users enter a role-specific identifier and PIN. The client derives the internal email candidates, attempts the salted) Tj
+T* (password format, and then attempts the legacy PIN format where applicable. Once Supabase returns a user) Tj
+T* (session, the provider loads the matching profile, maps it into the application User model, and redirects to the) Tj
+T* (dashboard. Supabase auth state events independently restore sessions on reload and token refresh.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 511.4900000000000091 Td
+(2. Findings and Resolution Register) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+0.8 0.84 0.88 RG
+0.200025 w
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+44. 489.4900000000000091 35. -19.1999999999999993 re
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+49. 477.6899999999999977 Td
+(ID) Tj
+ET
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+79. 489.4900000000000091 87. -19.1999999999999993 re
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+84. 477.6899999999999977 Td
+(Status) Tj
+ET
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+166. 489.4900000000000091 125. -19.1999999999999993 re
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+171. 477.6899999999999977 Td
+(Finding) Tj
+ET
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+291. 489.4900000000000091 205. -19.1999999999999993 re
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+296. 477.6899999999999977 Td
+(Resolution / evidence) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+1. g
+0.78 G
+0.1 w
+1. g
+44. 470.2900000000000205 35. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+49. 458.4900000000000091 Td
+(F-01) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+79. 470.2900000000000205 87. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+84. 458.4900000000000091 Td
+(FIXED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+166. 470.2900000000000205 125. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+171. 458.4900000000000091 Td
+(Concurrent fetch race) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+291. 470.2900000000000205 205. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+296. 458.4900000000000091 Td
+(A shared Promise prevents loginWithPassword and) Tj
+T* (onAuthStateChange from treating the same in-flight) Tj
+T* (request as a missing profile.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 432.6900000000000546 35. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+49. 420.8900000000000432 Td
+(F-02) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+79. 432.6900000000000546 87. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+84. 420.8900000000000432 Td
+(FIXED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+166. 432.6900000000000546 125. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+171. 420.8900000000000432 Td
+(Unbounded retry path) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+291. 432.6900000000000546 205. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+296. 420.8900000000000432 Td
+(Every server profile attempt is race-bounded by a) Tj
+T* (timeout; retries are limited and include a controlled) Tj
+T* (delay.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 395.0900000000000318 35. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+49. 383.2900000000000205 Td
+(F-03) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+79. 395.0900000000000318 87. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+84. 383.2900000000000205 Td
+(ADDED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+166. 395.0900000000000318 125. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+171. 383.2900000000000205 Td
+(Server profile identity check) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+291. 395.0900000000000318 205. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+296. 383.2900000000000205 Td
+(getProfileByIdAction verifies the bearer token and) Tj
+T* (rejects a requested ID that does not match the) Tj
+T* (authenticated subject.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 357.4900000000000091 35. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+49. 345.6899999999999977 Td
+(F-04) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+79. 357.4900000000000091 87. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+84. 345.6899999999999977 Td
+(FIXED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+166. 357.4900000000000091 125. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+171. 345.6899999999999977 Td
+(Auth listener churn) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+291. 357.4900000000000091 205. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+296. 345.6899999999999977 Td
+(The auth subscription no longer re-registers when unit) Tj
+T* (branding state changes; disposal guards prevent late) Tj
+T* (state writes.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 319.8899999999999864 35. -28.3999999999999986 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+49. 308.0900000000000318 Td
+(F-05) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+79. 319.8899999999999864 87. -28.3999999999999986 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+84. 308.0900000000000318 Td
+(FIXED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+166. 319.8899999999999864 125. -28.3999999999999986 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+171. 308.0900000000000318 Td
+(False lockout classification) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+291. 319.8899999999999864 205. -28.3999999999999986 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+296. 308.0900000000000318 Td
+(Profile loading/server failures are surfaced without) Tj
+T* (incrementing failed-credential counters.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 291.4900000000000091 35. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+49. 279.6900000000000546 Td
+(F-06) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+79. 291.4900000000000091 87. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+84. 279.6900000000000546 Td
+(HARDENED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+166. 291.4900000000000091 125. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+171. 279.6900000000000546 Td
+(Legacy password upgrade) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+291. 291.4900000000000091 205. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+296. 279.6900000000000546 Td
+(A successful legacy login is not discarded if the) Tj
+T* (post-login password upgrade fails; the failure is logged) Tj
+T* (for follow-up.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 253.8899999999999864 35. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+49. 242.0900000000000318 Td
+(F-07) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+79. 253.8899999999999864 87. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+84. 242.0900000000000318 Td
+(ADDED) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+166. 253.8899999999999864 125. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+171. 242.0900000000000318 Td
+(Regression protection) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+291. 253.8899999999999864 205. -37.5999999999999943 re
+B
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 0.161 0.231 rg
+296. 242.0900000000000318 Td
+(A test verifies that a concurrent auth callback and login) Tj
+T* (share one profile request and both complete) Tj
+T* (successfully.) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+0.78 G
+0. w
+0.8 0.84 0.88 RG
+0.200025 w
+0.8 0.84 0.88 RG
+0.200025 w
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 9961
+>>
+stream
+0.200025 w
+0.8 0.84 0.88 RG
+0.06 0.09 0.16 rg
+0. 841.8899999999999864 595.2799999999999727 -28. re
+f
+BT
+/F2 9 Tf
+10.3499999999999996 TL
+1. g
+44. 823.8899999999999864 Td
+(RGU NCC Cadet Management System) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+1. g
+367.4999999999998863 823.8899999999999864 Td
+(Authentication and Profile Remediation Report) Tj
+ET
+0.8 0.84 0.88 RG
+44. 34. m
+551.2799999999999727 34. l
+S
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+44. 18. Td
+(Confidential engineering report | Prepared 02 November 2026) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+526.1599999999999682 18. Td
+(Page 3) Tj
+ET
+BT
+/F2 23 Tf
+26.4499999999999993 TL
+0.059 0.09 0.165 rg
+44. 759.8899999999999864 Td
+(3. Technical Remediation Detail) Tj
+ET
+0.05 0.45 0.56 rg
+44. 747.8899999999999864 82. -4. re
+f
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+44. 721.8899999999999864 Td
+(Implementation changes and operating behavior) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 783.8899999999999864 Td
+(Profile acquisition control) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 761.8899999999999864 Td
+(The provider maintains a ref-held Promise for the active profile load. Any overlapping caller awaits that Promise.) Tj
+T* (This preserves a single source of truth for the resulting User object and eliminates the previous null-on-contention) Tj
+T* (behavior. The reference is cleared only when the exact active Promise settles, preventing an older request from) Tj
+T* (clearing a newer request.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 697.6900000000000546 Td
+(Session-bound server fallback) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 675.6900000000000546 Td
+(The browser client remains the first profile-read path when RLS permits self-read access. If that path does not) Tj
+T* (return a row, the provider obtains the active access token and calls the server action. The server action validates) Tj
+T* (the token with Supabase Auth and enforces subject-to-profile identity equality before querying profile data.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 625.2899999999999636 Td
+(Self-healing profile creation) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 603.2899999999999636 Td
+(If authentication is valid but no profile row exists, the provider attempts a server-side profile upsert using the active) Tj
+T* (access token. This remains best-effort and time-bounded. A failed repair is logged explicitly and cannot silently) Tj
+T* (become a success-shaped application user.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 552.8899999999999864 Td
+(Lifecycle and state safety) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 530.8899999999999864 Td
+(A.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 530.8899999999999864 Td
+(INITIAL_SESSION loads public unit branding only when no authenticated session is present.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 511.3899999999999864 Td
+(B.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 511.3899999999999864 Td
+(SIGNED_IN and TOKEN_REFRESHED events do not cause redundant profile loads after a user is already) Tj
+T* (established.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 478.3899999999999864 Td
+(C.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 478.3899999999999864 Td
+(SIGNED_OUT clears user state and in-flight profile state, then returns to the login page.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 458.8899999999999864 Td
+(D.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 458.8899999999999864 Td
+(Disposed listeners ignore late asynchronous responses, reducing stale state updates during navigation or) Tj
+T* (remount.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 425.8899999999999864 Td
+(Credential lockout behavior) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 403.8899999999999864 Td
+(The login page continues to enforce five failed credential attempts followed by a 60-second client-side lockout.) Tj
+T* (Empty input is rejected before authentication. A profile/server failure is displayed to the user but is not counted as a) Tj
+T* (bad credential, preventing a healthy account from being locked because of a transient backend issue.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 353.4900000000000091 Td
+(4. Validation and Acceptance Evidence) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+0.8 0.84 0.88 RG
+0.200025 w
+0.09 0.4 0.2 rg
+0.78 G
+0. w
+0.09 0.4 0.2 rg
+44. 331.4900000000000091 175. -21.7749999999999986 re
+f
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+1. g
+50. 318.2649999999999864 Td
+(Validation) Tj
+ET
+0.09 0.4 0.2 rg
+0.78 G
+0. w
+0.09 0.4 0.2 rg
+219. 331.4900000000000091 75. -21.7749999999999986 re
+f
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+1. g
+225. 318.2649999999999864 Td
+(Result) Tj
+ET
+0.09 0.4 0.2 rg
+0.78 G
+0. w
+0.09 0.4 0.2 rg
+294. 331.4900000000000091 202. -21.7749999999999986 re
+f
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+1. g
+300. 318.2649999999999864 Td
+(Evidence) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+1. g
+0.78 G
+0.1 w
+1. g
+44. 309.7150000000000318 175. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 296.4900000000000091 Td
+(Repository test suite \(Vitest\)) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+219. 309.7150000000000318 75. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+225. 296.4900000000000091 Td
+(PASS) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+294. 309.7150000000000318 202. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+300. 296.4900000000000091 Td
+(8 test files; 28 tests passed.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 287.9400000000000546 175. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 274.7150000000000318 Td
+(TypeScript compiler) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+219. 287.9400000000000546 75. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+225. 274.7150000000000318 Td
+(PASS) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+294. 287.9400000000000546 202. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+300. 274.7150000000000318 Td
+(npx tsc --noEmit completed successfully.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 266.1650000000000773 175. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 252.9400000000000546 Td
+(ESLint) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+219. 266.1650000000000773 75. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+225. 252.9400000000000546 Td
+(PASS) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+294. 266.1650000000000773 202. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+300. 252.9400000000000546 Td
+(npm run lint -- --no-cache completed successfully.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 244.3900000000001 175. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 231.1650000000000773 Td
+(Next.js production build) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+219. 244.3900000000001 75. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+225. 231.1650000000000773 Td
+(PASS) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+294. 244.3900000000001 202. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+300. 231.1650000000000773 Td
+(npm run build compiled, type-checked, and) Tj
+T* (generated 15 routes.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 212.8400000000001455 175. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 199.6150000000001228 Td
+(Pull request integration) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+219. 212.8400000000001455 75. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+225. 199.6150000000001228 Td
+(PASS) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+294. 212.8400000000001455 202. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+300. 199.6150000000001228 Td
+(PR #26 merged into main.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 191.0650000000001683 175. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 177.8400000000001455 Td
+(Observed user outcome) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+219. 191.0650000000001683 75. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+225. 177.8400000000001455 Td
+(PASS) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+294. 191.0650000000001683 202. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+300. 177.8400000000001455 Td
+(User reported that login is now successful.) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+0.78 G
+0. w
+0.8 0.84 0.88 RG
+0.200025 w
+0.8 0.84 0.88 RG
+0.200025 w
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 145.290000000000191 Td
+(Acceptance criteria) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 123.290000000000191 Td
+(PASS) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 123.290000000000191 Td
+(Valid credentials authenticate and profile loading completes without the previous false error.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 103.790000000000191 Td
+(PASS) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 103.790000000000191 Td
+(The 60-second lockout remains active for repeated credential failures.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 84.290000000000191 Td
+(PASS) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 84.290000000000191 Td
+(A slow or unavailable profile path cannot hold the login indefinitely.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 64.790000000000191 Td
+(PASS) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 64.790000000000191 Td
+(Profile/server errors do not consume credential-attempt budget.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 45.290000000000191 Td
+(PASS) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 45.290000000000191 Td
+(A legacy PIN user can enter the system even if password migration needs a later retry.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 5998
+>>
+stream
+0.200025 w
+0.8 0.84 0.88 RG
+0.06 0.09 0.16 rg
+0. 841.8899999999999864 595.2799999999999727 -28. re
+f
+BT
+/F2 9 Tf
+10.3499999999999996 TL
+1. g
+44. 823.8899999999999864 Td
+(RGU NCC Cadet Management System) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+1. g
+367.4999999999998863 823.8899999999999864 Td
+(Authentication and Profile Remediation Report) Tj
+ET
+0.8 0.84 0.88 RG
+44. 34. m
+551.2799999999999727 34. l
+S
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+44. 18. Td
+(Confidential engineering report | Prepared 02 November 2026) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+526.1599999999999682 18. Td
+(Page 4) Tj
+ET
+BT
+/F2 23 Tf
+26.4499999999999993 TL
+0.059 0.09 0.165 rg
+44. 759.8899999999999864 Td
+(5. Residual Risk and Recommendations) Tj
+ET
+0.05 0.45 0.56 rg
+44. 747.8899999999999864 82. -4. re
+f
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+44. 721.8899999999999864 Td
+(Controls that remain outside this code change) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 783.8899999999999864 Td
+(Residual risks) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 761.8899999999999864 Td
+(R-01) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 761.8899999999999864 Td
+(The current lockout is client-side and browser-instance scoped. It is useful for user experience but is not a) Tj
+T* (substitute for server-side rate limiting or Supabase Auth protections.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 728.8899999999999864 Td
+(R-02) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 728.8899999999999864 Td
+(The application uses a browser-managed Supabase session and passes access tokens to Server Actions.) Tj
+T* (Production deployment must keep the service-role key server-only and must use HTTPS.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 695.8899999999999864 Td
+(R-03) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 695.8899999999999864 Td
+(Automatic profile creation assigns conservative defaults. Operational policy should define how new users are) Tj
+T* (approved, assigned to a unit, and reviewed.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 662.8899999999999864 Td
+(R-04) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 662.8899999999999864 Td
+(The report validates application code and build behavior, not the live Supabase schema, RLS policy state,) Tj
+T* (SMTP provider, DNS, or deployed environment variables.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 629.8899999999999864 Td
+(Recommended next controls) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 607.8899999999999864 Td
+(1.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 607.8899999999999864 Td
+(Enable Supabase/Auth provider rate limiting and monitor authentication failures centrally.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 588.3899999999999864 Td
+(2.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 588.3899999999999864 Td
+(Add structured telemetry for profile-load failures with request correlation IDs, excluding tokens and personal) Tj
+T* (secrets.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 555.3899999999999864 Td
+(3.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 555.3899999999999864 Td
+(Add an end-to-end smoke test against a staging Supabase project covering salted login, legacy migration,) Tj
+T* (session restore, logout, and missing-profile repair.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 522.3899999999999864 Td
+(4.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 522.3899999999999864 Td
+(Verify migrations 005-007 and the production RLS policies are applied consistently before release promotion.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 502.8899999999999864 Td
+(5.) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 502.8899999999999864 Td
+(Rotate any credentials that may have appeared in historical setup documentation and keep production secrets) Tj
+T* (in the deployment secret manager.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 469.8899999999999864 Td
+(Deployment checklist) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 447.8899999999999864 Td
+([ ]) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 447.8899999999999864 Td
+(Confirm NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are configured for) Tj
+T* (the target environment.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 414.8899999999999864 Td
+([ ]) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 414.8899999999999864 Td
+(Confirm SUPABASE_SERVICE_ROLE_KEY exists only in server-side deployment configuration.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 395.3899999999999864 Td
+([ ]) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 395.3899999999999864 Td
+(Confirm the profiles table contains the required identity and unit columns, or that fallback behavior is) Tj
+T* (intentionally accepted.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 362.3899999999999864 Td
+([ ]) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 362.3899999999999864 Td
+(Run the login smoke test with a real test account and verify dashboard redirection.) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.055 0.455 0.565 rg
+44. 342.8899999999999864 Td
+([ ]) Tj
+ET
+BT
+/F1 10 Tf
+13.5 TL
+0.118 0.161 0.231 rg
+60. 342.8899999999999864 Td
+(Verify five bad attempts produce the 60-second lockout and that a profile outage does not increment the) Tj
+T* (counter.) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 309.8899999999999864 Td
+(6. Closure Statement) Tj
+ET
+BT
+/F1 10 Tf
+13.7999999999999989 TL
+0.118 0.161 0.231 rg
+44. 287.8899999999999864 Td
+(The reported production symptom—successful authentication followed by a profile-fetch failure—has been) Tj
+T* (addressed at its root in the client/server interaction model. The change is implemented, tested, built successfully,) Tj
+T* (and merged through the protected-branch pull request workflow. The remaining recommendations are operational) Tj
+T* (hardening items rather than blockers for the corrected login path.) Tj
+ET
+endstream
+endobj
+11 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 12 0 R
+>>
+endobj
+12 0 obj
+<<
+/Length 7847
+>>
+stream
+0.200025 w
+0.8 0.84 0.88 RG
+0.06 0.09 0.16 rg
+0. 841.8899999999999864 595.2799999999999727 -28. re
+f
+BT
+/F2 9 Tf
+10.3499999999999996 TL
+1. g
+44. 823.8899999999999864 Td
+(RGU NCC Cadet Management System) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+1. g
+367.4999999999998863 823.8899999999999864 Td
+(Authentication and Profile Remediation Report) Tj
+ET
+0.8 0.84 0.88 RG
+44. 34. m
+551.2799999999999727 34. l
+S
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+44. 18. Td
+(Confidential engineering report | Prepared 02 November 2026) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+526.1599999999999682 18. Td
+(Page 5) Tj
+ET
+BT
+/F2 23 Tf
+26.4499999999999993 TL
+0.059 0.09 0.165 rg
+44. 759.8899999999999864 Td
+(Appendix A. Change Traceability) Tj
+ET
+0.05 0.45 0.56 rg
+44. 747.8899999999999864 82. -4. re
+f
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+44. 721.8899999999999864 Td
+(Files, commit, and pull request references) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+0.8 0.84 0.88 RG
+0.200025 w
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+44. 783.8899999999999864 185. -21.7749999999999986 re
+f
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+1. g
+50. 770.6649999999999636 Td
+(Artifact) Tj
+ET
+0.07 0.23 0.37 rg
+0.78 G
+0. w
+0.07 0.23 0.37 rg
+229. 783.8899999999999864 267. -21.7749999999999986 re
+f
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+1. g
+235. 770.6649999999999636 Td
+(Traceability) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+1. g
+0.78 G
+0.1 w
+1. g
+44. 762.1150000000000091 185. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 748.8899999999999864 Td
+(Authentication provider) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+229. 762.1150000000000091 267. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+235. 748.8899999999999864 Td
+(src/lib/auth-context.tsx - profile coordination, session-bound) Tj
+T* (fallback, timeout controls, listener lifecycle.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 730.5649999999999409 185. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 717.3400000000000318 Td
+(Login interface) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+229. 730.5649999999999409 267. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+235. 717.3400000000000318 Td
+(src/app/page.tsx - input validation, legacy prefix fallback, lockout) Tj
+T* (classification.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 699.0149999999999864 185. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 685.7899999999999636 Td
+(Profile server action) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+229. 699.0149999999999864 267. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+235. 685.7899999999999636 Td
+(src/app/actions/profile-actions.ts - token validation and profile lookup) Tj
+T* (fallback.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 667.4649999999999181 185. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 654.2400000000000091 Td
+(Regression test) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+229. 667.4649999999999181 267. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+235. 654.2400000000000091 Td
+(tests/auth-context.test.tsx - concurrent profile fetch regression.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 645.6899999999999409 185. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 632.4649999999999181 Td
+(Commit) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+229. 645.6899999999999409 267. -21.7749999999999986 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+235. 632.4649999999999181 Td
+(c8ad8f1 - fix: stabilize login and profile loading.) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+44. 623.9149999999999636 185. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+50. 610.6899999999999409 Td
+(Pull request) Tj
+ET
+1. g
+0.78 G
+0.1 w
+1. g
+229. 623.9149999999999636 267. -31.5499999999999972 re
+B
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.118 0.161 0.231 rg
+235. 610.6899999999999409 Td
+(CaptainCheetah978/RGU-NCC-Web-Application#26 - merged into) Tj
+T* (main.) Tj
+ET
+0.8 0.84 0.88 RG
+0.200025 w
+0.78 G
+0. w
+0.8 0.84 0.88 RG
+0.200025 w
+0.8 0.84 0.88 RG
+0.200025 w
+BT
+/F2 15 Tf
+17.25 TL
+0.071 0.227 0.373 rg
+44. 568.3650000000000091 Td
+(Status legend) Tj
+ET
+0.09 0.4 0.2 rg
+47. 556.3650000000000091 m
+98.9499999999999886 556.3650000000000091 l
+100.6068542494923719 556.3650000000000091 101.9499999999999886 555.0218542494923213 101.9499999999999886 553.3650000000000091 c
+101.9499999999999886 543.3650000000000091 l
+101.9499999999999886 541.7081457505075832 100.2931457505076054 540.3650000000000091 98.9499999999999886 540.3650000000000091 c
+46.9999999999999929 540.3650000000000091 l
+45.3431457505076096 540.3650000000000091 43.9999999999999929 542.0218542494923213 43.9999999999999929 543.3650000000000091 c
+43.9999999999999929 553.3650000000000091 l
+43.9999999999999929 555.0218542494923213 45.6568542494923761 556.3650000000000091 46.9999999999999929 556.3650000000000091 c
+h
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+51. 545.3650000000000091 Td
+(FIXED) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.278 0.333 0.412 rg
+106. 545.3650000000000091 Td
+(Root cause corrected and validated.) Tj
+ET
+0.05 0.45 0.56 rg
+47. 532.3650000000000091 m
+86.3199999999999932 532.3650000000000091 l
+87.9768542494923764 532.3650000000000091 89.3199999999999932 531.0218542494923213 89.3199999999999932 529.3650000000000091 c
+89.3199999999999932 519.3650000000000091 l
+89.3199999999999932 517.7081457505075832 87.6631457505076099 516.3650000000000091 86.3199999999999932 516.3650000000000091 c
+47. 516.3650000000000091 l
+45.3431457505076168 516.3650000000000091 44. 518.0218542494923213 44. 519.3650000000000091 c
+44. 529.3650000000000091 l
+44. 531.0218542494923213 45.6568542494923832 532.3650000000000091 47. 532.3650000000000091 c
+h
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+51. 521.3650000000000091 Td
+(ADDED) Tj
+ET
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+106. 521.3650000000000091 Td
+(New control or coverage introduced.) Tj
+ET
+0.57 0.25 0.05 rg
+47. 508.3649999999999523 m
+100.1200000000000045 508.3649999999999523 l
+101.7768542494923878 508.3649999999999523 103.1200000000000045 507.0218542494923213 103.1200000000000045 505.3649999999999523 c
+103.1200000000000045 495.3649999999999523 l
+103.1200000000000045 493.7081457505075832 101.4631457505076213 492.3649999999999523 100.1200000000000045 492.3649999999999523 c
+47.0000000000000071 492.3649999999999523 l
+45.3431457505076239 492.3649999999999523 44.0000000000000071 494.0218542494923213 44.0000000000000071 495.3649999999999523 c
+44.0000000000000071 505.3649999999999523 l
+44.0000000000000071 507.0218542494923213 45.6568542494923904 508.3649999999999523 47.0000000000000071 508.3649999999999523 c
+h
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+51. 497.3649999999999523 Td
+(HARDENED) Tj
+ET
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+126. 497.3649999999999523 Td
+(Existing behavior retained with improved failure handling.) Tj
+ET
+0.39 0.45 0.55 rg
+47. 484.3649999999999523 m
+77.5600000000000023 484.3649999999999523 l
+79.2168542494923855 484.3649999999999523 80.5600000000000023 483.0218542494923213 80.5600000000000023 481.3649999999999523 c
+80.5600000000000023 471.3649999999999523 l
+80.5600000000000023 469.7081457505075832 78.903145750507619 468.3649999999999523 77.5600000000000023 468.3649999999999523 c
+47. 468.3649999999999523 l
+45.3431457505076168 468.3649999999999523 44. 470.0218542494923213 44. 471.3649999999999523 c
+44. 481.3649999999999523 l
+44. 483.0218542494923213 45.6568542494923832 484.3649999999999523 47. 484.3649999999999523 c
+h
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+51. 473.3649999999999523 Td
+(OPEN) Tj
+ET
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+106. 473.3649999999999523 Td
+(Recommendation or environment-dependent item remains.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R ]
+/Count 5
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+25 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+26 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 13 0 R
+/F2 14 0 R
+/F3 15 0 R
+/F4 16 0 R
+/F5 17 0 R
+/F6 18 0 R
+/F7 19 0 R
+/F8 20 0 R
+/F9 21 0 R
+/F10 22 0 R
+/F11 23 0 R
+/F12 24 0 R
+/F13 25 0 R
+/F14 26 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+27 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20261102145432-00'00')
+>>
+endobj
+28 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 29
+0000000000 65535 f 
+0000043761 00000 n 
+0000045608 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000008957 00000 n 
+0000009094 00000 n 
+0000019383 00000 n 
+0000019520 00000 n 
+0000029533 00000 n 
+0000029671 00000 n 
+0000035722 00000 n 
+0000035861 00000 n 
+0000043843 00000 n 
+0000043969 00000 n 
+0000044100 00000 n 
+0000044234 00000 n 
+0000044372 00000 n 
+0000044496 00000 n 
+0000044625 00000 n 
+0000044757 00000 n 
+0000044893 00000 n 
+0000045021 00000 n 
+0000045148 00000 n 
+0000045277 00000 n 
+0000045410 00000 n 
+0000045512 00000 n 
+0000045861 00000 n 
+0000045947 00000 n 
+trailer
+<<
+/Size 29
+/Root 28 0 R
+/Info 27 0 R
+/ID [ <95EF67956C318A237AC26E7B6F1EFD6C> <95EF67956C318A237AC26E7B6F1EFD6C> ]
+>>
+startxref
+46051
+%%EOF
