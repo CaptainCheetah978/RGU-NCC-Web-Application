@@ -12,8 +12,9 @@ describe('Permissions Matrix', () => {
         expect(hasPermission(Role.ANO, Permissions.CAN_VIEW_ACTIVITY_LOG)).toBe(true);
     });
 
-    it('should restrict Activity Log to ANO only', () => {
-        const rolesToTest = [Role.CTO, Role.CSUO, Role.CJUO, Role.CSM, Role.CQMS, Role.SGT, Role.CPL, Role.LCPL, Role.CADET];
+    it('should allow CTO activity visibility while restricting it from cadet ranks', () => {
+        expect(hasPermission(Role.CTO, Permissions.CAN_VIEW_ACTIVITY_LOG)).toBe(true);
+        const rolesToTest = [Role.CSUO, Role.CJUO, Role.CSM, Role.CQMS, Role.SGT, Role.CPL, Role.LCPL, Role.CADET];
         rolesToTest.forEach(role => {
             expect(hasPermission(role, Permissions.CAN_VIEW_ACTIVITY_LOG)).toBe(false);
         });

@@ -6,7 +6,7 @@ export const Permissions = {
     CAN_MANAGE_CLASSES: new Set([Role.ANO, Role.CTO, Role.CSUO, Role.CJUO, Role.CWO]),
     CAN_POST_ANNOUNCEMENTS: new Set([Role.ANO, Role.CTO, Role.CSUO, Role.CJUO, Role.CWO]),
     CAN_VIEW_FULL_ROSTER: new Set([Role.ANO, Role.CTO, Role.CSUO, Role.CJUO, Role.CWO, Role.CSM, Role.CQMS, Role.SGT]),
-    CAN_VIEW_ACTIVITY_LOG: new Set([Role.ANO]),
+    CAN_VIEW_ACTIVITY_LOG: new Set([Role.ANO, Role.CTO]),
 } as const;
 
 export function hasPermission(role: Role, permissionSet: Set<Role>): boolean {

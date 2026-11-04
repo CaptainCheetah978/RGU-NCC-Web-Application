@@ -60,9 +60,9 @@ export default function LoginPage() {
 
     try {
       let loginEmails: string[];
-      if (activeTab === Role.ANO) {
+      if (activeTab === Role.ANO || activeTab === Role.CTO) {
         const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
-        loginEmails = [`ano_${cleanUsername}@ncc.internal`];
+        loginEmails = [`${activeTab.toLowerCase()}_${cleanUsername}@ncc.internal`];
       } else {
         const resolved = await resolveLoginUsername(formData.username);
         if (!resolved.success || !resolved.emails) {
@@ -174,6 +174,7 @@ export default function LoginPage() {
 
   const tabs = [
     { id: Role.ANO, label: "ANO", icon: Shield, color: "from-red-600 to-red-800" },
+    { id: Role.CTO, label: "CTO", icon: Shield, color: "from-purple-600 to-purple-800" },
     { id: Role.CSUO, label: "CSUO", icon: User, color: "from-blue-600 to-blue-800" },
     { id: Role.CADET, label: "Cadet", icon: User, color: "from-green-600 to-green-800" }
   ];
@@ -218,7 +219,7 @@ export default function LoginPage() {
             {step === "login" && (
               <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 {/* Role Tabs */}
-                <div className="grid grid-cols-3 border-b border-white/5">
+                <div className="grid grid-cols-4 border-b border-white/5">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
@@ -241,14 +242,14 @@ export default function LoginPage() {
                     <div className="space-y-4">
                       <div>
                         <label className="text-xs font-black text-zinc-300 uppercase tracking-widest ml-1">
-                          {activeTab === Role.ANO ? "Officer ID" : "Login ID"}
+                          {activeTab === Role.ANO || activeTab === Role.CTO ? "Officer ID" : "Login ID"}
                         </label>
                         <div className="relative mt-1">
                           <User className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
                           <Input
                             value={formData.username}
                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                            placeholder={activeTab === Role.ANO ? "ANO" : "e.g. C1234"}
+                            placeholder={activeTab === Role.ANO ? "ANO" : activeTab === Role.CTO ? "CTO ID" : "e.g. C1234"}
                             className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-primary font-bold"
                             required
                           />
