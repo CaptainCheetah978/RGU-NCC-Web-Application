@@ -1,14 +1,23 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Shield, CheckCircle2, XCircle, User, Award } from "lucide-react";
+import { Shield, CheckCircle2, XCircle, User, Award, Camera, CameraOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { verifyCadetById, verifyCadetByToken, type VerifyResult } from "@/app/actions/verify-actions";
 import { cn, getColorOfTheDay, getWingAwareRank, getGenderClassification } from "@/lib/utils";
 import { Wing, Role } from "@/types";
 
+type BarcodeDetectorLike = {
+    detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue: string }>>;
+};
+
+declare global {
+    interface Window {
+        BarcodeDetector?: new (options?: { formats: string[] }) => BarcodeDetectorLike;
+    }
+}
 
 interface VerifiedPerson {
     name: string;
@@ -33,7 +42,127 @@ function VerifyContent() {
     const [loading, setLoading] = useState(() => !!id || !!token);
     const [checked, setChecked] = useState(() => !id && !token);
     const [errorMsg, setErrorMsg] = useState<string>("");
+    const [scannerOpen, setScannerOpen] = useState(false);
+    const [scannerError, setScannerError] = useState("");
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const dailyColor = getColorOfTheDay();
+
+    const stopScanner = useCallback(() => {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        setScannerOpen(false);
+    }, []);
+
+    const verifyScannedValue = useCallback((rawValue: string) => {
+        try {
+            const scannedUrl = new URL(rawValue);
+            const scannedToken = scannedUrl.searchParams.get("token");
+            const scannedId = scannedUrl.searchParams.get("id");
+            if (scannedToken) {
+                window.history.replaceState({}, "", `/verify?token=${encodeURIComponent(scannedToken)}`);
+                stopScanner();
+                setLoading(true);
+                setChecked(false);
+                setErrorMsg("");
+                verifyCadetByToken(scannedToken).then((result) => {
+                    if (result.found && result.person) setPerson(result.person as unknown as VerifiedPerson);
+                    else setErrorMsg(result.error || "Unable to verify scanned QR code.");
+                    setLoading(false);
+                    setChecked(true);
+                });
+                return;
+            }
+            if (scannedId) {
+                window.history.replaceState({}, "", `/verify?id=${encodeURIComponent(scannedId)}`);
+                stopScanner();
+                setLoading(true);
+                setChecked(false);
+                setErrorMsg("");
+                verifyCadetById(scannedId).then((result) => {
+                    if (result.found && result.person) setPerson(result.person as unknown as VerifiedPerson);
+                    else setErrorMsg(result.error || "Unable to verify scanned QR code.");
+                    setLoading(false);
+                    setChecked(true);
+                });
+                return;
+            }
+        } catch {
+            // A raw JWT is also accepted below.
+        }
+
+        if (rawValue.split(".").length === 3) {
+            stopScanner();
+            setLoading(true);
+            setChecked(false);
+            setErrorMsg("");
+            verifyCadetByToken(rawValue).then((result) => {
+                if (result.found && result.person) setPerson(result.person as unknown as VerifiedPerson);
+                else setErrorMsg(result.error || "Unable to verify scanned QR code.");
+                setLoading(false);
+                setChecked(true);
+            });
+            return;
+        }
+
+        setScannerError("This QR code is not an NCC verification code.");
+    }, [stopScanner]);
+
+    const startScanner = async () => {
+        setScannerError("");
+        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+            setScannerError("Camera scanning requires HTTPS and a supported mobile browser.");
+            return;
+        }
+        if (!window.BarcodeDetector) {
+            setScannerError("QR scanning is not supported by this browser. Open the ID card QR link directly.");
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: "environment" } },
+                audio: false,
+            });
+            streamRef.current = stream;
+            setScannerOpen(true);
+            requestAnimationFrame(() => {
+                if (videoRef.current) videoRef.current.srcObject = stream;
+            });
+        } catch {
+            setScannerError("Camera access was denied. Allow camera access or open the QR link directly.");
+        }
+    };
+
+    useEffect(() => {
+        if (!scannerOpen || !videoRef.current || !window.BarcodeDetector) return;
+        let cancelled = false;
+        const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+
+        const scan = async () => {
+            if (cancelled || !videoRef.current) return;
+            try {
+                const results = await detector.detect(videoRef.current);
+                if (results[0]?.rawValue) {
+                    verifyScannedValue(results[0].rawValue);
+                    return;
+                }
+            } catch {
+                // Continue polling while the camera is active.
+            }
+            if (!cancelled) window.setTimeout(scan, 250);
+        };
+
+        void videoRef.current.play().then(scan).catch(() => {
+            setScannerError("Unable to start the camera preview.");
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [scannerOpen, verifyScannedValue]);
+
+    useEffect(() => () => {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+    }, []);
 
     useEffect(() => {
         if (!id && !token) return;
@@ -202,9 +331,22 @@ function VerifyContent() {
                                     : "No verification ID was detected. Please ensure you are scanning a valid NCC digital ID card.")}
                             </p>
                             
+                            <button
+                                type="button"
+                                onClick={() => void startScanner()}
+                                className="mt-6 inline-flex items-center justify-center gap-2 px-6 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+                            >
+                                <Camera className="w-4 h-4" />
+                                Scan ID Card QR
+                            </button>
+
+                            {scannerError && (
+                                <p className="mt-3 text-xs font-medium text-red-600">{scannerError}</p>
+                            )}
+
                             <Link 
                                 href="/"
-                                className="mt-6 inline-flex items-center justify-center px-6 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+                                className="mt-3 inline-flex items-center justify-center px-6 py-2 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors"
                             >
                                 Return to System Login
                             </Link>
@@ -212,6 +354,27 @@ function VerifyContent() {
                             <p className="text-[10px] text-gray-400 mt-6 uppercase font-black tracking-tighter">
                                 If this persists, contact the unit ANO for manual verification.
                             </p>
+                        </div>
+                    </div>
+                )}
+
+                {scannerOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4">
+                        <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
+                            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                                <div>
+                                    <h2 className="font-bold text-slate-900">Scan NCC ID Card</h2>
+                                    <p className="text-xs text-slate-500">Align the QR code inside the frame.</p>
+                                </div>
+                                <button type="button" onClick={stopScanner} aria-label="Close scanner" className="rounded-full p-2 text-slate-500 hover:bg-slate-100">
+                                    <CameraOff className="h-5 w-5" />
+                                </button>
+                            </div>
+                            <div className="relative aspect-square bg-black">
+                                <video ref={videoRef} muted playsInline className="h-full w-full object-cover" />
+                                <div className="pointer-events-none absolute inset-10 rounded-2xl border-2 border-white/80 shadow-[0_0_0_999px_rgba(0,0,0,0.35)]" />
+                            </div>
+                            {scannerError && <p className="px-4 py-3 text-xs font-medium text-red-600">{scannerError}</p>}
                         </div>
                     </div>
                 )}
