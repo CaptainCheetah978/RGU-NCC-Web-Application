@@ -40,6 +40,10 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     if (!user) return null;
 
     const unreadNotes = getStats().unreadNotesValue;
+    const unitLabel = [unitBranding?.name, unitBranding?.number]
+        .filter((value): value is string => Boolean(value?.trim()))
+        .filter((value, index, values) => values.indexOf(value) === index)
+        .join(" ");
 
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [] }, // All
@@ -128,7 +132,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                         />
                     </div>
                     <span className="font-bold text-gray-900 dark:text-white text-lg tracking-tight">
-                        {unitBranding?.name?.split(' ')[0] || "NCC"} {unitBranding?.number || ""}
+                        {unitLabel || "NCC"}
                     </span>
                     {/* Close button on mobile */}
                     <button
@@ -140,7 +144,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     </button>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2">
+                <nav className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
                     {filteredLinks.map((link) => {
                         const isActive = pathname === link.href;
                         const Icon = link.icon;
@@ -175,7 +179,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-white/10 dark:border-slate-700/50 space-y-2">
+                <div className="shrink-0 p-4 border-t border-white/10 dark:border-slate-700/50 space-y-2">
                     <button
                         onClick={toggleTheme}
                         className="flex items-center space-x-3 px-4 py-3 rounded-xl text-zinc-900 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white w-full transition-colors"

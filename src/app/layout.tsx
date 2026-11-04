@@ -13,6 +13,11 @@ export const metadata: Metadata = {
     icon: "/icon-192x192.png",
     apple: "/icon-192x192.png",
   },
+  appleWebApp: {
+    capable: true,
+    title: "NCC CMS",
+    statusBarStyle: "default",
+  },
 };
 
 import { Providers } from "@/components/providers";

@@ -3,7 +3,10 @@
     "short_name": "NCC CMS",
     "description": "Cadet Management System developed by SUO Aditya Singh (https://github.com/CaptainCheetah978)",
     "start_url": "/dashboard",
+    "scope": "/",
+    "id": "/",
     "display": "standalone",
+    "prefer_related_applications": false,
     "background_color": "#0f172a",
     "theme_color": "#0f172a",
     "icons": [

@@ -63,6 +63,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
     const currentUser = messageableUsers.find(u => u.id === user.id);
     const displayUser = currentUser || user;
+    const unitLabel = [unitBranding?.name || user.unitName, unitBranding?.number || user.unitNumber]
+        .filter((value): value is string => Boolean(value?.trim()))
+        .filter((value, index, values) => values.indexOf(value) === index)
+        .join(" ");
 
     const handleNotificationClick = (id: string) => {
         markNoteAsRead(id);
@@ -105,9 +109,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                     <h1 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight sm:hidden">
                         Dashboard
                     </h1>
-                    {(unitBranding?.name || user?.unitName) && (
+                    {unitLabel && (
                         <span className="text-[10px] font-bold text-primary/70 dark:text-blue-400/70 uppercase tracking-widest -mt-0.5 hidden sm:block">
-                            {unitBranding?.name || user?.unitName} {(unitBranding?.number || user?.unitNumber) && `(${unitBranding?.number || user?.unitNumber})`}
+                            {unitLabel}
                         </span>
                     )}
                 </div>
