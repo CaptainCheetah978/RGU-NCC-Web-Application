@@ -58,13 +58,17 @@ export default function LoginPage() {
     }
 
     const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
-    const loginEmails = activeTab === Role.CADET
-      ? [
-          `cadet_${cleanUsername}@ncc.internal`,
-          ...["csuo", "cjuo", "cwo", "csm", "cqms", "sgt", "cpl", "lcpl"]
-            .map(prefix => `${prefix}_${cleanUsername}@ncc.internal`),
-        ]
-      : [`${activeTab.toLowerCase()}_${cleanUsername}@ncc.internal`];
+    const rolePrefix = activeTab.toLowerCase();
+    const legacyPrefix = activeTab === Role.CSUO ? "suo" : activeTab === Role.CJUO ? "uo" : null;
+    const loginEmails = [
+      `${rolePrefix}_${cleanUsername}@ncc.internal`,
+      ...(legacyPrefix ? [`${legacyPrefix}_${cleanUsername}@ncc.internal`] : []),
+      // Accounts created by the Cadet Registry historically used the cadet_
+      // prefix even when their rank was CSUO/CJUO.
+      ...(activeTab === Role.CADET || activeTab === Role.CSUO || activeTab === Role.CJUO
+        ? [`cadet_${cleanUsername}@ncc.internal`]
+        : []),
+    ].filter((email, index, emails) => emails.indexOf(email) === index);
 
     try {
       await loginWithPassword(loginEmails, formData.pin);
@@ -76,22 +80,6 @@ export default function LoginPage() {
     } catch (err: unknown) {
       const profileLoadFailed = err instanceof Error &&
         err.message.startsWith("Login succeeded but your profile could not be loaded");
-
-      // If modern prefix (csuo/cjuo) failed credentials, try legacy fallback (suo/uo).
-      if (!profileLoadFailed && (activeTab === Role.CSUO || activeTab === Role.CJUO)) {
-        const legacyPrefix = activeTab === Role.CSUO ? "suo" : "uo";
-        const legacyEmail = `${legacyPrefix}_${cleanUsername}@ncc.internal`;
-        try {
-          await loginWithPassword([legacyEmail], formData.pin);
-          // Success with legacy email!
-          failCountRef.current = 0;
-          setLockoutRemaining(0);
-          setSubmitting(false);
-          return;
-        } catch (error) {
-          console.error("Auto-login error:", error);
-        }
-      }
 
       setError(err instanceof Error ? err.message : "Invalid credentials. Contact your ANO.");
       // Profile/server failures are not bad credentials and must not trigger lockout.

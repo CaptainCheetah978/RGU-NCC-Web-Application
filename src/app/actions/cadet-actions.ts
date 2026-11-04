@@ -53,7 +53,12 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
 
     try {
         const cleanRegNo = regimentalNumber.replace(/\s+/g, '').toLowerCase();
-        const pseudoEmail = `cadet_${cleanRegNo}@ncc.internal`;
+        const accountPrefix = rank === Role.CSUO
+            ? "csuo"
+            : rank === Role.CJUO
+                ? "cjuo"
+                : rank.toLowerCase();
+        const pseudoEmail = `${accountPrefix}_${cleanRegNo}@ncc.internal`;
         const password = `${pin}-ncc-auth`;
 
         // ── 3. Create Auth User ─────────────────────────────────────────────────
