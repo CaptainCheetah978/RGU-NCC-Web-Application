@@ -187,7 +187,7 @@ export default function LoginPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-900/30 rounded-full blur-[150px]" />
       </div>
 
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
           <div className="flex justify-center items-center space-x-4 mb-6">
             <Image 
