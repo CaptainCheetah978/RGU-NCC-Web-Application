@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCallerSession } from "@/lib/server-auth";
 import { Certificate, Role } from "@/types";
 import { CertificateRow } from "@/app/actions/profile-actions";
+import { Permissions } from "@/lib/permissions";
 
 type ActionResult = { success: boolean; error?: string };
 
@@ -120,24 +121,35 @@ export async function getCertificatesAction(accessToken: string): Promise<{ succ
     if (!session) return { success: false, error: "Unauthorized." };
 
     try {
+        const canViewUnitCertificates = Permissions.CAN_VIEW_FULL_ROSTER.has(session.role);
         // Multi-tenancy: fetch only certificates for caller's unit
         let data, error;
         if (session.unitId) {
             const result = await supabaseAdmin
                 .from("certificates")
                 .select("id, user_id, name, type, file_data, upload_date")
-                .eq("unit_id", session.unitId);
+                .eq(canViewUnitCertificates ? "unit_id" : "user_id", canViewUnitCertificates ? session.unitId : session.userId);
             data = result.data; error = result.error;
         }
 
-        // If no unitId or unit_id column error, fetch all
-        if (!session.unitId || (error && (error.message?.includes("unit_id") || error.code === '42703'))) {
+        if (!session.unitId && canViewUnitCertificates) {
             const result = await supabaseAdmin
                 .from("certificates")
                 .select("id, user_id, name, type, file_data, upload_date");
             data = result.data; error = result.error;
         }
 
+        if (!session.unitId && !canViewUnitCertificates) {
+            const result = await supabaseAdmin
+                .from("certificates")
+                .select("id, user_id, name, type, file_data, upload_date")
+                .eq("user_id", session.userId);
+            data = result.data; error = result.error;
+        }
+
+        if (error && canViewUnitCertificates && (error.message?.includes("unit_id") || error.code === '42703')) {
+            return { success: false, error: "Unit isolation is not available until the database migration is applied." };
+        }
         if (error) return { success: false, error: error.message };
         return { success: true, data: data || [] };
     } catch (e: unknown) {

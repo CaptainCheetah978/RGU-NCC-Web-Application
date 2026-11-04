@@ -150,7 +150,7 @@ export default function CadetsPage() {
             setIsModalOpen(false);
             setFormData(initialFormState);
             showToast(
-                `${formData.name} enrolled successfully! Login ID: ${result.loginUsername} | PIN: ${formData.pin}`,
+                `${formData.name} enrolled successfully! Login ID: ${result.loginUsername}. Share the PIN securely.`,
                 "success",
             );
         } else {
@@ -167,7 +167,7 @@ export default function CadetsPage() {
         if (result.success) {
             setIsCtoModalOpen(false);
             setCtoForm({ name: "", officerId: "", pin: "" });
-            showToast(`CTO enrolled successfully! Officer ID: ${result.officerId} | PIN: ${ctoForm.pin}`, "success");
+            showToast(`CTO account created successfully. Officer ID: ${result.officerId}. Share the PIN securely.`, "success");
         } else {
             showToast("CTO enrollment failed: " + result.error);
         }

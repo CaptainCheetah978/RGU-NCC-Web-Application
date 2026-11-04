@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/auth-context";
 import { useActivityData } from "@/lib/activity-context";
-import { Role } from "@/types";
+import { Permissions } from "@/lib/permissions";
 import { Card, CardContent } from "@/components/ui/card";
 import { History, Filter, BookOpen, Megaphone, Users, FileCheck, MessageSquare } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -42,9 +42,8 @@ export default function ActivityLogPage() {
     const router = useRouter();
     const [filterAction, setFilterAction] = useState("ALL");
 
-    // ANO-only access
     useEffect(() => {
-        if (user && user.role !== Role.ANO) {
+        if (user && !Permissions.CAN_VIEW_ACTIVITY_LOG.has(user.role)) {
             router.replace("/dashboard");
         }
     }, [user, router]);
@@ -59,7 +58,7 @@ export default function ActivityLogPage() {
         return activityLog.filter(e => e.action === filterAction);
     }, [activityLog, filterAction]);
 
-    if (!user || user.role !== Role.ANO) return null;
+    if (!user || !Permissions.CAN_VIEW_ACTIVITY_LOG.has(user.role)) return null;
 
     const timeAgo = (dateStr: string) => {
         // eslint-disable-next-line react-hooks/purity

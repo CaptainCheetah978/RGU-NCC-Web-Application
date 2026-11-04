@@ -12,21 +12,19 @@ export interface VerifyResult {
         wing?: string;
         unitNumber?: string;
         unitName?: string;
-        bloodGroup?: string;
-        enrollmentYear?: string;
         avatarUrl?: string;
     };
 }
 
 export async function verifyCadetById(id: string): Promise<VerifyResult> {
-    if (!id || typeof id !== 'string' || id.length < 10) {
+    if (!id || typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
         return { found: false, error: "Invalid Cadet ID format." };
     }
 
     try {
         const { data, error } = await supabaseAdmin
             .from("profiles")
-            .select("full_name, role, regimental_number, wing, unit_number, unit_name, blood_group, enrollment_year, avatar_url")
+            .select("full_name, role, regimental_number, wing, unit_number, unit_name, avatar_url")
             .eq("id", id)
             .single();
 
@@ -43,8 +41,6 @@ export async function verifyCadetById(id: string): Promise<VerifyResult> {
                 wing: data.wing || undefined,
                 unitNumber: data.unit_number || undefined,
                 unitName: data.unit_name || undefined,
-                bloodGroup: data.blood_group || undefined,
-                enrollmentYear: data.enrollment_year?.toString() || undefined,
                 avatarUrl: data.avatar_url || undefined,
             },
         };

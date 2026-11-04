@@ -38,26 +38,28 @@ export type CertificateRow = {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isUUID = (v: unknown): v is string => typeof v === "string" && UUID_RE.test(v);
 
-// Fields that any authenticated user may update on their own profile.
-// Critically: "role" and "unit_id" are intentionally excluded — those
-// can only be changed by ANO/SUO via the admin-level allowlist below.
+// Self-service fields must not affect identity, authorization, unit membership,
+// enrollment status, or organizational assignment.
 const SELF_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
     "full_name",
+    "gender",
+    "blood_group",
+    "avatar_url",
+]);
+
+const STAFF_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
+    ...SELF_UPDATE_ALLOWED,
     "regimental_number",
     "rank",
     "wing",
-    "gender",
     "unit_number",
     "unit_name",
     "enrollment_year",
-    "blood_group",
-    "avatar_url",
     "status",
 ]);
 
-// Fields that ANO/SUO may also update on any profile.
-const ADMIN_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
-    ...SELF_UPDATE_ALLOWED,
+const ANO_UPDATE_ALLOWED: ReadonlySet<string> = new Set([
+    ...STAFF_UPDATE_ALLOWED,
     "role",
     "unit_id",
 ]);
@@ -112,6 +114,10 @@ export async function getAllProfilesAction(
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
 
+    if (!Permissions.CAN_VIEW_FULL_ROSTER.has(session.role)) {
+        return { success: false, error: "Forbidden: roster access is restricted to authorized staff." };
+    }
+
     let query = supabaseAdmin.from("profiles").select(PROFILE_READ_COLUMNS);
 
     // Multi-tenancy: scope to the caller's unit if available
@@ -123,13 +129,8 @@ export async function getAllProfilesAction(
     const { data, error } = await query;
     if (error) {
         // If the error is about unit_id column not existing, retry without filter
-        if (error.message?.includes("unit_id") || error.code === '42703') {
-            console.warn("getAllProfilesAction: unit_id column not found, fetching all profiles");
-            const { data: fallbackData, error: fallbackError } = await supabaseAdmin
-                .from("profiles")
-                .select(PROFILE_READ_COLUMNS);
-            if (fallbackError) return { success: false, error: fallbackError.message };
-            return { success: true, data: (fallbackData as ProfileRow[]) || [] };
+        if (session.unitId && (error.message?.includes("unit_id") || error.code === '42703')) {
+            return { success: false, error: "Unit isolation is not available until the database migration is applied." };
         }
         return { success: false, error: error.message };
     }
@@ -146,6 +147,9 @@ export async function getAllCertificatesAction(
 ): Promise<{ success: boolean; data?: CertificateRow[]; error?: string }> {
     const session = await getCallerSession(accessToken);
     if (!session) return { success: false, error: "Unauthorized." };
+    if (!Permissions.CAN_VIEW_FULL_ROSTER.has(session.role)) {
+        return { success: false, error: "Forbidden: certificate access is restricted to authorized staff." };
+    }
 
     // Get the unit's profile IDs first to scope certificates
     let profileQuery = supabaseAdmin.from("profiles").select("id");
@@ -158,12 +162,8 @@ export async function getAllCertificatesAction(
     const { data: profileData, error: profileErr } = await profileQuery;
     if (profileErr) {
         // If unit_id column doesn't exist, retry without filter
-        if (profileErr.message?.includes("unit_id") || profileErr.code === '42703') {
-            console.warn("getAllCertificatesAction: unit_id column not found, fetching all");
-            const { data: fallbackIds, error: fallbackErr } = await supabaseAdmin
-                .from("profiles").select("id");
-            if (fallbackErr) return { success: false, error: fallbackErr.message };
-            profileIds = fallbackIds;
+        if (session.unitId && (profileErr.message?.includes("unit_id") || profileErr.code === '42703')) {
+            return { success: false, error: "Unit isolation is not available until the database migration is applied." };
         } else {
             return { success: false, error: profileErr.message };
         }
@@ -195,13 +195,17 @@ export async function updateProfileAction(
     if (!session) return { success: false, error: "Unauthorized." };
 
     // Only ANO/CTO/CSUO can update other profiles; others can only update their own
-    const isAdmin = Permissions.CAN_MANAGE_USERS.has(session.role);
-    if (!isAdmin && session.userId !== id) {
+    const isStaff = Permissions.CAN_MANAGE_USERS.has(session.role);
+    if (!isStaff && session.userId !== id) {
         return { success: false, error: "Forbidden: insufficient permissions." };
     }
 
     // Filter payload to only allowed fields to prevent privilege escalation
-    const allowedFields = isAdmin ? ADMIN_UPDATE_ALLOWED : SELF_UPDATE_ALLOWED;
+    const allowedFields = session.role === Role.ANO
+        ? ANO_UPDATE_ALLOWED
+        : isStaff
+            ? STAFF_UPDATE_ALLOWED
+            : SELF_UPDATE_ALLOWED;
     const safePayload = Object.fromEntries(
         Object.entries(payload).filter(([key]) => allowedFields.has(key))
     );

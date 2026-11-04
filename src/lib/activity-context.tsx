@@ -3,11 +3,9 @@
 import { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ActivityLogEntry } from "@/types";
-import { supabase } from "@/lib/supabase-client";
-import { logActivityAction } from "@/app/actions/activity-actions";
+import { getActivityLogAction, logActivityAction } from "@/app/actions/activity-actions";
 import { getAccessToken } from "@/lib/get-access-token";
-
-const ACTIVITY_COLUMNS = "id, action, performed_by, performed_by_name, target_name, created_at";
+import { useAuth } from "@/lib/auth-context";
 
 interface ActivityContextType {
     activityLog: ActivityLogEntry[];
@@ -21,18 +19,17 @@ const ActivityContext = createContext<ActivityContextType | undefined>(undefined
 
 export function ActivityProvider({ children }: { children: React.ReactNode }) {
     const queryClient = useQueryClient();
+    const { user } = useAuth();
 
     const activityQuery = useQuery({
         queryKey: ["activity"],
         queryFn: async () => {
-            const { data, error } = await supabase
-                .from("activity_log")
-                .select(ACTIVITY_COLUMNS)
-                .order("created_at", { ascending: false })
-                .limit(100);
-            if (error) throw error;
+            const token = await getAccessToken();
+            if (!token) return [];
+            const result = await getActivityLogAction(token);
+            if (!result.success) throw new Error(result.error || "Failed to fetch activity log");
             return (
-                data?.map((a) => ({
+                result.data?.map((a) => ({
                     id: a.id,
                     action: a.action,
                     performedBy: a.performed_by,
@@ -42,6 +39,7 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
                 })) || []
             );
         },
+        enabled: !!user,
     });
 
     const logActivityMutation = useMutation({
