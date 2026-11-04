@@ -58,16 +58,11 @@ export default function LoginPage() {
     }
 
     const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
-    const rolePrefix = activeTab.toLowerCase();
-    const legacyPrefix = activeTab === Role.CSUO ? "suo" : activeTab === Role.CJUO ? "uo" : null;
+    const legacyPrefixes = ["cadet", "csuo", "cjuo", "cwo", "csm", "cqms", "sgt", "cpl", "lcpl", "suo", "uo"];
     const loginEmails = [
-      `${rolePrefix}_${cleanUsername}@ncc.internal`,
-      ...(legacyPrefix ? [`${legacyPrefix}_${cleanUsername}@ncc.internal`] : []),
-      // Accounts created by the Cadet Registry historically used the cadet_
-      // prefix even when their rank was CSUO/CJUO.
-      ...(activeTab === Role.CADET || activeTab === Role.CSUO || activeTab === Role.CJUO
-        ? [`cadet_${cleanUsername}@ncc.internal`]
-        : []),
+      `reg_${cleanUsername}@ncc.internal`,
+      `${activeTab.toLowerCase()}_${cleanUsername}@ncc.internal`,
+      ...legacyPrefixes.map(prefix => `${prefix}_${cleanUsername}@ncc.internal`),
     ].filter((email, index, emails) => emails.indexOf(email) === index);
 
     try {

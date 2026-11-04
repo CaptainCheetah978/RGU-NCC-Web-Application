@@ -6,6 +6,7 @@ import { Permissions } from "@/lib/permissions";
 import { CreateCadetSchema, UpdatePinSchema } from "@/lib/schemas";
 import { Role, Wing, Gender } from "@/types";
 import { revalidatePath } from "next/cache";
+import { getStableAuthEmail } from "@/lib/auth-identifiers";
 
 interface CreateCadetFormData {
     name: string;
@@ -52,18 +53,25 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
     } = parsed.data;
 
     try {
-        const cleanRegNo = regimentalNumber.replace(/\s+/g, '').toLowerCase();
-        const accountPrefix = rank === Role.CSUO
-            ? "csuo"
-            : rank === Role.CJUO
-                ? "cjuo"
-                : rank.toLowerCase();
-        const pseudoEmail = `${accountPrefix}_${cleanRegNo}@ncc.internal`;
+        const stableEmail = getStableAuthEmail(regimentalNumber);
+
+        const { data: existingProfiles, error: duplicateError } = await supabaseAdmin
+            .from("profiles")
+            .select("id")
+            .eq("regimental_number", regimentalNumber)
+            .limit(1);
+        if (duplicateError) {
+            return { success: false, error: `Unable to validate registration number: ${duplicateError.message}` };
+        }
+        if (existingProfiles && existingProfiles.length > 0) {
+            return { success: false, error: "A profile with this registration number already exists." };
+        }
+
         const password = `${pin}-ncc-auth`;
 
         // ── 3. Create Auth User ─────────────────────────────────────────────────
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email: pseudoEmail,
+            email: stableEmail,
             password: password,
             email_confirm: true,
             user_metadata: {

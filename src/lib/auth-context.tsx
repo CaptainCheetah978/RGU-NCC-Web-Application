@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 import { ensureUserProfileAction, getProfileByIdAction } from "@/app/actions/profile-actions";
 import { getUnitBrandingAction } from "@/app/actions/unit-actions";
+import { migrateToStableAuthIdentity } from "@/app/actions/auth-identity-actions";
 
 interface AuthContextType {
     user: User | null;
@@ -280,6 +281,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 if (data.user) {
                     const fetchedUser = await fetchProfile(data.user.id, 8000, 1, data.session?.access_token);
                     if (!fetchedUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
+                    if (fetchedUser.regimentalNumber && data.session?.access_token) {
+                        await migrateToStableAuthIdentity(data.session.access_token, fetchedUser.regimentalNumber);
+                    }
                     router.push("/dashboard");
                     return;
                 }
@@ -294,6 +298,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 if (legacyData.user) {
                     const fetchedLegacyUser = await fetchProfile(legacyData.user.id, 8000, 1, legacyData.session?.access_token);
                     if (!fetchedLegacyUser) throw new Error("Login succeeded but your profile could not be loaded. Please contact your ANO.");
+                    if (fetchedLegacyUser.regimentalNumber && legacyData.session?.access_token) {
+                        await migrateToStableAuthIdentity(legacyData.session.access_token, fetchedLegacyUser.regimentalNumber);
+                    }
                     const { error: upgradeError } = await supabase.auth.updateUser({ password: securePassword });
                     if (upgradeError) {
                         console.warn("Legacy PIN login succeeded, but password upgrade failed:", upgradeError);
