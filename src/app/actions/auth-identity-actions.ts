@@ -2,13 +2,14 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import {
+    getLegacyAuthEmails,
     getStableAuthEmail,
     normalizeLoginUsername,
 } from "@/lib/auth-identifiers";
 
 export async function resolveLoginUsername(
     username: string,
-): Promise<{ success: boolean; email?: string; error?: string }> {
+): Promise<{ success: boolean; email?: string; emails?: string[]; error?: string }> {
     const normalizedUsername = normalizeLoginUsername(username);
     if (!/^C\d{4}$/.test(normalizedUsername)) {
         return { success: false, error: "Enter your Login ID, for example C1234." };
@@ -16,7 +17,7 @@ export async function resolveLoginUsername(
 
     const { data: profile, error } = await supabaseAdmin
         .from("profiles")
-        .select("regimental_number")
+        .select("regimental_number, role")
         .eq("login_username", normalizedUsername)
         .limit(1)
         .maybeSingle();
@@ -28,6 +29,7 @@ export async function resolveLoginUsername(
     return {
         success: true,
         email: getStableAuthEmail(profile.regimental_number),
+        emails: getLegacyAuthEmails(profile.regimental_number, profile.role),
     };
 }
 

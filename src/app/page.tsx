@@ -65,12 +65,12 @@ export default function LoginPage() {
         loginEmails = [`ano_${cleanUsername}@ncc.internal`];
       } else {
         const resolved = await resolveLoginUsername(formData.username);
-        if (!resolved.success || !resolved.email) {
+        if (!resolved.success || !resolved.emails) {
           setError(resolved.error || "Login ID not found.");
           setSubmitting(false);
           return;
         }
-        loginEmails = [resolved.email];
+        loginEmails = resolved.emails;
       }
       await loginWithPassword(loginEmails, formData.pin);
       // Success!
