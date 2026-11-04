@@ -327,8 +327,8 @@ function VerifyContent() {
                             </p>
                         </div>
                     </div>
-                ) : (
-                    /* Not Found / Error Card */
+                ) : errorMsg || token ? (
+                    /* Verification Error Card */
                     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
                         <div className="bg-gradient-to-r from-red-600 to-rose-700 px-6 py-4 flex items-center space-x-3">
                             <XCircle className="w-7 h-7 text-white" />
@@ -369,6 +369,50 @@ function VerifyContent() {
                             <p className="text-[10px] text-gray-400 mt-6 uppercase font-black tracking-tighter">
                                 Only signed NCC QR tokens are accepted. If this persists, contact the unit ANO.
                             </p>
+                        </div>
+                    </div>
+                ) : (
+                    /* Welcome Card */
+                    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5 text-center">
+                            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30">
+                                <Shield className="h-7 w-7 text-white" />
+                            </div>
+                            <h2 className="text-xl font-bold text-white">Welcome to NCC Verification</h2>
+                            <p className="mt-1 text-sm text-blue-100">Quickly confirm an NCC digital ID card</p>
+                        </div>
+                        <div className="p-8 text-center">
+                            <h3 className="text-lg font-bold text-gray-900">Verify an ID card securely</h3>
+                            <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                                Scan the QR code shown on a current NCC digital ID card. The verification checks its secure signature and validity.
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={() => void startScanner()}
+                                className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
+                            >
+                                <Camera className="h-5 w-5" />
+                                Scan ID Card QR
+                            </button>
+
+                            {scannerError && (
+                                <p className="mt-3 text-xs font-medium text-red-600">{scannerError}</p>
+                            )}
+
+                            <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4 text-left">
+                                <p className="text-xs font-bold text-blue-900">For a smooth scan</p>
+                                <p className="mt-1 text-xs leading-relaxed text-blue-800">
+                                    Allow camera access, use good lighting, and hold the QR code steady inside the frame.
+                                </p>
+                            </div>
+
+                            <Link
+                                href="/"
+                                className="mt-5 inline-flex items-center justify-center px-6 py-2 text-xs font-bold text-slate-600 transition-colors hover:text-primary"
+                            >
+                                Return to System Login
+                            </Link>
                         </div>
                     </div>
                 )}
