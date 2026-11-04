@@ -89,7 +89,7 @@ export function AddCadetModal({ isOpen, onClose, formData, onChange, onSubmit, i
                         >
                             <option value={Wing.ARMY}>Army</option>
                             <option value={Wing.NAVY}>Navy</option>
-                            <option value={Wing.AIR}>Air Force</option>
+                            <option value={Wing.AIR}>Air</option>
                         </select>
                     </div>
                 </div>
