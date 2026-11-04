@@ -6,7 +6,7 @@ import { Permissions } from "@/lib/permissions";
 import { CreateCadetSchema, UpdatePinSchema } from "@/lib/schemas";
 import { Role, Wing, Gender } from "@/types";
 import { revalidatePath } from "next/cache";
-import { getStableAuthEmail } from "@/lib/auth-identifiers";
+import { getLoginUsername, getStableAuthEmail } from "@/lib/auth-identifiers";
 
 interface CreateCadetFormData {
     name: string;
@@ -54,10 +54,14 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
 
     try {
         const stableEmail = getStableAuthEmail(regimentalNumber);
+        const loginUsername = getLoginUsername(regimentalNumber);
+        if (!loginUsername) {
+            return { success: false, error: "Registration number must contain at least four digits." };
+        }
 
         const { data: existingProfiles, error: duplicateError } = await supabaseAdmin
             .from("profiles")
-            .select("id")
+            .select("id, login_username")
             .eq("regimental_number", regimentalNumber)
             .limit(1);
         if (duplicateError) {
@@ -65,6 +69,15 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
         }
         if (existingProfiles && existingProfiles.length > 0) {
             return { success: false, error: "A profile with this registration number already exists." };
+        }
+
+        const { data: existingLogin } = await supabaseAdmin
+            .from("profiles")
+            .select("id")
+            .eq("login_username", loginUsername)
+            .limit(1);
+        if (existingLogin && existingLogin.length > 0) {
+            return { success: false, error: `Login ID ${loginUsername} is already assigned.` };
         }
 
         const password = `${pin}-ncc-auth`;
@@ -94,6 +107,7 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
             full_name: name,
             role: rank,
             regimental_number: regimentalNumber,
+            login_username: loginUsername,
             wing: wing,
             gender: gender,
             unit_number: unitNumber,

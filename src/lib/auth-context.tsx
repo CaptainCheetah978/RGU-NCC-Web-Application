@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             try {
                 const { data: clientProfile, error: clientProfileError } = await supabase
                     .from("profiles")
-                    .select("id, full_name, role, regimental_number, avatar_url, unit_id, unit_number")
+                    .select("id, full_name, role, regimental_number, login_username, avatar_url, unit_id, unit_number")
                     .eq("id", userId)
                     .maybeSingle();
 
@@ -127,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     name: (profileData.full_name as string) || 'Unknown User',
                     role: normalizeRole(profileData.role as string),
                     regimentalNumber: profileData.regimental_number as string | undefined,
+                    loginUsername: profileData.login_username as string | undefined,
                     avatarUrl: profileData.avatar_url as string | undefined,
                     unitId: profileData.unit_id as string | undefined,
                     unitNumber: profileData.unit_number as string | undefined,

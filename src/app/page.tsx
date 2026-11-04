@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Shield, User, Lock, ChevronRight, Loader2, Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Role } from "@/types";
+import { resolveLoginUsername } from "@/app/actions/auth-identity-actions";
 
 type LoginStep = "login" | "forgot-email" | "forgot-otp" | "forgot-newpin" | "forgot-done";
 
@@ -57,15 +58,20 @@ export default function LoginPage() {
       return;
     }
 
-    const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
-    const legacyPrefixes = ["cadet", "csuo", "cjuo", "cwo", "csm", "cqms", "sgt", "cpl", "lcpl", "suo", "uo"];
-    const loginEmails = [
-      `reg_${cleanUsername}@ncc.internal`,
-      `${activeTab.toLowerCase()}_${cleanUsername}@ncc.internal`,
-      ...legacyPrefixes.map(prefix => `${prefix}_${cleanUsername}@ncc.internal`),
-    ].filter((email, index, emails) => emails.indexOf(email) === index);
-
     try {
+      let loginEmails: string[];
+      if (activeTab === Role.ANO) {
+        const cleanUsername = formData.username.replace(/\s+/g, '').toLowerCase();
+        loginEmails = [`ano_${cleanUsername}@ncc.internal`];
+      } else {
+        const resolved = await resolveLoginUsername(formData.username);
+        if (!resolved.success || !resolved.email) {
+          setError(resolved.error || "Login ID not found.");
+          setSubmitting(false);
+          return;
+        }
+        loginEmails = [resolved.email];
+      }
       await loginWithPassword(loginEmails, formData.pin);
       // Success!
       failCountRef.current = 0;
@@ -235,14 +241,14 @@ export default function LoginPage() {
                     <div className="space-y-4">
                       <div>
                         <label className="text-xs font-black text-zinc-300 uppercase tracking-widest ml-1">
-                          {activeTab === Role.ANO ? "Officer ID" : "Regimental Number"}
+                          {activeTab === Role.ANO ? "Officer ID" : "Login ID"}
                         </label>
                         <div className="relative mt-1">
                           <User className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
                           <Input
                             value={formData.username}
                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                            placeholder={activeTab === Role.ANO ? "ANO" : "e.g. SW/RGU/1234"}
+                            placeholder={activeTab === Role.ANO ? "ANO" : "e.g. C1234"}
                             className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-primary font-bold"
                             required
                           />

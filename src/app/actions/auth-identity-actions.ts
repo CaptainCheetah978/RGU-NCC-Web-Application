@@ -1,7 +1,35 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { getStableAuthEmail } from "@/lib/auth-identifiers";
+import {
+    getStableAuthEmail,
+    normalizeLoginUsername,
+} from "@/lib/auth-identifiers";
+
+export async function resolveLoginUsername(
+    username: string,
+): Promise<{ success: boolean; email?: string; error?: string }> {
+    const normalizedUsername = normalizeLoginUsername(username);
+    if (!/^C\d{4}$/.test(normalizedUsername)) {
+        return { success: false, error: "Enter your Login ID, for example C1234." };
+    }
+
+    const { data: profile, error } = await supabaseAdmin
+        .from("profiles")
+        .select("regimental_number")
+        .eq("login_username", normalizedUsername)
+        .limit(1)
+        .maybeSingle();
+
+    if (error || !profile?.regimental_number) {
+        return { success: false, error: "Login ID not found. Check the last four digits of your registration number." };
+    }
+
+    return {
+        success: true,
+        email: getStableAuthEmail(profile.regimental_number),
+    };
+}
 
 /**
  * Migrates a legacy account to the registration-number identity after login.

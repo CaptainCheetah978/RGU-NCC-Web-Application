@@ -70,6 +70,7 @@ export interface User {
     unitId?: string;
     unitName?: string;
     unitNumber?: string;
+    loginUsername?: string;
     unitBranding?: UnitBranding;
 }
 
