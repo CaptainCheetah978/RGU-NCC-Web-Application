@@ -8,6 +8,7 @@ import Link from "next/link";
 import { verifyCadetById, verifyCadetByToken, type VerifyResult } from "@/app/actions/verify-actions";
 import { cn, getColorOfTheDay, getWingAwareRank, getGenderClassification } from "@/lib/utils";
 import { Wing, Role } from "@/types";
+import QrScanner from "qr-scanner";
 
 type BarcodeDetectorLike = {
     detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue: string }>>;
@@ -46,11 +47,14 @@ function VerifyContent() {
     const [scannerError, setScannerError] = useState("");
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const qrScannerRef = useRef<QrScanner | null>(null);
     const dailyColor = getColorOfTheDay();
 
     const stopScanner = useCallback(() => {
         streamRef.current?.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
+        qrScannerRef.current?.destroy();
+        qrScannerRef.current = null;
         setScannerOpen(false);
     }, []);
 
@@ -114,34 +118,55 @@ function VerifyContent() {
             setScannerError("Camera scanning requires HTTPS and a supported mobile browser.");
             return;
         }
-        if (!window.BarcodeDetector) {
-            setScannerError("QR scanning is not supported by this browser. Open the ID card QR link directly.");
-            return;
-        }
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: "environment" } },
-                audio: false,
-            });
-            streamRef.current = stream;
+            if (window.BarcodeDetector) {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" } },
+                    audio: false,
+                });
+                streamRef.current = stream;
+            }
             setScannerOpen(true);
-            requestAnimationFrame(() => {
-                if (videoRef.current) videoRef.current.srcObject = stream;
-            });
         } catch {
             setScannerError("Camera access was denied. Allow camera access or open the QR link directly.");
         }
     };
 
     useEffect(() => {
-        if (!scannerOpen || !videoRef.current || !window.BarcodeDetector) return;
+        if (!scannerOpen || !videoRef.current) return;
         let cancelled = false;
+        const video = videoRef.current;
+
+        if (!window.BarcodeDetector) {
+            const scanner = new QrScanner(
+                video,
+                (result) => verifyScannedValue(result.data),
+                {
+                    preferredCamera: "environment",
+                    maxScansPerSecond: 4,
+                    highlightScanRegion: false,
+                    highlightCodeOutline: false,
+                    returnDetailedScanResult: true,
+                },
+            );
+            qrScannerRef.current = scanner;
+            void scanner.start().catch(() => {
+                if (!cancelled) setScannerError("Unable to start the camera. Open the QR link directly if camera scanning is unavailable.");
+            });
+            return () => {
+                cancelled = true;
+                scanner.destroy();
+                qrScannerRef.current = null;
+            };
+        }
+
         const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+        video.srcObject = streamRef.current;
 
         const scan = async () => {
-            if (cancelled || !videoRef.current) return;
+            if (cancelled) return;
             try {
-                const results = await detector.detect(videoRef.current);
+                const results = await detector.detect(video);
                 if (results[0]?.rawValue) {
                     verifyScannedValue(results[0].rawValue);
                     return;
@@ -152,7 +177,7 @@ function VerifyContent() {
             if (!cancelled) window.setTimeout(scan, 250);
         };
 
-        void videoRef.current.play().then(scan).catch(() => {
+        void video.play().then(scan).catch(() => {
             setScannerError("Unable to start the camera preview.");
         });
         return () => {
@@ -162,7 +187,17 @@ function VerifyContent() {
 
     useEffect(() => () => {
         streamRef.current?.getTracks().forEach((track) => track.stop());
+        qrScannerRef.current?.destroy();
     }, []);
+
+    useEffect(() => {
+        if (!scannerOpen) return;
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") stopScanner();
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }, [scannerOpen, stopScanner]);
 
     useEffect(() => {
         if (!id && !token) return;
@@ -190,14 +225,14 @@ function VerifyContent() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+            <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
                 <p className="text-slate-400 animate-pulse">Verifying identity...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div className="w-full max-w-md">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -359,7 +394,7 @@ function VerifyContent() {
                 )}
 
                 {scannerOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/90 px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
                         <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
                             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                                 <div>

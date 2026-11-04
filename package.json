@@ -28,6 +28,7 @@
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.564.0",
     "next": "16.4.3",
+    "qr-scanner": "^1.4.2",
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
