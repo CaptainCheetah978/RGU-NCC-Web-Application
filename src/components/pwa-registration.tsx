@@ -20,6 +20,10 @@ export function PWARegistration() {
             || (navigator.maxTouchPoints > 1 && /macintosh/i.test(window.navigator.userAgent));
     });
     const [showIosHelp, setShowIosHelp] = useState(false);
+    const [isDismissed, setIsDismissed] = useState(() => {
+        if (typeof window === "undefined") return false;
+        return window.localStorage.getItem("ncc_install_prompt_dismissed") === "true";
+    });
 
     useEffect(() => {
         if ("serviceWorker" in navigator) {
@@ -42,7 +46,7 @@ export function PWARegistration() {
         return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     }, []);
 
-    if (isStandalone || (!installEvent && !isIos)) return null;
+    if (isStandalone || isDismissed || (!installEvent && !isIos)) return null;
 
     const install = async () => {
         if (installEvent) {
@@ -54,8 +58,13 @@ export function PWARegistration() {
         setShowIosHelp((visible) => !visible);
     };
 
+    const dismiss = () => {
+        window.localStorage.setItem("ncc_install_prompt_dismissed", "true");
+        setIsDismissed(true);
+    };
+
     return (
-        <aside className="fixed inset-x-4 bottom-4 z-[200] mx-auto max-w-md rounded-2xl border border-primary/20 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+        <aside className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[200] mx-auto max-w-md rounded-2xl border border-primary/20 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                     <p className="font-bold text-gray-900 dark:text-white">Install NCC CMS</p>
@@ -74,6 +83,14 @@ export function PWARegistration() {
                     className="shrink-0 rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
                 >
                     {installEvent ? "Install" : "How to install"}
+                </button>
+                <button
+                    type="button"
+                    onClick={dismiss}
+                    aria-label="Dismiss install prompt"
+                    className="shrink-0 rounded-lg p-2 text-lg leading-none text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700"
+                >
+                    ×
                 </button>
             </div>
         </aside>

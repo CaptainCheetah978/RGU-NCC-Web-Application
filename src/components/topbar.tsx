@@ -148,7 +148,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                className="absolute right-0 mt-2 w-80 bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/40 border border-gray-100 dark:border-slate-700/60 overflow-hidden z-[100]"
+                                className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/40 border border-gray-100 dark:border-slate-700/60 overflow-hidden z-[100]"
                                 style={{ transformOrigin: "top right" }}
                             >
                                 {/* Dropdown Header */}

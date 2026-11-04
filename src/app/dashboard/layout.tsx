@@ -40,7 +40,7 @@ export default function DashboardLayout({
     if (!user) return null;
 
     return (
-        <div className="flex h-screen bg-gray-50 dark:bg-slate-950 overflow-hidden text-gray-900 dark:text-white">
+        <div className="flex h-screen h-[100dvh] bg-gray-50 dark:bg-slate-950 overflow-hidden text-gray-900 dark:text-white">
             <Sidebar isOpen={isMobileMenuOpen} setIsOpen={setIsMobileMenuOpen} />
             <div className="flex-1 flex flex-col md:ml-64 bg-white dark:bg-slate-900 transition-all duration-300 relative max-w-full">
                 <Topbar onMenuClick={() => setIsMobileMenuOpen(true)} />

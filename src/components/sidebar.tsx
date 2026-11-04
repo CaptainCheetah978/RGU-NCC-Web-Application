@@ -118,7 +118,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             )}
 
             <div className={cn(
-                "h-screen w-64 bg-white dark:bg-slate-900/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-700/50 flex flex-col fixed left-0 top-0 z-30 transition-transform duration-300 md:translate-x-0",
+                "h-screen h-[100dvh] w-64 bg-white dark:bg-slate-900/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-700/50 flex flex-col fixed left-0 top-0 z-30 transition-transform duration-300 md:translate-x-0",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="p-6 flex items-center space-x-3 border-b border-gray-200 dark:border-slate-700/50 relative">
