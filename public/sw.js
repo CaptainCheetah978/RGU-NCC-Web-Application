@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ncc-pwa-v4';
+const CACHE_NAME = 'ncc-pwa-v5';
 
 // App shell: pages and static assets to pre-cache on install
 const PRECACHE_URLS = [
@@ -49,6 +49,22 @@ self.addEventListener('fetch', event => {
         url.pathname.startsWith('/api/')
     ) {
         return; // Let the browser handle it normally
+    }
+
+    // Always fetch HTML navigations first so new deployments are visible
+    // immediately. Fall back to the cached shell only when offline.
+    if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+        event.respondWith(
+            fetch(event.request)
+                .then(response => {
+                    if (response && response.status === 200 && response.type === 'basic') {
+                        caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+                    }
+                    return response;
+                })
+                .catch(() => caches.match(event.request).then(cached => cached || caches.match('/')))
+        );
+        return;
     }
 
     event.respondWith(
