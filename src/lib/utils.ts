@@ -54,6 +54,7 @@ export function getWingAwareRank(rank: Role, wing?: Wing): string {
             default:
                 return rank;
         }
+
     }
     
     // Navy mapping
@@ -75,10 +76,17 @@ export function getWingAwareRank(rank: Role, wing?: Wing): string {
             default:
                 return rank;
         }
+
     }
 
     // Army (Default) - Keep standard CSUO/CJUO labels
     return rank;
+}
+
+export function isRankAllowedForWing(rank: Role, wing: Wing): boolean {
+    if (rank === Role.CWO) return wing === Wing.AIR;
+    if (rank === Role.CSM || rank === Role.CQMS) return wing === Wing.ARMY;
+    return true;
 }
 
 /**

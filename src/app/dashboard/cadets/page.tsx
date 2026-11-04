@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Search, UserPlus, Trash2, Key, Edit2, LayoutGrid, List as ListIcon } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { cn, getWingAwareRank } from "@/lib/utils";
+import { cn, getWingAwareRank, isRankAllowedForWing } from "@/lib/utils";
 
 import { CertificatesSection } from "@/components/profile/certificates-section";
 import { createCadetAccount, updateCadetPin } from "@/app/actions/cadet-actions";
@@ -89,7 +89,13 @@ export default function CadetsPage() {
                     ? { unitName: "Assam Naval Unit NCC", unitNumber: "48" }
                     : {};
 
-        setFormData(prev => ({ ...prev, ...updates, ...wingDefaults }));
+        setFormData(prev => {
+            const next = { ...prev, ...updates, ...wingDefaults };
+            if (updates.wing && !isRankAllowedForWing(next.rank, updates.wing)) {
+                next.rank = Role.CADET;
+            }
+            return next;
+        });
     };
 
     const handleEdit = (cadet: Cadet) => {

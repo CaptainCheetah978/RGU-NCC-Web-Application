@@ -5,6 +5,7 @@ import { getCallerSession } from "@/lib/server-auth";
 import { Permissions } from "@/lib/permissions";
 import { CreateCadetSchema, UpdatePinSchema } from "@/lib/schemas";
 import { Role, Wing, Gender } from "@/types";
+import { isRankAllowedForWing } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import { getLoginUsername, getStableAuthEmail } from "@/lib/auth-identifiers";
 
@@ -51,6 +52,10 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
         pin,
         status,
     } = parsed.data;
+
+    if (!isRankAllowedForWing(rank as Role, wing as Wing)) {
+        return { success: false, error: `${rank} is not valid for the ${wing} wing.` };
+    }
 
     try {
         const stableEmail = getStableAuthEmail(regimentalNumber);
