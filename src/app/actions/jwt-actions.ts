@@ -4,15 +4,22 @@ import { SignJWT } from "jose";
 import { getCallerSession } from "@/lib/server-auth";
 import { Permissions } from "@/lib/permissions";
 
+const TOKEN_ISSUER = "ncc-digital-id";
+const TOKEN_AUDIENCE = "ncc-verifier";
+
 const getSecret = () => {
-    const secret = process.env.JWT_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const secret = process.env.JWT_SECRET;
     if (!secret) {
-        throw new Error("CRITICAL: JWT Security Secret is missing from environment. Production verification is disabled to prevent spoofing.");
+        throw new Error("CRITICAL: JWT_SECRET is missing. Configure a dedicated signing secret; never use the Supabase service-role key.");
     }
     return new TextEncoder().encode(secret);
 };
 
-export async function generateVerificationToken(cadetId: string, accessToken?: string) {
+export async function generateVerificationToken(
+    cadetId: string,
+    accessToken?: string,
+    mode: "live" | "card" = "live",
+) {
     if (!cadetId) {
         return { error: "Missing cadet ID" };
     }
@@ -32,12 +39,13 @@ export async function generateVerificationToken(cadetId: string, accessToken?: s
             return { error: "Forbidden: Cannot generate token for another user" };
         }
 
-        // Generate a cryptographically secure token valid for 30 seconds
-        const jwt = await new SignJWT({ sub: cadetId })
+        const jwt = await new SignJWT({ sub: cadetId, typ: "ncc-id", mode })
             .setProtectedHeader({ alg: "HS256" })
+            .setIssuer(TOKEN_ISSUER)
+            .setAudience(TOKEN_AUDIENCE)
             .setIssuedAt()
-            .setExpirationTime("30s")
-            .setJti(crypto.randomUUID()) // Unique nonce
+            .setExpirationTime(mode === "card" ? "1y" : "30s")
+            .setJti(crypto.randomUUID())
             .sign(getSecret());
 
         return { token: jwt };

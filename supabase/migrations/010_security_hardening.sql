@@ -54,6 +54,44 @@ CREATE POLICY "ANO updates profiles" ON profiles
   )
   WITH CHECK (true);
 
+CREATE OR REPLACE FUNCTION public.prevent_client_identity_escalation()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- Server-side service-role actions have no auth.uid() and are allowed to
+  -- provision or administratively change staff identities.
+  IF auth.uid() IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'INSERT' AND (
+    NEW.role IS DISTINCT FROM 'CADET'
+    OR NEW.unit_id IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Client cannot provision staff identity fields';
+  END IF;
+
+  IF TG_OP = 'UPDATE' AND OLD.id = auth.uid()
+     AND public.current_profile_role() <> 'ANO'
+     AND (
+       NEW.role IS DISTINCT FROM OLD.role
+       OR NEW.unit_id IS DISTINCT FROM OLD.unit_id
+     ) THEN
+    RAISE EXCEPTION 'Client cannot change role or unit';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS prevent_client_identity_escalation ON profiles;
+CREATE TRIGGER prevent_client_identity_escalation
+  BEFORE INSERT OR UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION public.prevent_client_identity_escalation();
+
 DROP POLICY IF EXISTS "Users manage own certificates" ON certificates;
 DROP POLICY IF EXISTS "ANO manages all certificates" ON certificates;
 DROP POLICY IF EXISTS "SUO views all certificates" ON certificates;

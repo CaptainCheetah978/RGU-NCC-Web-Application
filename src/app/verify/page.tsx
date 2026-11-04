@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Shield, CheckCircle2, XCircle, User, Award, Camera, CameraOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { verifyCadetById, verifyCadetByToken, type VerifyResult } from "@/app/actions/verify-actions";
+import { verifyCadetByToken, type VerifyResult } from "@/app/actions/verify-actions";
 import { cn, getColorOfTheDay, getWingAwareRank, getGenderClassification } from "@/lib/utils";
 import { Wing, Role } from "@/types";
 import QrScanner from "qr-scanner";
@@ -37,11 +37,10 @@ interface VerifiedPerson {
 
 function VerifyContent() {
     const searchParams = useSearchParams();
-    const id = searchParams.get("id");
     const token = searchParams.get("token");
     const [person, setPerson] = useState<VerifiedPerson | null>(null);
-    const [loading, setLoading] = useState(() => !!id || !!token);
-    const [checked, setChecked] = useState(() => !id && !token);
+    const [loading, setLoading] = useState(() => !!token);
+    const [checked, setChecked] = useState(() => !token);
     const [errorMsg, setErrorMsg] = useState<string>("");
     const [scannerOpen, setScannerOpen] = useState(false);
     const [scannerError, setScannerError] = useState("");
@@ -62,7 +61,6 @@ function VerifyContent() {
         try {
             const scannedUrl = new URL(rawValue);
             const scannedToken = scannedUrl.searchParams.get("token");
-            const scannedId = scannedUrl.searchParams.get("id");
             if (scannedToken) {
                 window.history.replaceState({}, "", `/verify?token=${encodeURIComponent(scannedToken)}`);
                 stopScanner();
@@ -70,20 +68,6 @@ function VerifyContent() {
                 setChecked(false);
                 setErrorMsg("");
                 verifyCadetByToken(scannedToken).then((result) => {
-                    if (result.found && result.person) setPerson(result.person as unknown as VerifiedPerson);
-                    else setErrorMsg(result.error || "Unable to verify scanned QR code.");
-                    setLoading(false);
-                    setChecked(true);
-                });
-                return;
-            }
-            if (scannedId) {
-                window.history.replaceState({}, "", `/verify?id=${encodeURIComponent(scannedId)}`);
-                stopScanner();
-                setLoading(true);
-                setChecked(false);
-                setErrorMsg("");
-                verifyCadetById(scannedId).then((result) => {
                     if (result.found && result.person) setPerson(result.person as unknown as VerifiedPerson);
                     else setErrorMsg(result.error || "Unable to verify scanned QR code.");
                     setLoading(false);
@@ -200,13 +184,11 @@ function VerifyContent() {
     }, [scannerOpen, stopScanner]);
 
     useEffect(() => {
-        if (!id && !token) return;
+        if (!token) return;
 
         let isMounted = true;
         
-        const verificationPromise = token 
-            ? verifyCadetByToken(token) 
-            : verifyCadetById(id!);
+        const verificationPromise = verifyCadetByToken(token);
 
         verificationPromise.then((result: VerifyResult) => {
             if (!isMounted) return;
@@ -221,7 +203,7 @@ function VerifyContent() {
         });
 
         return () => { isMounted = false; };
-    }, [id, token]);
+    }, [token]);
 
     if (loading) {
         return (
@@ -361,9 +343,7 @@ function VerifyContent() {
                             </div>
                             <h3 className="text-gray-900 font-bold">{errorMsg ? "Security Verification Failed" : "Record Not Found"}</h3>
                             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-                                {errorMsg ? errorMsg : (id 
-                                    ? "The ID provided in the scan does not match any current cadet or officer in our digital registry." 
-                                    : "No verification ID was detected. Please ensure you are scanning a valid NCC digital ID card.")}
+                                {errorMsg || "No valid signed verification token was detected. Please scan a current NCC digital ID card."}
                             </p>
                             
                             <button
@@ -387,7 +367,7 @@ function VerifyContent() {
                             </Link>
 
                             <p className="text-[10px] text-gray-400 mt-6 uppercase font-black tracking-tighter">
-                                If this persists, contact the unit ANO for manual verification.
+                                Only signed NCC QR tokens are accepted. If this persists, contact the unit ANO.
                             </p>
                         </div>
                     </div>

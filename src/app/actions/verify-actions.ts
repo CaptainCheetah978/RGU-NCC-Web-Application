@@ -1,6 +1,10 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { jwtVerify } from "jose";
+
+const TOKEN_ISSUER = "ncc-digital-id";
+const TOKEN_AUDIENCE = "ncc-verifier";
 
 export interface VerifyResult {
     found: boolean;
@@ -16,19 +20,15 @@ export interface VerifyResult {
     };
 }
 
-export async function verifyCadetById(id: string): Promise<VerifyResult> {
-    if (!id || typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-        return { found: false, error: "Invalid Cadet ID format." };
-    }
-
+async function getPublicProfile(id: string): Promise<VerifyResult> {
     try {
         const { data, error } = await supabaseAdmin
             .from("profiles")
-            .select("full_name, role, regimental_number, wing, unit_number, unit_name, avatar_url")
+            .select("full_name, role, regimental_number, wing, unit_number, unit_name, avatar_url, status")
             .eq("id", id)
             .single();
 
-        if (error || !data) {
+        if (error || !data || data.status === "alumni" || data.status === "inactive") {
             return { found: false, error: "Identity not found in database." };
         }
 
@@ -49,12 +49,10 @@ export async function verifyCadetById(id: string): Promise<VerifyResult> {
     }
 }
 
-import { jwtVerify } from "jose";
-
 const getSecret = () => {
-    const secret = process.env.JWT_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const secret = process.env.JWT_SECRET;
     if (!secret) {
-        throw new Error("CRITICAL: JWT Security Secret is missing from environment. Production verification is disabled to prevent spoofing.");
+        throw new Error("CRITICAL: JWT_SECRET is missing.");
     }
     return new TextEncoder().encode(secret);
 };
@@ -65,18 +63,19 @@ export async function verifyCadetByToken(token: string): Promise<VerifyResult> {
     }
 
     try {
-        // jwtVerify validates both the signature AND the `exp` claim automatically
+        // jwtVerify validates the signature, expiry, issuer, and audience.
         const { payload } = await jwtVerify(token, getSecret(), {
             algorithms: ["HS256"],
+            issuer: TOKEN_ISSUER,
+            audience: TOKEN_AUDIENCE,
         });
 
         const cadetId = payload.sub;
-        if (!cadetId) {
+        if (!cadetId || payload.typ !== "ncc-id" || (payload.mode !== "live" && payload.mode !== "card")) {
             return { found: false, error: "Malformed Token Identity." };
         }
 
-        // Token is valid and fresh. Complete verification by fetching user details.
-        return await verifyCadetById(cadetId);
+        return await getPublicProfile(cadetId);
     } catch (error) {
         const err = error as Error & { code?: string };
         console.error("JWT Verification failed:", err.code || err.message);

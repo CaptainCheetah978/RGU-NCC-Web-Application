@@ -38,6 +38,8 @@ export default function ProfilePage() {
     const [changePinSuccess, setChangePinSuccess] = useState(false);
     const [currentTime, setCurrentTime] = useState<string>("");
     const [qrToken, setQrToken] = useState<string>("");
+    const [staticQrToken, setStaticQrToken] = useState<string>("");
+    const [qrError, setQrError] = useState("");
     const [isStaticQR, setIsStaticQR] = useState(false);
     const hasEverLoaded = Boolean(user) || (!isAuthLoading && !isDataLoading);
 
@@ -63,6 +65,18 @@ export default function ProfilePage() {
 
         fetchQrToken(); // Initial fetch
         const tokenInterval = setInterval(fetchQrToken, 25000); // Refresh every 25s
+
+        const fetchStaticQrToken = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const res = await generateVerificationToken(currentUserProfile.id, session?.access_token, "card");
+                if (res.token && isMounted) setStaticQrToken(res.token);
+                else if (isMounted) setQrError("Secure printable QR is unavailable. Refresh and try again.");
+            } catch {
+                if (isMounted) setQrError("Secure printable QR is unavailable. Refresh and try again.");
+            }
+        };
+        fetchStaticQrToken();
 
         return () => {
             isMounted = false;
@@ -176,8 +190,12 @@ export default function ProfilePage() {
 
     const handleDownload = async () => {
         if (!idCardRef.current || !currentUser?.id) return;
+        if (!staticQrToken) {
+            setQrError("Secure printable QR is still loading. Please try again in a moment.");
+            return;
+        }
         setIsDownloading(true);
-        setIsStaticQR(true); // Switch to stable ID-based QR for download
+        setIsStaticQR(true);
         
         // iOS Safari Compatibility: We must open the window synchronously in the click handler 
         // to bypass the popup blocker, as the subsequent 'await' makes the context asynchronous.
@@ -229,8 +247,12 @@ export default function ProfilePage() {
 
     const handlePrint = async () => {
         if (!idCardRef.current || !currentUser?.id) return;
+        if (!staticQrToken) {
+            setQrError("Secure printable QR is still loading. Please try again in a moment.");
+            return;
+        }
         setIsPrinting(true);
-        setIsStaticQR(true); // Switch to stable ID-based QR for print
+        setIsStaticQR(true);
         try {
             // Wait for re-render with static QR
             await new Promise(r => setTimeout(r, 250));
@@ -417,6 +439,9 @@ export default function ProfilePage() {
                                 </Button>
                             </div>
                         </CardHeader>
+                        {qrError && (
+                            <p className="px-4 pt-3 text-center text-xs font-medium text-red-600 dark:text-red-400">{qrError}</p>
+                        )}
                         <CardContent className="p-4 sm:p-10 flex justify-center bg-gray-100/50 dark:bg-slate-900/30 overflow-x-auto w-full custom-scrollbar">
                             {/* The Official ID Card Component */}
                             <div className="print-container min-w-max flex justify-center py-2 px-2">
@@ -523,13 +548,19 @@ export default function ProfilePage() {
 
                                                 {/* QR Code + Color of the Day */}
                                                 <div className="ml-3 shrink-0 flex flex-col items-center">
-                                                    {/* Dual-Mode QR: High-security JWT on live screen, stable ID for Printed/Downloaded media */}
-                                                    <QRCodeSVG
-                                                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?${(qrToken && !isStaticQR) ? `token=${qrToken}` : `id=${currentUser.id}`}`}
-                                                        size={56}
-                                                        level="M"
-                                                        className={`rounded transition-opacity duration-300 ${(!qrToken && !isStaticQR) ? 'opacity-50' : 'opacity-100'}`}
-                                                    />
+                                                    {/* Live cards use a rotating token; printed cards use a signed card token. */}
+                                                    {(isStaticQR ? staticQrToken : qrToken) ? (
+                                                        <QRCodeSVG
+                                                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?token=${encodeURIComponent(isStaticQR ? staticQrToken : qrToken)}`}
+                                                            size={56}
+                                                            level="M"
+                                                            className="rounded transition-opacity duration-300"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex h-14 w-14 items-center justify-center rounded bg-gray-100 text-center text-[7px] font-bold uppercase text-gray-500">
+                                                            Loading secure QR
+                                                        </div>
+                                                    )}
                                                     <div className="flex items-center gap-1 mt-0.5">
                                                         <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dailyColor.hex }} title={`Today: ${dailyColor.name}`} />
                                                         <p className="text-[7px] text-gray-600 font-bold uppercase tracking-wider">Scan to verify</p>
