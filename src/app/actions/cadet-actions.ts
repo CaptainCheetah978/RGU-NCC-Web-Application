@@ -141,7 +141,7 @@ export async function createCadetAccount(formData: CreateCadetFormData, accessTo
         }
 
         revalidatePath('/dashboard/cadets');
-        return { success: true, userId };
+        return { success: true, userId, loginUsername };
 
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Unknown error";

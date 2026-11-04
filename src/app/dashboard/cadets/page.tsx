@@ -141,7 +141,10 @@ export default function CadetsPage() {
             await refreshProfiles();
             setIsModalOpen(false);
             setFormData(initialFormState);
-            showToast(`${formData.name} enrolled successfully! PIN: ${formData.pin}`, "success");
+            showToast(
+                `${formData.name} enrolled successfully! Login ID: ${result.loginUsername} | PIN: ${formData.pin}`,
+                "success",
+            );
         } else {
             showToast("Enrollment failed: " + result.error);
         }
