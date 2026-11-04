@@ -63,10 +63,11 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
     const currentUser = messageableUsers.find(u => u.id === user.id);
     const displayUser = currentUser || user;
-    const unitLabel = [unitBranding?.name || user.unitName, unitBranding?.number || user.unitNumber]
-        .filter((value): value is string => Boolean(value?.trim()))
-        .filter((value, index, values) => values.indexOf(value) === index)
-        .join(" ");
+    const unitName = (unitBranding?.name || user.unitName)?.trim();
+    const unitNumber = (unitBranding?.number || user.unitNumber)?.trim();
+    const unitLabel = unitName && unitNumber && unitName.includes(unitNumber)
+        ? unitName
+        : [unitName, unitNumber].filter(Boolean).join(" ");
 
     const handleNotificationClick = (id: string) => {
         markNoteAsRead(id);

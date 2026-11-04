@@ -40,10 +40,11 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     if (!user) return null;
 
     const unreadNotes = getStats().unreadNotesValue;
-    const unitLabel = [unitBranding?.name, unitBranding?.number]
-        .filter((value): value is string => Boolean(value?.trim()))
-        .filter((value, index, values) => values.indexOf(value) === index)
-        .join(" ");
+    const unitName = unitBranding?.name?.trim();
+    const unitNumber = unitBranding?.number?.trim();
+    const unitLabel = unitName && unitNumber && unitName.includes(unitNumber)
+        ? unitName
+        : [unitName, unitNumber].filter(Boolean).join(" ");
 
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [] }, // All
