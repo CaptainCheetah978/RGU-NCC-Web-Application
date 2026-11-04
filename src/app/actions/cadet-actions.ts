@@ -23,6 +23,58 @@ interface CreateCadetFormData {
     status: string;
 }
 
+interface CreateStaffFormData {
+    name: string;
+    officerId: string;
+    pin: string;
+    role: Role.CTO;
+}
+
+export async function createStaffAccount(formData: CreateStaffFormData, accessToken: string) {
+    const session = await getCallerSession(accessToken);
+    if (!session || session.role !== Role.ANO) {
+        return { success: false, error: "Only ANO can create CTO accounts." };
+    }
+
+    const officerId = formData.officerId.replace(/\s+/g, "").trim().toLowerCase();
+    if (!formData.name.trim() || !officerId || !/^[a-z0-9._-]+$/.test(officerId)) {
+        return { success: false, error: "Enter a valid CTO Officer ID." };
+    }
+    if (!formData.pin || !/^\d{4}$/.test(formData.pin)) {
+        return { success: false, error: "CTO PIN must be exactly 4 digits." };
+    }
+
+    const email = `cto_${officerId}@ncc.internal`;
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: `${formData.pin}-ncc-auth`,
+        email_confirm: true,
+        user_metadata: { full_name: formData.name.trim(), role: Role.CTO },
+    });
+    if (authError) {
+        return { success: false, error: authError.message.includes("already registered")
+            ? "This CTO Officer ID is already assigned."
+            : `Failed to create CTO account: ${authError.message}` };
+    }
+
+    const profilePayload: Record<string, unknown> = {
+        id: authData.user.id,
+        full_name: formData.name.trim(),
+        role: Role.CTO,
+        updated_at: new Date().toISOString(),
+    };
+    if (session.unitId) profilePayload.unit_id = session.unitId;
+
+    const { error: profileError } = await supabaseAdmin.from("profiles").upsert(profilePayload);
+    if (profileError) {
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+        return { success: false, error: `CTO profile creation failed: ${profileError.message}` };
+    }
+
+    revalidatePath("/dashboard/cadets");
+    return { success: true, officerId: `CTO-${officerId.toUpperCase()}` };
+}
+
 export async function createCadetAccount(formData: CreateCadetFormData, accessToken: string) {
     // ── 1. Auth: verify caller is logged in and has permission ─────────────────
     const session = await getCallerSession(accessToken);

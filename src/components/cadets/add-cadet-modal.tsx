@@ -60,7 +60,7 @@ export function AddCadetModal({ isOpen, onClose, formData, onChange, onSubmit, i
                             onChange={(e) => onChange({ rank: e.target.value as Role })}
                         >
                             {Object.values(Role)
-                                .filter(r => r !== Role.ANO)
+                                .filter(r => r !== Role.ANO && r !== Role.CTO)
                                 .filter(r => isRankAllowedForWing(r, formData.wing))
                                 .map(r => (
                                 <option key={r} value={r}>{getWingAwareRank(r, formData.wing)}</option>

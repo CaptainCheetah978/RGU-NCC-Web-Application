@@ -13,7 +13,7 @@ import { motion } from "framer-motion";
 import { cn, getWingAwareRank, isRankAllowedForWing } from "@/lib/utils";
 
 import { CertificatesSection } from "@/components/profile/certificates-section";
-import { createCadetAccount, updateCadetPin } from "@/app/actions/cadet-actions";
+import { createCadetAccount, createStaffAccount, updateCadetPin } from "@/app/actions/cadet-actions";
 import { useToast } from "@/lib/toast-context";
 import { getAccessToken } from "@/lib/get-access-token";
 import Image from "next/image";
@@ -34,6 +34,7 @@ export default function CadetsPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+    const [isCtoModalOpen, setIsCtoModalOpen] = useState(false);
 
     const [editingCadet, setEditingCadet] = useState<Cadet | null>(null);
     const [viewingCadet, setViewingCadet] = useState<Cadet | null>(null);
@@ -58,6 +59,7 @@ export default function CadetsPage() {
     const [formData, setFormData] = useState(initialFormState);
     const [editFormData, setEditFormData] = useState<Partial<Cadet>>({});
     const [newPin, setNewPin] = useState("");
+    const [ctoForm, setCtoForm] = useState({ name: "", officerId: "", pin: "" });
 
     const {
         searchQuery,
@@ -157,6 +159,21 @@ export default function CadetsPage() {
         setIsLoading(false);
     };
 
+    const handleCreateCto = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        const token = await getAccessToken();
+        const result = await createStaffAccount({ ...ctoForm, role: Role.CTO }, token || "");
+        if (result.success) {
+            setIsCtoModalOpen(false);
+            setCtoForm({ name: "", officerId: "", pin: "" });
+            showToast(`CTO enrolled successfully! Officer ID: ${result.officerId} | PIN: ${ctoForm.pin}`, "success");
+        } else {
+            showToast("CTO enrollment failed: " + result.error);
+        }
+        setIsLoading(false);
+    };
+
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingCadet) return;
@@ -235,6 +252,11 @@ export default function CadetsPage() {
                         <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-primary/25">
                             <UserPlus className="w-5 h-5 mr-2" />
                             Enroll Cadet
+                        </Button>
+                    )}
+                    {isANO && (
+                        <Button variant="outline" onClick={() => setIsCtoModalOpen(true)}>
+                            Add CTO
                         </Button>
                     )}
                 </div>
@@ -374,6 +396,18 @@ export default function CadetsPage() {
             )}
 
             <AddCadetModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} formData={formData} onChange={handleFormChange} onSubmit={handleSubmit} isLoading={isLoading} />
+            <Modal isOpen={isCtoModalOpen} onClose={() => setIsCtoModalOpen(false)} title="Create CTO Staff Account">
+                <form onSubmit={handleCreateCto} className="space-y-4">
+                    <Input label="Full Name" value={ctoForm.name} onChange={(e) => setCtoForm({ ...ctoForm, name: e.target.value })} required />
+                    <Input label="Officer ID" placeholder="e.g. CTO01" value={ctoForm.officerId} onChange={(e) => setCtoForm({ ...ctoForm, officerId: e.target.value })} required />
+                    <Input label="Access PIN (4 digits)" type="password" maxLength={4} value={ctoForm.pin} onChange={(e) => setCtoForm({ ...ctoForm, pin: e.target.value })} required />
+                    <p className="text-xs text-zinc-600 dark:text-slate-400">CTO accounts are staff accounts and are not assigned cadet ranks or registration numbers.</p>
+                    <div className="flex justify-end gap-3">
+                        <Button type="button" variant="ghost" onClick={() => setIsCtoModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" isLoading={isLoading}>Create CTO</Button>
+                    </div>
+                </form>
+            </Modal>
             <EditCadetModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} formData={editFormData} onChange={(updates) => setEditFormData({ ...editFormData, ...updates })} onSubmit={handleUpdate} isLoading={isLoading} />
             <Modal isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title="Update Access PIN">
                 <form onSubmit={handlePinUpdate} className="space-y-4">

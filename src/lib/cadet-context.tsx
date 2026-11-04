@@ -272,7 +272,7 @@ export function CadetProvider({ children }: { children: React.ReactNode }) {
     }, [profilesQuery.data, user]);
 
     const cadets = useMemo(
-        () => (profilesQuery.data || []).filter((p) => p.role !== Role.ANO) as Cadet[],
+        () => (profilesQuery.data || []).filter((p) => p.role !== Role.ANO && p.role !== Role.CTO) as Cadet[],
         [profilesQuery.data]
     );
 
